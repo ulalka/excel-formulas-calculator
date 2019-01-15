@@ -18,31 +18,3 @@ class Add(AddSubNode):
 
 class Subtract(AddSubNode):
     mult = -1
-
-
-class Multiply(EFCBaseNode):
-    pass
-
-
-class Divide(EFCBaseNode):
-    pass
-
-
-class Exponent(EFCBaseNode):
-    pass
-
-
-class ConcatString(EFCBaseNode):
-    pass
-
-
-class SubExpression(EFCBaseNode):
-    pass
-
-
-class CompareBase(EFCBaseNode):
-    pass
-
-
-class CompareEq(CompareBase):
-    pass
