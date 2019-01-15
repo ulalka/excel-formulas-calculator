@@ -23,6 +23,16 @@ class TestFormulaCalculator(unittest.TestCase):
         ('2 - (2 + 3)', -3),
     )
 
+    compare_examples = (
+        ('4 > 3', True),
+        ('4 = 3', False),
+        ('4 <> 3', True),
+        ('4 < 3', False),
+        ('4 + 1 > 4', True),
+        ('4 > 4 - 3', True),
+        ('4 * 2 + 2 <> 4 / 3 - 1', True),
+    )
+
     def setUp(self):
         self.calculator = FormulaCalculator()
 
@@ -33,3 +43,6 @@ class TestFormulaCalculator(unittest.TestCase):
 
     def test_arithmetic(self):
         self.run_test_on_examples(self.arithmetic_examples)
+
+    def test_compare(self):
+        self.run_test_on_examples(self.compare_examples)

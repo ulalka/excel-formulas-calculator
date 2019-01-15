@@ -49,5 +49,14 @@ class FormulaCalculator(NodeWalker):
     def walk__compare_eq(self, node):
         return self.walk(node.left) == self.walk(node.right)
 
+    def walk__compare_not_eq(self, node):
+        return self.walk(node.left) != self.walk(node.right)
+
+    def walk__compare_gt(self, node):
+        return self.walk(node.left) > self.walk(node.right)
+
+    def walk__compare_lt(self, node):
+        return self.walk(node.left) < self.walk(node.right)
+
     def walk__sub_expression(self, node):
         return self.walk(node.expr)

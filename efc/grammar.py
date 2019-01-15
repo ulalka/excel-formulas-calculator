@@ -5,10 +5,17 @@ from __future__ import unicode_literals
 GRAMMAR = """
 start
     =
-    | compare_eq $
-    | expression $
+    stmt $
     ;
 
+stmt
+    =
+    | compare_eq
+    | compare_not_eq
+    | compare_gt
+    | compare_lt
+    | expression
+    ;
 
 expression
     =
@@ -20,6 +27,21 @@ expression
 compare_eq::CompareEq
     =
     left:expression '=' ~ right:expression
+    ;
+    
+compare_not_eq::CompareNotEq
+    =
+    left:expression '<>' ~ right:expression
+    ;
+    
+compare_gt::CompareGT
+    =
+    left:expression '>' ~ right:expression
+    ;
+    
+compare_lt::CompareLT
+    =
+    left:expression '<' ~ right:expression
     ;
 
 addition::Add
