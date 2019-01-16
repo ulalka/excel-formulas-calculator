@@ -5,7 +5,7 @@ import unittest
 
 from efc import get_calculator
 from efc.tests.mock import ExcelMock
-from efc.errors import WorksheetDoesNotExists
+from efc.errors import EFCLinkError
 
 
 class TestFormulaCalculator(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestFormulaCalculator(unittest.TestCase):
         self.assertEqual(self.calc('B100', 'Yet another sheet', self.source), 2)
         self.assertEqual(self.calc('AA104', 'Yet another sheet', self.source), 45)
 
-        with self.assertRaises(WorksheetDoesNotExists):
+        with self.assertRaises(EFCLinkError):
             self.assertEqual(self.calc('F104', 'Some error ws', self.source), 2)
 
         self.assertEqual(self.calc('Sheet4!A3', 'Yet another sheet', self.source), 4)
@@ -32,3 +32,9 @@ class TestFormulaCalculator(unittest.TestCase):
 
         self.assertEqual(self.calc('Sheet4!A3 ^ 2', 'Yet another sheet', self.source), 16)
         self.assertEqual(self.calc('\'Sheet 1\'!C1 - 4 - 1', 'Yet another sheet', self.source), 13)
+
+        self.assertEqual(self.calc('Sheet4!A1:B3', 'Yet another sheet', self.source),
+                         [[13, 16], [13, 16], [4, 2]])
+
+        self.assertEqual(self.calc('Sheet4!test', 'Yet another sheet', self.source),
+                         [1, 2, 3, 4, 5])

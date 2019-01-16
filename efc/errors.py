@@ -6,5 +6,13 @@ class BaseFormulaException(Exception):
     pass
 
 
-class WorksheetDoesNotExists(BaseFormulaException):
-    """Use this exception class in excel interface, when ws does not exists."""
+class EFCValueError(BaseFormulaException):
+    """Error in arithmetic"""
+
+
+class EFCLinkError(BaseFormulaException):
+    """Worksheet does not exists"""
+
+
+class EFCNameError(BaseFormulaException):
+    """Named range does not exists"""

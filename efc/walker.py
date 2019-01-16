@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 
 from tatsu.walkers import NodeWalker
-from efc.nodes import AddSubNode, SingleCell, CellRange
+from efc.nodes import AddSubNode, SingleCell, CellRange, NamedRange
 
 
 class FormulaWalker(NodeWalker):
@@ -70,3 +70,6 @@ class FormulaWalker(NodeWalker):
             return source.range_to_values(start_row=node.address.start_row, start_column=node.address.start_column,
                                           end_row=node.address.end_row, end_column=node.address.end_column,
                                           ws_name=getattr(node, 'ws_name', ws_name))
+        elif isinstance(node.address, NamedRange):
+            return source.named_range_to_values(range_name=node.address.name,
+                                                ws_name=getattr(node, 'ws_name', ws_name))

@@ -120,8 +120,8 @@ CELL_ADDRESS::CellAddress
 
 RELATIVE_CELL_ADDRESS 
     =
-    | SINGLE_CELL
     | CELL_RANGE
+    | SINGLE_CELL
     | NAMED_RANGE
     ;
     

@@ -10,6 +10,9 @@ class BaseExcelInterface(object):
 
     def named_range_to_values(self, range_name, ws_name):
         """
+        A1:A4 -> [A1, A2, A3, A4]
+        A1:D1 -> [A1, B1, C1, D1]
+        A1:D2 -> [[A1, B1, C1, D1], [A2, B2, C2, D2]]
         :type range_name: basestring
         :type ws_name: basestring
         :rtype: (list|tuple)
@@ -18,6 +21,9 @@ class BaseExcelInterface(object):
 
     def range_to_values(self, start_row, start_column, end_row, end_column, ws_name):
         """
+        A1:A4 -> [A1, A2, A3, A4]
+        A1:D1 -> [A1, B1, C1, D1]
+        A1:D2 -> [[A1, B1, C1, D1], [A2, B2, C2, D2]]
         :type start_row: int
         :type start_column: int
         :type end_row: int
