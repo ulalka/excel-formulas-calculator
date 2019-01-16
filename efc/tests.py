@@ -1,13 +1,14 @@
 # coding: utf8
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 import unittest
 
-from efc.calculator import FormulaCalculator
+from efc import get_calculator
 
 
 class TestFormulaCalculator(unittest.TestCase):
     arithmetic_examples = (
+        ('4', 4),
         ('4 + 4', 8),
         ('4 - 2', 2),
         ('4 * 4', 16),
@@ -34,11 +35,11 @@ class TestFormulaCalculator(unittest.TestCase):
     )
 
     def setUp(self):
-        self.calculator = FormulaCalculator()
+        self.calc = get_calculator(None)
 
     def run_test_on_examples(self, examples):
         for expr, result in examples:
-            calc_result = self.calculator.calculate(expr)
+            calc_result = self.calc(expr)
             self.assertEqual(calc_result, result, '%s = %s, expected: %s' % (expr, calc_result, result))
 
     def test_arithmetic(self):
@@ -46,3 +47,6 @@ class TestFormulaCalculator(unittest.TestCase):
 
     def test_compare(self):
         self.run_test_on_examples(self.compare_examples)
+
+    def test_cell_address(self):
+        self.calc('B4')

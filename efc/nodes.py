@@ -18,3 +18,19 @@ class Add(AddSubNode):
 
 class Subtract(AddSubNode):
     mult = -1
+
+
+class CellAddressNode(EFCBaseNode):
+    pass
+
+
+class CellRange(CellAddressNode):
+    pass
+
+
+class NamedRange(CellAddressNode):
+    pass
+
+
+class SingleCell(CellAddressNode):
+    pass
