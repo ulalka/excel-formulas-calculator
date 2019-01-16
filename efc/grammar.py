@@ -12,7 +12,9 @@ stmt
     =
     | compare_eq
     | compare_not_eq
+    | compare_gte
     | compare_gt
+    | compare_lte
     | compare_lt
     | expression
     ;
@@ -33,12 +35,22 @@ compare_not_eq::CompareNotEq
     =
     left:expression '<>' ~ right:expression
     ;
-    
+
+compare_gte::CompareGTE
+    =
+    left:expression '>=' ~ right:expression
+    ;
+
 compare_gt::CompareGT
     =
     left:expression '>' ~ right:expression
     ;
-    
+
+compare_lte::CompareLTE
+    =
+    left:expression '<=' ~ right:expression
+    ;
+ 
 compare_lt::CompareLT
     =
     left:expression '<' ~ right:expression

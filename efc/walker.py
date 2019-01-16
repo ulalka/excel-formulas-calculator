@@ -53,8 +53,14 @@ class FormulaWalker(NodeWalker):
     def walk__compare_gt(self, node):
         return self.walk(node.left) > self.walk(node.right)
 
+    def walk__compare_gte(self, node):
+        return self.walk(node.left) >= self.walk(node.right)
+
     def walk__compare_lt(self, node):
         return self.walk(node.left) < self.walk(node.right)
+
+    def walk__compare_lte(self, node):
+        return self.walk(node.left) <= self.walk(node.right)
 
     def walk__sub_expression(self, node):
         return self.walk(node.expr)

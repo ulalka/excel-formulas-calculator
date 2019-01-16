@@ -25,10 +25,12 @@ class TestFormulaCalculator(unittest.TestCase):
     )
 
     compare_examples = (
-        ('4 > 3', True),
         ('4 = 3', False),
         ('4 <> 3', True),
+        ('4 > 3', True),
+        ('4 >= 4', True),
         ('4 < 3', False),
+        ('3 <= 3', True),
         ('4 + 1 > 4', True),
         ('4 > 4 - 3', True),
         ('4 * 2 + 2 <> 4 / 3 - 1', True),
