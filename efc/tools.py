@@ -7,14 +7,12 @@ from efc.walker import FormulaWalker
 from efc.grammar import GRAMMAR
 
 
-def get_calculator(source, walker=FormulaWalker, grammar=GRAMMAR, semantics=None):
-    walker = walker(source)
+def get_calculator(walker=None, grammar=GRAMMAR, semantics=None):
+    walker = walker or FormulaWalker()
     semantics = semantics or EFCModelBuilderSemantics()
     parser = tatsu.compile(grammar, semantics=semantics)
-    return lambda formula: walker.walk(parser.parse(formula))
+    return lambda formula, ws_name, source: walker.walk(parser.parse(formula), ws_name=ws_name, source=source)
 
 
-def calc(formula, source, walker=FormulaWalker, grammar=GRAMMAR, semantics=None):
-    semantics = semantics or EFCModelBuilderSemantics()
-    ast = tatsu.parse(grammar=grammar, semantics=semantics, input=formula)
-    return walker(source).walk(ast)
+def calc(formula, ws_name, source, walker=None, grammar=GRAMMAR, semantics=None):
+    return get_calculator(walker=walker, grammar=grammar, semantics=semantics)(formula, ws_name, source)

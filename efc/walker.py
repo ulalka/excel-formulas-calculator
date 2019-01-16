@@ -7,20 +7,17 @@ from efc.nodes import AddSubNode
 
 
 class FormulaWalker(NodeWalker):
-    def __init__(self, source):
-        """
-        Class for calculating formula value
-        :type source: efc.interface.BaseExcelInterface
-        """
-        self.source = source
+    """
+    Class for calculating formula value
+    """
 
-    def walk_object(self, node):
+    def walk_object(self, node, *args, **kwargs):
         return node
 
-    def walk__add(self, node):
+    def walk__add(self, node, *args, **kwargs):
         return self.walk(node.left) + self.walk(node.right)
 
-    def walk__subtract(self, node):
+    def walk__subtract(self, node, *args, **kwargs):
         if not isinstance(node.right, AddSubNode):
             return self.walk(node.left) - self.walk(node.right)
         else:
@@ -35,32 +32,32 @@ class FormulaWalker(NodeWalker):
             result = result + mult * self.walk(right_node)
             return result
 
-    def walk__multiply(self, node):
+    def walk__multiply(self, node, *args, **kwargs):
         return self.walk(node.left) * self.walk(node.right)
 
-    def walk__divide(self, node):
+    def walk__divide(self, node, *args, **kwargs):
         return self.walk(node.left) / self.walk(node.right)
 
-    def walk__exponent(self, node):
+    def walk__exponent(self, node, *args, **kwargs):
         return self.walk(node.left) ** self.walk(node.right)
 
-    def walk__compare_eq(self, node):
+    def walk__compare_eq(self, node, *args, **kwargs):
         return self.walk(node.left) == self.walk(node.right)
 
-    def walk__compare_not_eq(self, node):
+    def walk__compare_not_eq(self, node, *args, **kwargs):
         return self.walk(node.left) != self.walk(node.right)
 
-    def walk__compare_gt(self, node):
+    def walk__compare_gt(self, node, *args, **kwargs):
         return self.walk(node.left) > self.walk(node.right)
 
-    def walk__compare_gte(self, node):
+    def walk__compare_gte(self, node, *args, **kwargs):
         return self.walk(node.left) >= self.walk(node.right)
 
-    def walk__compare_lt(self, node):
+    def walk__compare_lt(self, node, *args, **kwargs):
         return self.walk(node.left) < self.walk(node.right)
 
-    def walk__compare_lte(self, node):
+    def walk__compare_lte(self, node, *args, **kwargs):
         return self.walk(node.left) <= self.walk(node.right)
 
-    def walk__sub_expression(self, node):
+    def walk__sub_expression(self, node, *args, **kwargs):
         return self.walk(node.expr)
