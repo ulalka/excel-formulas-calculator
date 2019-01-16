@@ -92,7 +92,7 @@ factor
     
 exponent::Exponent
     =
-    left:value '^' right:value
+    left:value '^' ~ right:value
     ;
 
 subexpression::SubExpression
@@ -108,36 +108,36 @@ number::int
 value
     =
     | number
-    | cell_address
+    | CELL_ADDRESS
     ;
     
-cell_address
+CELL_ADDRESS::CellAddress
     =
-    | CELL_RANGE
+    | ws_name:/\w+/ '!' ~ address:RELATIVE_CELL_ADDRESS
+    | "'" ws_name:/[^']+/ "'!" ~ address:RELATIVE_CELL_ADDRESS
+    | address:RELATIVE_CELL_ADDRESS
+    ;
+
+RELATIVE_CELL_ADDRESS 
+    =
     | SINGLE_CELL
+    | CELL_RANGE
+    | NAMED_RANGE
     ;
     
 CELL_RANGE::CellRange
     =
-    | ws_name:WS_NAME '!' SINGLE_CELL ':' ~ SINGLE_CELL
-    | SINGLE_CELL ':' ~ SINGLE_CELL
+    left:SINGLE_CELL ':' ~ right:SINGLE_CELL
     ;
 
 NAMED_RANGE::NamedRange
     =
-    | ws_name:WS_NAME '!' RANGE_NAME
-    | RANGE_NAME
-    ;
-
-RANGE_NAME
-    =
-    /[^\W0-9]\w+/
+    name:/[^\W0-9]\w+/
     ;
 
 SINGLE_CELL::SingleCell
     =
-    | ws_name:WS_NAME '!' /&?/ column:CELL_COLUMN /&?/ row:CELL_ROW
-    | /&?/ column:CELL_COLUMN /&?/ row:CELL_ROW
+    /&?/ column_letter:CELL_COLUMN /&?/ row:CELL_ROW
     ;
 
 CELL_COLUMN
@@ -148,10 +148,5 @@ CELL_COLUMN
 CELL_ROW::int
     =
     /\d+/
-    ;
-    
-WS_NAME
-    =
-    /'?.+'?/
     ;
 """

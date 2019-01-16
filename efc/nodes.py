@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 from tatsu.objectmodel import Node
+from efc.utils import col_str_to_index
 
 
 class EFCBaseNode(Node):
@@ -20,17 +21,33 @@ class Subtract(AddSubNode):
     mult = -1
 
 
-class CellAddressNode(EFCBaseNode):
+class CellAddress(EFCBaseNode):
     pass
 
 
-class CellRange(CellAddressNode):
+class CellRange(CellAddress):
+    @property
+    def start_row(self):
+        return self.left.row
+
+    @property
+    def start_column(self):
+        return col_str_to_index(self.left.column_letter)
+
+    @property
+    def end_row(self):
+        return self.right.row
+
+    @property
+    def end_column(self):
+        return col_str_to_index(self.right.column_letter)
+
+
+class NamedRange(CellAddress):
     pass
 
 
-class NamedRange(CellAddressNode):
-    pass
-
-
-class SingleCell(CellAddressNode):
-    pass
+class SingleCell(CellAddress):
+    @property
+    def column(self):
+        return col_str_to_index(self.column_letter)
