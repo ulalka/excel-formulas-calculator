@@ -49,6 +49,3 @@ class TestFormulaCalculator(unittest.TestCase):
 
     def test_compare(self):
         self.run_test_on_examples(self.compare_examples)
-
-    def test_cell_address(self):
-        self.calc('B4', None, None)
