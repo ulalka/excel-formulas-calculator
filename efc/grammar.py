@@ -107,8 +107,25 @@ number::int
 
 value
     =
+    | functions
     | number
     | CELL_ADDRESS
+    ;
+    
+functions
+    =
+    | SUM_FUNCTION
+    | MOD_FUNCTION
+    ;
+
+SUM_FUNCTION::SumFunction
+    =
+    'SUM(' ~ ','>{operand:stmt}+ ')'
+    ;
+
+MOD_FUNCTION::ModFunction
+    =
+    'MOD(' ~ left:stmt ',' right:stmt ')'
     ;
     
 CELL_ADDRESS::CellAddress

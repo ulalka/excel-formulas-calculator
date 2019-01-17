@@ -51,3 +51,16 @@ class SingleCell(CellAddress):
     @property
     def column(self):
         return col_str_to_index(self.column_letter)
+
+
+class BaseFunction(EFCBaseNode):
+    pass
+
+
+class SumFunction(BaseFunction):
+    @property
+    def operands(self):
+        operands = self.operand
+        if not isinstance(self.operand, list):
+            operands = [operands]
+        return operands

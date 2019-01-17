@@ -8,7 +8,7 @@ from efc.tests.mock import ExcelMock
 from efc.errors import EFCLinkError
 
 
-class TestFormulaCalculator(unittest.TestCase):
+class TestCells(unittest.TestCase):
     def setUp(self):
         self.calc = get_calculator()
         self.source = ExcelMock()

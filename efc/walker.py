@@ -3,7 +3,9 @@
 from __future__ import unicode_literals, print_function
 
 from tatsu.walkers import NodeWalker
-from efc.nodes import AddSubNode, SingleCell, CellRange, NamedRange
+from efc.nodes import AddSubNode
+from efc.utils import Matrix
+from efc.errors import EFCValueError
 
 
 class FormulaWalker(NodeWalker):
@@ -63,13 +65,21 @@ class FormulaWalker(NodeWalker):
         return self.walk(node.expr, **context)
 
     def walk__cell_address(self, node, ws_name, source, **context):
-        if isinstance(node.address, SingleCell):
-            return source.cell_to_value(row=node.address.row, column=node.address.column,
-                                        ws_name=getattr(node, 'ws_name', ws_name))
-        elif isinstance(node.address, CellRange):
-            return source.range_to_values(start_row=node.address.start_row, start_column=node.address.start_column,
-                                          end_row=node.address.end_row, end_column=node.address.end_column,
-                                          ws_name=getattr(node, 'ws_name', ws_name))
-        elif isinstance(node.address, NamedRange):
-            return source.named_range_to_values(range_name=node.address.name,
-                                                ws_name=getattr(node, 'ws_name', ws_name))
+        return source.get_value(node.address, getattr(node, 'ws_name', ws_name))
+
+    def walk__sum_function(self, node, **context):
+        result = 0.0
+        for operand in (self.walk(o, **context) for o in node.operands):
+            try:
+                result += sum(operand) if isinstance(operand, (list, Matrix)) else operand
+            except TypeError:
+                raise EFCValueError(operand)
+        return result
+
+    def walk__mod_function(self, node, **context):
+        left_value, right_value = self.walk(node.left, **context), self.walk(node.right, **context)
+        try:
+            return left_value % right_value
+        except TypeError:
+            raise EFCValueError(left_value, right_value)
+
