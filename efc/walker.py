@@ -19,6 +19,9 @@ class FormulaWalker(NodeWalker):
     def walk__add(self, node, **context):
         return self.walk(node.left, **context) + self.walk(node.right, **context)
 
+    def walk__concat(self, node, **context):
+        return str(self.walk(node.left, **context)) + str(self.walk(node.right, **context))
+
     def walk__subtract(self, node, **context):
         if not isinstance(node.right, AddSubNode):
             return self.walk(node.left, **context) - self.walk(node.right, **context)

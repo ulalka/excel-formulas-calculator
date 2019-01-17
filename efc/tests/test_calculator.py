@@ -36,6 +36,11 @@ class TestFormulaCalculator(unittest.TestCase):
         ('4 * 2 + 2 <> 4 / 3 - 1', True),
     )
 
+    string_examples = (
+        ('"test" & "2"', 'test2'),
+        ('2 & 3', '23'),
+    )
+
     def setUp(self):
         self.calc = get_calculator()
 
@@ -49,3 +54,6 @@ class TestFormulaCalculator(unittest.TestCase):
 
     def test_compare(self):
         self.run_test_on_examples(self.compare_examples)
+
+    def test_string(self):
+        self.run_test_on_examples(self.string_examples)

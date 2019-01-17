@@ -21,6 +21,7 @@ stmt
 
 expression
     =
+    | concat
     | addition
     | subtraction
     | term
@@ -59,6 +60,11 @@ compare_lt::CompareLT
 addition::Add
     =
     left:term '+' ~ right:expression
+    ;
+
+concat::Concat
+    =
+    left:term '&' ~ right:expression
     ;
 
 subtraction::Subtract
@@ -105,11 +111,23 @@ number::int
     /\d+/
     ;
 
+float::float
+    =
+    /\d+\.\d+/
+    ;
+
+STRING
+    =
+    '"' @:/[^"]+/ '"'
+    ;
+    
 value
     =
     | functions
+    | float
     | number
     | CELL_ADDRESS
+    | STRING
     ;
     
 functions
