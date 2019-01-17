@@ -86,3 +86,5 @@ class FormulaWalker(NodeWalker):
         except TypeError:
             raise EFCValueError(left_value, right_value)
 
+    def walk__iffunction(self, node, **context):
+        return self.walk(node.true, **context) if self.walk(node.expr, **context) else self.walk(node.false, **context)

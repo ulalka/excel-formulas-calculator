@@ -134,6 +134,7 @@ functions
     =
     | SUM_FUNCTION
     | MOD_FUNCTION
+    | IF_FUNCTION
     ;
 
 SUM_FUNCTION::SumFunction
@@ -144,6 +145,11 @@ SUM_FUNCTION::SumFunction
 MOD_FUNCTION::ModFunction
     =
     'MOD(' ~ left:stmt ',' right:stmt ')'
+    ;
+
+IF_FUNCTION::IFFunction
+    =
+    'IF(' ~ expr:stmt ',' true:stmt ',' false:stmt ')'
     ;
     
 CELL_ADDRESS::CellAddress

@@ -23,3 +23,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('MOD(\'Sheet 1\'!B3,4)', 'Yet another sheet', self.source), 2)
         self.assertEqual(self.calc('MOD(\'Sheet 1\'!A3,\'Sheet 1\'!C3)', 'Yet another sheet', self.source), 4)
         self.assertEqual(self.calc('MOD(\'Sheet 1\'!A3,\'Sheet 1\'!B3 * 2)', 'Yet another sheet', self.source), 0)
+
+        # IF
+        self.assertEqual(self.calc('IF(2>1,1,2)', 'Yet another sheet', self.source), 1)
+        self.assertEqual(self.calc('IF(\'Sheet 1\'!A3 = 4,\'Sheet 1\'!C3, 0)', 'Yet another sheet', self.source), 8)
