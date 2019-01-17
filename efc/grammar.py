@@ -135,6 +135,7 @@ functions
     | SUM_FUNCTION
     | MOD_FUNCTION
     | IF_FUNCTION
+    | IF_ERROR_FUNCTION
     | MAX_FUNCTION
     ;
 
@@ -151,6 +152,11 @@ MOD_FUNCTION::ModFunction
 IF_FUNCTION::IFFunction
     =
     'IF(' ~ expr:stmt ',' true:stmt ',' false:stmt ')'
+    ;
+
+IF_ERROR_FUNCTION::IFERRORFunction
+    =
+    'IFERROR(' ~ expr:stmt ',' true:stmt ')'
     ;
     
 MAX_FUNCTION::MaxFunction

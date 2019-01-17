@@ -28,6 +28,10 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('IF(2>1,1,2)', 'Yet another sheet', self.source), 1)
         self.assertEqual(self.calc('IF(\'Sheet 1\'!A3 = 4,\'Sheet 1\'!C3, 0)', 'Yet another sheet', self.source), 8)
 
+        # IFERROR
+        self.assertEqual(self.calc('IFERROR(5/0,1)', 'Yet another sheet', self.source), 1)
+        self.assertEqual(self.calc('IFERROR(5+6, 0)', 'Yet another sheet', self.source), 11)
+
         # MAX
         self.assertEqual(self.calc('MAX(Sheet4!A1:B3)', 'Yet another sheet', self.source), 16)
         self.assertEqual(self.calc('MAX(Sheet4!A1:B3,100)', 'Yet another sheet', self.source), 100)

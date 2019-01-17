@@ -89,6 +89,13 @@ class FormulaWalker(NodeWalker):
     def walk__iffunction(self, node, **context):
         return self.walk(node.true, **context) if self.walk(node.expr, **context) else self.walk(node.false, **context)
 
+    def walk__iferrorfunction(self, node, **context):
+        try:
+            result = self.walk(node.expr, **context)
+        except:
+            result = self.walk(node.true, **context)
+        return result
+
     def walk__max_function(self, node, **context):
         result = []
         for operand in (self.walk(o, **context) for o in node.operands):
