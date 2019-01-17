@@ -134,3 +134,6 @@ class FormulaWalker(NodeWalker):
             raise EFCValueError(value)
 
         return value[-amount:]
+
+    def walk__is_blank_function(self, node, **context):
+        return self.walk(node.expr, **context) is None

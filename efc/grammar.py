@@ -118,7 +118,7 @@ float::float
 
 STRING
     =
-    '"' @:/[^"]+/ '"'
+    '"' @:/[^"]*/ '"'
     ;
     
 value
@@ -139,6 +139,7 @@ functions
     | MAX_FUNCTION
     | LEFT_FUNCTION
     | RIGHT_FUNCTION
+    | ISBLANK
     ;
 
 SUM_FUNCTION::SumFunction
@@ -159,6 +160,11 @@ LEFT_FUNCTION::LeftFunction
 RIGHT_FUNCTION::RightFunction
     =
     'RIGHT(' ~ expr:stmt ',' amount:stmt ')'
+    ;
+
+ISBLANK::IsBlankFunction
+    =
+    'ISBLANK(' ~ expr:stmt ')'
     ;
 
 IF_FUNCTION::IFFunction

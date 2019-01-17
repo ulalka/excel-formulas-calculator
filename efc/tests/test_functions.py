@@ -39,3 +39,8 @@ class TestFunctions(unittest.TestCase):
         # LEFT & RIGHT
         self.assertEqual(self.calc('LEFT("test", 2)', 'Yet another sheet', self.source), 'te')
         self.assertEqual(self.calc('RIGHT("test", 2)', 'Yet another sheet', self.source), 'st')
+
+        # ISBLANK
+        self.assertEqual(self.calc('ISBLANK("test")', 'Yet another sheet', self.source), False)
+        self.assertEqual(self.calc('ISBLANK("")', 'Yet another sheet', self.source), False)
+        self.assertEqual(self.calc('ISBLANK(Sheet4!AA1)', 'Yet another sheet', self.source), True)
