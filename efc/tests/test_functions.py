@@ -36,6 +36,10 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('MAX(Sheet4!A1:B3)', 'Yet another sheet', self.source), 16)
         self.assertEqual(self.calc('MAX(Sheet4!A1:B3,100)', 'Yet another sheet', self.source), 100)
 
+        # MIN
+        self.assertEqual(self.calc('MIN(Sheet4!A1:B3)', 'Yet another sheet', self.source), 2)
+        self.assertEqual(self.calc('MIN(Sheet4!A1:B3,1)', 'Yet another sheet', self.source), 1)
+
         # LEFT & RIGHT
         self.assertEqual(self.calc('LEFT("test", 2)', 'Yet another sheet', self.source), 'te')
         self.assertEqual(self.calc('RIGHT("test", 2)', 'Yet another sheet', self.source), 'st')

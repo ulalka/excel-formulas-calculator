@@ -57,7 +57,7 @@ class BaseFunction(EFCBaseNode):
     pass
 
 
-class SumFunction(BaseFunction):
+class OperandsMixin(object):
     @property
     def operands(self):
         operands = self.operand
@@ -66,10 +66,13 @@ class SumFunction(BaseFunction):
         return operands
 
 
-class MaxFunction(BaseFunction):
-    @property
-    def operands(self):
-        operands = self.operand
-        if not isinstance(self.operand, list):
-            operands = [operands]
-        return operands
+class SumFunction(BaseFunction, OperandsMixin):
+    pass
+
+
+class MaxFunction(BaseFunction, OperandsMixin):
+    pass
+
+
+class MinFunction(MaxFunction, OperandsMixin):
+    pass

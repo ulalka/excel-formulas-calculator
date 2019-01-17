@@ -137,6 +137,7 @@ functions
     | IF_FUNCTION
     | IF_ERROR_FUNCTION
     | MAX_FUNCTION
+    | MIN_FUNCTION
     | LEFT_FUNCTION
     | RIGHT_FUNCTION
     | ISBLANK
@@ -180,6 +181,11 @@ IF_ERROR_FUNCTION::IFERRORFunction
 MAX_FUNCTION::MaxFunction
     =
     'MAX(' ~ ','>{operand:stmt}+ ')'
+    ;
+    
+MIN_FUNCTION::MinFunction
+    =
+    'MIN(' ~ ','>{operand:stmt}+ ')'
     ;
     
 CELL_ADDRESS::CellAddress

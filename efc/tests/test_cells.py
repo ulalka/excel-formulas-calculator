@@ -6,6 +6,7 @@ import unittest
 from efc import get_calculator
 from efc.tests.mock import ExcelMock
 from efc.errors import EFCLinkError
+from efc.utils import Matrix
 
 
 class TestCells(unittest.TestCase):
@@ -33,8 +34,8 @@ class TestCells(unittest.TestCase):
         self.assertEqual(self.calc('Sheet4!A3 ^ 2', 'Yet another sheet', self.source), 16)
         self.assertEqual(self.calc('\'Sheet 1\'!C1 - 4 - 1', 'Yet another sheet', self.source), 13)
 
-        self.assertEqual(self.calc('Sheet4!A1:B3', 'Yet another sheet', self.source),
-                         [[13, 16], [13, 16], [4, 2]])
+        self.assertEqual(list(self.calc('Sheet4!A1:B3', 'Yet another sheet', self.source)),
+                         list(Matrix([[13, 16], [13, 16], [4, 2]])))
 
         self.assertEqual(self.calc('Sheet4!test', 'Yet another sheet', self.source),
                          [1, 2, 3, 4, 5])

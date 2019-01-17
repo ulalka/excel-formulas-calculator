@@ -105,6 +105,15 @@ class FormulaWalker(NodeWalker):
                 raise EFCValueError(operand)
         return max(result)
 
+    def walk__min_function(self, node, **context):
+        result = []
+        for operand in (self.walk(o, **context) for o in node.operands):
+            try:
+                result.append(min(operand) if isinstance(operand, (list, Matrix)) else operand)
+            except TypeError:
+                raise EFCValueError(operand)
+        return min(result)
+
     def walk__left_function(self, node, **context):
         amount = self.walk(node.amount, **context)
         try:
