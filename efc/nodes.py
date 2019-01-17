@@ -64,3 +64,12 @@ class SumFunction(BaseFunction):
         if not isinstance(self.operand, list):
             operands = [operands]
         return operands
+
+
+class MaxFunction(BaseFunction):
+    @property
+    def operands(self):
+        operands = self.operand
+        if not isinstance(self.operand, list):
+            operands = [operands]
+        return operands

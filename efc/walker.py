@@ -88,3 +88,12 @@ class FormulaWalker(NodeWalker):
 
     def walk__iffunction(self, node, **context):
         return self.walk(node.true, **context) if self.walk(node.expr, **context) else self.walk(node.false, **context)
+
+    def walk__max_function(self, node, **context):
+        result = []
+        for operand in (self.walk(o, **context) for o in node.operands):
+            try:
+                result.append(max(operand) if isinstance(operand, (list, Matrix)) else operand)
+            except TypeError:
+                raise EFCValueError(operand)
+        return max(result)

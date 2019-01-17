@@ -135,6 +135,7 @@ functions
     | SUM_FUNCTION
     | MOD_FUNCTION
     | IF_FUNCTION
+    | MAX_FUNCTION
     ;
 
 SUM_FUNCTION::SumFunction
@@ -150,6 +151,11 @@ MOD_FUNCTION::ModFunction
 IF_FUNCTION::IFFunction
     =
     'IF(' ~ expr:stmt ',' true:stmt ',' false:stmt ')'
+    ;
+    
+MAX_FUNCTION::MaxFunction
+    =
+    'MAX(' ~ ','>{operand:stmt}+ ')'
     ;
     
 CELL_ADDRESS::CellAddress
