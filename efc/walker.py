@@ -104,3 +104,33 @@ class FormulaWalker(NodeWalker):
             except TypeError:
                 raise EFCValueError(operand)
         return max(result)
+
+    def walk__left_function(self, node, **context):
+        amount = self.walk(node.amount, **context)
+        try:
+            amount = int(amount)
+        except ValueError:
+            raise EFCValueError(amount)
+
+        value = self.walk(node.expr, **context)
+        try:
+            value = str(value)
+        except ValueError:
+            raise EFCValueError(value)
+
+        return value[:amount]
+
+    def walk__right_function(self, node, **context):
+        amount = self.walk(node.amount, **context)
+        try:
+            amount = int(amount)
+        except ValueError:
+            raise EFCValueError(amount)
+
+        value = self.walk(node.expr, **context)
+        try:
+            value = str(value)
+        except ValueError:
+            raise EFCValueError(value)
+
+        return value[-amount:]

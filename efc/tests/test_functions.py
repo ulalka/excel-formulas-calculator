@@ -35,3 +35,7 @@ class TestFunctions(unittest.TestCase):
         # MAX
         self.assertEqual(self.calc('MAX(Sheet4!A1:B3)', 'Yet another sheet', self.source), 16)
         self.assertEqual(self.calc('MAX(Sheet4!A1:B3,100)', 'Yet another sheet', self.source), 100)
+
+        # LEFT & RIGHT
+        self.assertEqual(self.calc('LEFT("test", 2)', 'Yet another sheet', self.source), 'te')
+        self.assertEqual(self.calc('RIGHT("test", 2)', 'Yet another sheet', self.source), 'st')

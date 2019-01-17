@@ -137,6 +137,8 @@ functions
     | IF_FUNCTION
     | IF_ERROR_FUNCTION
     | MAX_FUNCTION
+    | LEFT_FUNCTION
+    | RIGHT_FUNCTION
     ;
 
 SUM_FUNCTION::SumFunction
@@ -147,6 +149,16 @@ SUM_FUNCTION::SumFunction
 MOD_FUNCTION::ModFunction
     =
     'MOD(' ~ left:stmt ',' right:stmt ')'
+    ;
+    
+LEFT_FUNCTION::LeftFunction
+    =
+    'LEFT(' ~ expr:stmt ',' amount:stmt ')'
+    ;
+    
+RIGHT_FUNCTION::RightFunction
+    =
+    'RIGHT(' ~ expr:stmt ',' amount:stmt ')'
     ;
 
 IF_FUNCTION::IFFunction
