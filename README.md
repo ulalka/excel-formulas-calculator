@@ -7,3 +7,10 @@ Library for the evaluation of excel formulas
     * basestring **formula** - excel formula
     * basestring **ws_name** - excel worksheet, where the formula exists
     * BaseExcelInterface **source** - excel document, where the formula exists
+
+# Functionality
+  * Arithmetic: ```-, +, *, /, ^, ()```
+  * Comparison: ```<>, >, >=, <, <=, =```
+  * String concatenation: ```&```
+  * Functions: ```SUM, MOD, IF, IF_ERROR, LEFT, RIGHT, MAX, MIN, ISBLANK```
+  * All variations of the spelling of the cell and range addresses
