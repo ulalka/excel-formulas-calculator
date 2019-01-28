@@ -4,15 +4,7 @@ from __future__ import unicode_literals, print_function
 import unittest
 from efc.rpn import tokens
 from efc.rpn.lexer import Lexer
-from itertools import product, chain, izip
-import six
-
-
-class TestToken(object):
-    def __init__(self, cls, v):
-        self.cls = cls
-        self.v = v
-
+from itertools import izip
 
 operands_examples = (
     ('4', [tokens.IntToken]),

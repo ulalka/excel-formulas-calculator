@@ -17,6 +17,12 @@ class Token(object):
     def to_python(self, m):
         return m[self.__class__.__name__]
 
+    def __str__(self):
+        return '<%s, %s>' % (self.__class__.__name__, self.value)
+
+    def __repr__(self):
+        return str(self)
+
 
 class OperandToken(Token):
     pass
@@ -43,11 +49,7 @@ class StringToken(OperandToken):
         return super(StringToken, self).to_python(m)[1:-1]
 
 
-class FunctionToken(Token):
-    pattern = r'[A-Z]+(?=\()'
-
-
-class AddressToken(Token):
+class AddressToken(OperandToken):
     pass
 
 
@@ -79,7 +81,22 @@ class NamedRangeToken(AddressToken):
 
 
 class OperationToken(Token):
-    pass
+    _operands_count = 2
+
+    def __init__(self, *args, **kwargs):
+        super(OperationToken, self).__init__(*args, **kwargs)
+
+    @property
+    def operands_count(self):
+        return self._operands_count
+
+    @operands_count.setter
+    def operands_count(self, v):
+        self._operands_count = v
+
+
+class FunctionToken(OperationToken):
+    pattern = r'[A-Z]+(?=\()'
 
 
 class AddToken(OperationToken):
@@ -130,11 +147,11 @@ class CompareEgToken(OperationToken):
     pattern = r'\='
 
 
-class LeftBracketToken(OperationToken):
+class LeftBracketToken(Token):
     pattern = r'\('
 
 
-class RightBracketToken(OperationToken):
+class RightBracketToken(Token):
     pattern = r'\)'
 
 
