@@ -11,28 +11,32 @@ class Token(object):
         self.value = self.to_python(match.groupdict())
 
     @classmethod
-    def get_token_name(cls):
-        return cls.__name__
+    def get_group_pattern(cls):
+        return r'(?P<%s>%s)' % (cls.__name__, cls.pattern)
 
     def to_python(self, m):
-        return m[self.get_token_name()]
+        return m[self.__class__.__name__]
 
 
-class FloatToken(Token):
+class OperandToken(Token):
+    pass
+
+
+class FloatToken(OperandToken):
     pattern = r'\d+\.\d+'
 
     def to_python(self, m):
         return float(super(FloatToken, self).to_python(m))
 
 
-class IntToken(Token):
+class IntToken(OperandToken):
     pattern = r'\d+'
 
     def to_python(self, m):
         return int(super(IntToken, self).to_python(m))
 
 
-class StringToken(Token):
+class StringToken(OperandToken):
     pattern = r'"[^"]*"'
 
     def to_python(self, m):
@@ -48,18 +52,18 @@ class NameToken(Token):
 
 
 class CellRangeToken(Token):
-    pattern = r'\$?(?P<row1>[A-Z]+)\$?(?P<cell1>[0-9]+):' \
-              r'\$?(?P<row2>[A-Z]+)\$?(?P<cell2>[0-9]+)'
+    pattern = (r'\$?(?P<row1>[A-Z]+)\$?(?P<column1>[0-9]+):'
+               r'\$?(?P<row2>[A-Z]+)\$?(?P<column2>[0-9]+)')
 
     def to_python(self, m):
-        return (m['row1'], int(m['cell1'])), (m['row2'], int(m['cell2']))
+        return (m['row1'], int(m['column1'])), (m['row2'], int(m['column2']))
 
 
 class CellAddressToken(Token):
-    pattern = r'\$?(?P<row>[A-Z]+)\$?(?P<cell>[0-9]+)'
+    pattern = r'\$?(?P<row>[A-Z]+)\$?(?P<column>[0-9]+)'
 
     def to_python(self, m):
-        return m['row'], int(m['cell'])
+        return m['row'], int(m['column'])
 
 
 class SheetNameToken(Token):
@@ -72,23 +76,63 @@ class SheetNameToken(Token):
         return v
 
 
-class ArithmeticToken(Token):
-    pattern = r'\+|-|/|\*|&|\^'
-
-
-class CompareToken(Token):
-    pattern = r'\<\>|\>\=|\<\=|\>|\<|\='
-
-
-class BracketToken(Token):
+class OperationToken(Token):
     pass
 
 
-class LeftBracketToken(BracketToken):
+class AddToken(OperationToken):
+    pattern = r'\+'
+
+
+class SubtractToken(OperationToken):
+    pattern = r'\-'
+
+
+class DivideToken(OperationToken):
+    pattern = r'/'
+
+
+class MultiplyToken(OperationToken):
+    pattern = r'\*'
+
+
+class ConcatToken(OperationToken):
+    pattern = r'\&'
+
+
+class ExponentToken(OperationToken):
+    pattern = r'\^'
+
+
+class CompareNotEqToken(OperationToken):
+    pattern = r'\<\>'
+
+
+class CompareGTEToken(OperationToken):
+    pattern = r'\>\='
+
+
+class CompareLTEToken(OperationToken):
+    pattern = r'\<\='
+
+
+class CompareGTToken(OperationToken):
+    pattern = r'\>'
+
+
+class CompareLTToken(OperationToken):
+    pattern = r'\<'
+
+
+class CompareEgToken(OperationToken):
+    pattern = r'\='
+
+
+class LeftBracketToken(OperationToken):
     pattern = r'\('
 
 
-class RightBracketToken(BracketToken):
+class RightBracketToken(OperationToken):
     pattern = r'\)'
 
 
