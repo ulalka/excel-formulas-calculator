@@ -10,11 +10,10 @@ TOKENS_PRIORITY = (
     tokens.FloatToken,
     tokens.IntToken,
     tokens.StringToken,
-    tokens.CellRangeToken,
-    tokens.CellAddressToken,
-    tokens.SheetNameToken,
     tokens.FunctionToken,
-    tokens.NameToken,
+    tokens.CellsRangeToken,
+    tokens.SingleCellToken,
+    tokens.NamedRangeToken,
     tokens.AddToken,
     tokens.SubtractToken,
     tokens.DivideToken,
@@ -47,9 +46,6 @@ class TokensLine(object):
         self._pointer += 1
         return v
 
-    # def prev(self):
-    #
-
     def add(self, token):
         self._tokens.append(token)
 
@@ -61,15 +57,15 @@ class TokensLine(object):
 
 
 class Lexer(object):
-    def __init__(self, tokens_classes=TOKENS_PRIORITY):
+    def __init__(self):
         self.lexer_tokens = OrderedDict()
         self.regexp = None
 
-        self.prepare_regexp(tokens_classes)
+        self.prepare_regexp()
 
-    def prepare_regexp(self, tokens_classes):
+    def prepare_regexp(self):
         regexp_list = []
-        for c in tokens_classes:
+        for c in TOKENS_PRIORITY:
             self.lexer_tokens[c.__name__] = c
             regexp_list.append(c.get_group_pattern())
         self.regexp = r'|'.join(regexp_list)

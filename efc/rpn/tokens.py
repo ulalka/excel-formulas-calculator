@@ -47,33 +47,35 @@ class FunctionToken(Token):
     pattern = r'[A-Z]+(?=\()'
 
 
-class NameToken(Token):
-    pattern = r'\w+'
+class AddressToken(Token):
+    pass
 
 
-class CellRangeToken(Token):
-    pattern = (r'\$?(?P<row1>[A-Z]+)\$?(?P<column1>[0-9]+):'
-               r'\$?(?P<row2>[A-Z]+)\$?(?P<column2>[0-9]+)')
-
-    def to_python(self, m):
-        return (m['row1'], int(m['column1'])), (m['row2'], int(m['column2']))
-
-
-class CellAddressToken(Token):
-    pattern = r'\$?(?P<row>[A-Z]+)\$?(?P<column>[0-9]+)'
+class SingleCellToken(AddressToken):
+    pattern = (r"((?P<single_ws_name>('[^']+')|(\w+))!)?"
+               r"\$?(?P<row>[A-Z]+)\$?(?P<column>[0-9]+)")
 
     def to_python(self, m):
-        return m['row'], int(m['column'])
+        return m['single_ws_name'], m['row'], int(m['column'])
 
 
-class SheetNameToken(Token):
-    pattern = r"(?P<ws_name>('[^']+')|(\w+))!"
+class CellsRangeToken(AddressToken):
+    pattern = (r"((?P<range_ws_name>('[^']+')|(\w+))!)?"
+               r"\$?(?P<row1>[A-Z]+)\$?(?P<column1>[0-9]+)"
+               r":\$?(?P<row2>[A-Z]+)\$?(?P<column2>[0-9]+)")
 
     def to_python(self, m):
-        v = m['ws_name']
-        if v.startswith("'"):
-            v = v[1:-1]
-        return v
+        return (m['range_ws_name'],
+                m['row1'], int(m['column1']),
+                m['row2'], int(m['column2']))
+
+
+class NamedRangeToken(AddressToken):
+    pattern = (r"((?P<named_range_ws_name>('[^']+')|(\w+))!)?"
+               r"(?P<range_name>\w+)")
+
+    def to_python(self, m):
+        return m['named_range_ws_name'], m['range_name']
 
 
 class OperationToken(Token):
