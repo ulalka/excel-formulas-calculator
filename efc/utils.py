@@ -15,7 +15,8 @@ def col_str_to_index(col_str):
     """
     str_len = len(col_str)
     base = len(uppercase)
-    return sum((uppercase.index(s) + 1) * base ** (str_len - i) for i, s in enumerate(col_str, 1))
+    return sum((uppercase.index(s) + 1) * base ** (str_len - i)
+               for i, s in enumerate(col_str, 1))
 
 
 class Matrix(object):
@@ -29,3 +30,12 @@ class Matrix(object):
 
     def __iter__(self):
         return self.iter_values()
+
+
+class cached_property(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, cls=None):
+        result = instance.__dict__[self.func.__name__] = self.func(instance)
+        return result

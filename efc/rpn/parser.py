@@ -8,16 +8,12 @@ from efc.rpn.tokens import (OperandToken, OperationToken, FunctionToken,
 from efc.rpn.errors import InconsistentParentheses, SeparatorWithoutFunction
 
 OPERATORS_PRIORITY = {
-    tokens.ExponentToken: 4,
-    tokens.MultiplyToken: 3,
-    tokens.DivideToken: 3,
-    tokens.SubtractToken: 2,
-    tokens.CompareNotEqToken: 1,
-    tokens.CompareGTEToken: 1,
-    tokens.CompareLTEToken: 1,
-    tokens.CompareGTToken: 1,
-    tokens.CompareLTToken: 1,
-    tokens.CompareEgToken: 1,
+    tokens.ExponentToken: 5,
+    tokens.MultiplyToken: 4,
+    tokens.DivideToken: 4,
+    tokens.SubtractToken: 3,
+    tokens.AddToken: 2,
+    tokens.ConcatToken: 1,
 }
 
 
@@ -26,7 +22,7 @@ class Parser(object):
     def get_priority(token):
         return OPERATORS_PRIORITY.get(token.__class__, 0)
 
-    def parse(self, line):
+    def to_rpn(self, line):
         get_priority = self.get_priority
         result = []
         stack = []
@@ -48,7 +44,8 @@ class Parser(object):
                 while stack:
                     top_stack_token = stack[-1]
                     if (isinstance(top_stack_token, FunctionToken)
-                            or get_priority(stack[-1]) >= priority):
+                            or isinstance(top_stack_token, OperationToken)
+                            and get_priority(top_stack_token) >= priority):
                         result_append(stack_pop())
                     else:
                         break

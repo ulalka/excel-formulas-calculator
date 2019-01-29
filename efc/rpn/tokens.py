@@ -1,6 +1,7 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
+from efc.utils import col_str_to_index, cached_property
 
 
 class Token(object):
@@ -50,34 +51,76 @@ class StringToken(OperandToken):
 
 
 class AddressToken(OperandToken):
-    pass
+    ws_name = None
+
+    def get_value(self, ws_name, source):
+        raise NotImplementedError
 
 
 class SingleCellToken(AddressToken):
     pattern = (r"((?P<single_ws_name>('[^']+')|(\w+))!)?"
                r"\$?(?P<row>[A-Z]+)\$?(?P<column>[0-9]+)")
+    row, column = None, None
 
     def to_python(self, m):
-        return m['single_ws_name'], m['row'], int(m['column'])
+        v = (self.ws_name, self.row, self.column) = (m['single_ws_name'],
+                                                     m['row'],
+                                                     int(m['column']))
+        return v
+
+    @cached_property
+    def int_column(self):
+        return col_str_to_index(self.column)
+
+    def get_value(self, ws_name, source):
+        ws_name = self.ws_name or ws_name
+        return source.cell_to_value(self.row, self.int_column,
+                                    ws_name)
 
 
 class CellsRangeToken(AddressToken):
     pattern = (r"((?P<range_ws_name>('[^']+')|(\w+))!)?"
                r"\$?(?P<row1>[A-Z]+)\$?(?P<column1>[0-9]+)"
                r":\$?(?P<row2>[A-Z]+)\$?(?P<column2>[0-9]+)")
+    row1, column1 = None, None
+    row2, column2 = None, None
 
     def to_python(self, m):
-        return (m['range_ws_name'],
-                m['row1'], int(m['column1']),
-                m['row2'], int(m['column2']))
+        v = (self.ws_name,
+             self.row1, self.column1,
+             self.row2, self.column2) = (m['single_ws_name'],
+                                         m['row1'], int(m['column1']),
+                                         m['row2'], int(m['column2']))
+        return v
+
+    @cached_property
+    def int_column1(self):
+        return col_str_to_index(self.column1)
+
+    @cached_property
+    def int_column2(self):
+        return col_str_to_index(self.column2)
+
+    def get_value(self, ws_name, source):
+        ws_name = self.ws_name or ws_name
+        return source.range_to_values(self.row1, self.int_column1,
+                                      self.row2, self.int_column2,
+                                      ws_name)
 
 
 class NamedRangeToken(AddressToken):
     pattern = (r"((?P<named_range_ws_name>('[^']+')|(\w+))!)?"
                r"(?P<range_name>\w+)")
+    range_name = None
 
     def to_python(self, m):
-        return m['named_range_ws_name'], m['range_name']
+        v = self.ws_name, self.range_name = (m['named_range_ws_name'],
+                                             m['range_name'])
+        return v
+
+    def get_value(self, ws_name, source):
+        ws_name = self.ws_name or ws_name
+        return source.named_range_to_values(self.range_name, ws_name)
 
 
 class OperationToken(Token):
@@ -143,7 +186,7 @@ class CompareLTToken(OperationToken):
     pattern = r'\<'
 
 
-class CompareEgToken(OperationToken):
+class CompareEqToken(OperationToken):
     pattern = r'\='
 
 

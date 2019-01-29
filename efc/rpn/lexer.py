@@ -25,7 +25,7 @@ TOKENS_PRIORITY = (
     tokens.CompareLTEToken,
     tokens.CompareGTToken,
     tokens.CompareLTToken,
-    tokens.CompareEgToken,
+    tokens.CompareEqToken,
     tokens.LeftBracketToken,
     tokens.RightBracketToken,
     tokens.SpaceToken,
