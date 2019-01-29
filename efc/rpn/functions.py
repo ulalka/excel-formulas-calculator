@@ -109,6 +109,10 @@ def is_blank_func(a):
     return a is None
 
 
+def or_function(*args):
+    return any(i for i in iter_elements(args) if not isinstance(i, basestring))
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -136,3 +140,4 @@ EXCEL_FUNCTIONS['MIN'] = min_func
 EXCEL_FUNCTIONS['LEFT'] = left_func
 EXCEL_FUNCTIONS['RIGHT'] = right_func
 EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
+EXCEL_FUNCTIONS['OR'] = or_function

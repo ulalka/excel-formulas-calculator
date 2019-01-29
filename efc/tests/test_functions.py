@@ -26,6 +26,8 @@ class TestFunctions(unittest.TestCase):
 
         # IF
         self.assertEqual(self.calc('IF(2>1,1,2)', 'Yet another sheet', self.source), 1)
+        self.assertEqual(self.calc('IF(TRUE,1,2)', 'Yet another sheet', self.source), 1)
+        self.assertEqual(self.calc('IF(FALSE,1,2)', 'Yet another sheet', self.source), 2)
         self.assertEqual(self.calc('IF(\'Sheet 1\'!A3 = 4,\'Sheet 1\'!C3, 0)', 'Yet another sheet', self.source), 8)
 
         # IFERROR
@@ -48,3 +50,8 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('ISBLANK("test")', 'Yet another sheet', self.source), False)
         self.assertEqual(self.calc('ISBLANK("")', 'Yet another sheet', self.source), False)
         self.assertEqual(self.calc('ISBLANK(Sheet4!AA1)', 'Yet another sheet', self.source), True)
+
+        # OR
+        self.assertEqual(self.calc('OR(0,0,0,TRUE)', 'Yet another sheet', self.source), True)
+        self.assertEqual(self.calc('OR(FALSE, 0)', 'Yet another sheet', self.source), False)
+        self.assertEqual(self.calc('OR(FALSE, 0 + 2)', 'Yet another sheet', self.source), True)
