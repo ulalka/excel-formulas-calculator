@@ -18,10 +18,7 @@ class Calculator(object):
         self.lexer = Lexer()
         self.parser = Parser()
 
-    def calc(self, formula, ws_name, source):
-        tokens_line = self.lexer.parse(formula)
-        rpn = self.parser.to_rpn(tokens_line)
-
+    def compute_rpn(self, rpn, ws_name, source):
         result = []
 
         result_append = result.append
@@ -41,7 +38,7 @@ class Calculator(object):
                 try:
                     args = [result_pop() for _ in range(token.operands_count)]
                 except IndexError:
-                    raise OperandsMissing(token, formula)
+                    raise OperandsMissing(token, rpn)
 
                 args.reverse()
 
@@ -63,3 +60,8 @@ class Calculator(object):
         if len(result) != 1:
             raise UnusedOperands(result)
         return result[0]
+
+    def calc(self, formula, ws_name, source):
+        tokens_line = self.lexer.parse(formula)
+        rpn = self.parser.to_rpn(tokens_line)
+        return self.compute_rpn(rpn, ws_name, source)

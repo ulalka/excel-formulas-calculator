@@ -51,9 +51,9 @@ class CriticalEFCError(EFCBaseError):
 class OperandsMissing(CriticalEFCError):
     """The number of operands is more than available in stack"""
 
-    def __init__(self, token, formula):
+    def __init__(self, token, rpn):
         self.token = token
-        self.formula = formula
+        self.rpn = rpn
 
 
 class UnusedOperands(CriticalEFCError):
