@@ -65,6 +65,14 @@ def sum_func(*args):
     return result
 
 
+def mod_func(a, b):
+    return a % b
+
+
+def if_func(expr, a, b):
+    return a if expr else b
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -83,3 +91,5 @@ ARITHMETIC_FUNCTIONS = {
 EXCEL_FUNCTIONS = {}
 EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
 EXCEL_FUNCTIONS['SUM'] = sum_func
+EXCEL_FUNCTIONS['MOD'] = mod_func
+EXCEL_FUNCTIONS['IF'] = if_func

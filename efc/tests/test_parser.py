@@ -22,6 +22,9 @@ operations_examples = (
     ('SUM(1,2,4) * 5',
      [tokens.IntToken, tokens.IntToken, tokens.IntToken, tokens.FunctionToken,
       tokens.IntToken, tokens.MultiplyToken]),
+    ('SUM(1 + 2,2,4) * 5',
+     [tokens.IntToken, tokens.IntToken, tokens.AddToken, tokens.IntToken,
+      tokens.IntToken, tokens.FunctionToken, tokens.IntToken, tokens.MultiplyToken]),
 )
 
 

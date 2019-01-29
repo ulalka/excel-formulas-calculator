@@ -56,6 +56,12 @@ class AddressToken(OperandToken):
     def get_value(self, ws_name, source):
         raise NotImplementedError
 
+    @staticmethod
+    def clean_ws_name(v):
+        if v and v.startswith('\''):
+            return v[1:-1]
+        return v
+
 
 class SingleCellToken(AddressToken):
     pattern = (r"((?P<single_ws_name>('[^']+')|(\w+))!)?"
@@ -64,7 +70,7 @@ class SingleCellToken(AddressToken):
 
     def to_python(self, m):
         v = (self.ws_name,
-             self.row, self.column) = (m['single_ws_name'],
+             self.row, self.column) = (self.clean_ws_name(m['single_ws_name']),
                                        int(m['row']),
                                        col_str_to_index(m['column']))
         return v
@@ -85,7 +91,7 @@ class CellsRangeToken(AddressToken):
     def to_python(self, m):
         v = (self.ws_name,
              self.row1, self.column1,
-             self.row2, self.column2) = (m['range_ws_name'],
+             self.row2, self.column2) = (self.clean_ws_name(m['range_ws_name']),
                                          int(m['row1']),
                                          col_str_to_index(m['column1']),
                                          int(m['row2']),
@@ -105,8 +111,9 @@ class NamedRangeToken(AddressToken):
     range_name = None
 
     def to_python(self, m):
-        v = self.ws_name, self.range_name = (m['named_range_ws_name'],
-                                             m['range_name'])
+        v = (self.ws_name,
+             self.range_name) = (self.clean_ws_name(m['named_range_ws_name']),
+                                 m['range_name'])
         return v
 
     def get_value(self, ws_name, source):

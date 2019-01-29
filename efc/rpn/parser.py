@@ -66,7 +66,15 @@ class Parser(object):
             elif isinstance(token, Separator):
                 if not operands_count:
                     raise SeparatorWithoutFunction
-                operands_count[-1] += 1
+
+                while stack:
+                    if isinstance(stack[-1], LeftBracketToken):
+                        operands_count[-1] += 1
+                        break
+                    else:
+                        result_append(stack_pop())
+                else:
+                    raise SeparatorWithoutFunction
 
         for stack_token in reversed(stack):
             if isinstance(stack_token, LeftBracketToken):
