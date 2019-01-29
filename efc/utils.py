@@ -19,28 +19,6 @@ def col_str_to_index(col_str):
                for i, s in enumerate(col_str, 1))
 
 
-class Matrix(object):
-    def __init__(self, m):
-        self._m = m
-
-    def iter_values(self):
-        for row in self._m:
-            for value in row:
-                yield value
-
-    def __iter__(self):
-        return self.iter_values()
-
-
-class cached_property(object):
-    def __init__(self, func):
-        self.func = func
-
-    def __get__(self, instance, cls=None):
-        result = instance.__dict__[self.func.__name__] = self.func(instance)
-        return result
-
-
 def to_unicode(value):
     if isinstance(value, str):
         return value.decode('utf8')

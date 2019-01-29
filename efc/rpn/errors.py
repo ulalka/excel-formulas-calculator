@@ -40,6 +40,10 @@ class EFCValueError(OperandLikeError):
     """Error getting cell value"""
 
 
+class EFCLinkError(OperandLikeError):
+    """Worksheet does not exists"""
+
+
 class FunctionError(OperandLikeError):
     """An error occurred while evaluating function"""
 

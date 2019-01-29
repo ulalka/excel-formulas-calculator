@@ -1,8 +1,6 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.nodes import SingleCell, CellRange, NamedRange
-from efc.utils import Matrix
 
 
 class BaseExcelInterface(object):
@@ -43,20 +41,3 @@ class BaseExcelInterface(object):
         :rtype: list
         """
         raise NotImplementedError
-
-    def get_value(self, address, ws_name):
-        if isinstance(address, SingleCell):
-            result = self.cell_to_value(row=address.row, column=address.column, ws_name=ws_name)
-        elif isinstance(address, CellRange):
-            result = self.range_to_values(start_row=address.start_row, start_column=address.start_column,
-                                          end_row=address.end_row, end_column=address.end_column,
-                                          ws_name=ws_name)
-        elif isinstance(address, NamedRange):
-            result = self.named_range_to_values(range_name=address.name,
-                                                ws_name=ws_name)
-        else:
-            raise ValueError('Unsupported address type "%s"' % address)
-
-        if isinstance(result, list) and len(result) > 0 and isinstance(result[0], list):
-            result = Matrix(result)
-        return result

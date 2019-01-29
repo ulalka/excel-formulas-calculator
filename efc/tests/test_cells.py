@@ -4,7 +4,7 @@ from __future__ import unicode_literals, print_function
 import unittest
 
 from efc.tests.mock import ExcelMock
-from efc.rpn.errors import EFCValueError
+from efc.rpn.errors import EFCLinkError
 from efc.rpn.calculator import Calculator
 
 
@@ -20,7 +20,7 @@ class TestCells(unittest.TestCase):
         self.assertEqual(self.calc('B100', 'Yet another sheet', self.source), 2)
         self.assertEqual(self.calc('AA104', 'Yet another sheet', self.source), 45)
 
-        self.assertIsInstance(self.calc('F104', 'Some error ws', self.source), EFCValueError)
+        self.assertIsInstance(self.calc('F104', 'Some error ws', self.source), EFCLinkError)
 
         self.assertEqual(self.calc('Sheet4!A3', 'Yet another sheet', self.source), 4)
         self.assertEqual(self.calc('\'Sheet 1\'!C1', 'Yet another sheet', self.source), 18)

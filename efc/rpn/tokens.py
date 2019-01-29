@@ -1,7 +1,7 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.utils import col_str_to_index, cached_property
+from efc.utils import col_str_to_index
 
 
 class Token(object):
