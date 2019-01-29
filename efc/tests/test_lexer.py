@@ -39,7 +39,7 @@ operators_examples = (
     ('<=', [tokens.CompareLTEToken]),
     ('>', [tokens.CompareGTToken]),
     ('<', [tokens.CompareLTToken]),
-    ('=', [tokens.CompareEgToken]),
+    ('=', [tokens.CompareEqToken]),
     ('4 + 5.54 - "hello"',
      [tokens.IntToken, tokens.AddToken, tokens.FloatToken, tokens.SubtractToken,
       tokens.StringToken]),

@@ -32,7 +32,7 @@ class ParserTestCase(unittest.TestCase):
 
     def classes_compare(self, examples):
         for s, result_classes in examples:
-            parsed_line = self.parser.parse(self.lexer.parse(s))
+            parsed_line = self.parser.to_rpn(self.lexer.parse(s))
 
             self.assertEqual(len(parsed_line), len(result_classes),
                              msg='Len of tokens lines not equal.')
