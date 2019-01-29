@@ -59,52 +59,43 @@ class AddressToken(OperandToken):
 
 class SingleCellToken(AddressToken):
     pattern = (r"((?P<single_ws_name>('[^']+')|(\w+))!)?"
-               r"\$?(?P<row>[A-Z]+)\$?(?P<column>[0-9]+)")
+               r"\$?(?P<column>[A-Z]+)\$?(?P<row>[0-9]+)")
     row, column = None, None
 
     def to_python(self, m):
-        v = (self.ws_name, self.row, self.column) = (m['single_ws_name'],
-                                                     m['row'],
-                                                     int(m['column']))
+        v = (self.ws_name,
+             self.row, self.column) = (m['single_ws_name'],
+                                       int(m['row']),
+                                       col_str_to_index(m['column']))
         return v
-
-    @cached_property
-    def int_column(self):
-        return col_str_to_index(self.column)
 
     def get_value(self, ws_name, source):
         ws_name = self.ws_name or ws_name
-        return source.cell_to_value(self.row, self.int_column,
+        return source.cell_to_value(self.row, self.column,
                                     ws_name)
 
 
 class CellsRangeToken(AddressToken):
     pattern = (r"((?P<range_ws_name>('[^']+')|(\w+))!)?"
-               r"\$?(?P<row1>[A-Z]+)\$?(?P<column1>[0-9]+)"
-               r":\$?(?P<row2>[A-Z]+)\$?(?P<column2>[0-9]+)")
+               r"\$?(?P<column1>[A-Z]+)\$?(?P<row1>[0-9]+)"
+               r":\$?(?P<column2>[A-Z]+)\$?(?P<row2>[0-9]+)")
     row1, column1 = None, None
     row2, column2 = None, None
 
     def to_python(self, m):
         v = (self.ws_name,
              self.row1, self.column1,
-             self.row2, self.column2) = (m['single_ws_name'],
-                                         m['row1'], int(m['column1']),
-                                         m['row2'], int(m['column2']))
+             self.row2, self.column2) = (m['range_ws_name'],
+                                         int(m['row1']),
+                                         col_str_to_index(m['column1']),
+                                         int(m['row2']),
+                                         col_str_to_index(m['column2']))
         return v
-
-    @cached_property
-    def int_column1(self):
-        return col_str_to_index(self.column1)
-
-    @cached_property
-    def int_column2(self):
-        return col_str_to_index(self.column2)
 
     def get_value(self, ws_name, source):
         ws_name = self.ws_name or ws_name
-        return source.range_to_values(self.row1, self.int_column1,
-                                      self.row2, self.int_column2,
+        return source.range_to_values(self.row1, self.column1,
+                                      self.row2, self.column2,
                                       ws_name)
 
 

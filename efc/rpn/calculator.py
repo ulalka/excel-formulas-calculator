@@ -37,7 +37,7 @@ class Calculator(object):
                     raise OperandsMissing(token)
 
                 try:
-                    f = EXCEL_FUNCTIONS[token.__class__]
+                    f = EXCEL_FUNCTIONS[token.src_value]
                 except KeyError:
                     raise FunctionNotSupported(token.value)
 

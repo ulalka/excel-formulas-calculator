@@ -1,7 +1,6 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn import tokens
 
 
 def add_func(a, b):
@@ -52,17 +51,35 @@ def compare_eq_func(a, b):
     return a == b
 
 
-EXCEL_FUNCTIONS = {
-    tokens.AddToken: add_func,
-    tokens.SubtractToken: subtract_func,
-    tokens.DivideToken: divide_func,
-    tokens.MultiplyToken: multiply_func,
-    tokens.ConcatToken: concat_func,
-    tokens.ExponentToken: exponent_func,
-    tokens.CompareNotEqToken: compare_not_eq_func,
-    tokens.CompareGTEToken: compare_gte_func,
-    tokens.CompareLTEToken: compare_lte_func,
-    tokens.CompareGTToken: compare_gt_func,
-    tokens.CompareLTToken: compare_lt_func,
-    tokens.CompareEqToken: compare_eq_func,
+def sum_func(*args):
+    result = 0.0
+    for arg in (a for a in args if a):
+        if isinstance(arg, list):
+            if isinstance(arg[0], list):
+                for row in arg:
+                    result += sum(i for i in row if i)
+            else:
+                result += sum(i for i in arg if i)
+        else:
+            result += arg
+    return result
+
+
+ARITHMETIC_FUNCTIONS = {
+    '+': add_func,
+    '-': subtract_func,
+    '/': divide_func,
+    '*': multiply_func,
+    '&': concat_func,
+    '^': exponent_func,
+    '<>': compare_not_eq_func,
+    '>=': compare_gte_func,
+    '<=': compare_lte_func,
+    '>': compare_gt_func,
+    '<': compare_lt_func,
+    '=': compare_eq_func,
 }
+
+EXCEL_FUNCTIONS = {}
+EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
+EXCEL_FUNCTIONS['SUM'] = sum_func
