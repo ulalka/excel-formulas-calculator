@@ -1,6 +1,7 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
+from efc.rpn.errors import OperandLikeError
 
 
 def add_func(a, b):
@@ -73,6 +74,10 @@ def if_func(expr, a, b):
     return a if expr else b
 
 
+def if_error_func(a, b):
+    return b if isinstance(a, OperandLikeError) else a
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -90,6 +95,8 @@ ARITHMETIC_FUNCTIONS = {
 
 EXCEL_FUNCTIONS = {}
 EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
+
 EXCEL_FUNCTIONS['SUM'] = sum_func
 EXCEL_FUNCTIONS['MOD'] = mod_func
 EXCEL_FUNCTIONS['IF'] = if_func
+EXCEL_FUNCTIONS['IFERROR'] = if_error_func

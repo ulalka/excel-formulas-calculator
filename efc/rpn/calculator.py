@@ -5,7 +5,8 @@ from efc.rpn.lexer import Lexer
 from efc.rpn.parser import Parser
 from efc.rpn.functions import EXCEL_FUNCTIONS
 from efc.rpn.tokens import OperandToken, OperationToken, AddressToken
-from efc.rpn.errors import OperandsMissing, FunctionNotSupported, UnusedOperands
+from efc.rpn.errors import (OperandsMissing, UnusedOperands, FunctionNotSupported, OperandLikeError,
+                            EFCValueError, CriticalEFCError)
 import six
 
 if six.PY2:
@@ -17,8 +18,8 @@ class Calculator(object):
         self.lexer = Lexer()
         self.parser = Parser()
 
-    def calc(self, f, ws_name, source):
-        tokens_line = self.lexer.parse(f)
+    def calc(self, formula, ws_name, source):
+        tokens_line = self.lexer.parse(formula)
         rpn = self.parser.to_rpn(tokens_line)
 
         result = []
@@ -27,21 +28,37 @@ class Calculator(object):
         result_pop = result.pop
         for token in rpn:
             if isinstance(token, AddressToken):
-                result_append(token.get_value(ws_name, source))
+                try:
+                    v = token.get_value(ws_name, source)
+                except OperandLikeError as v:
+                    pass
+                except:
+                    v = EFCValueError()
+                result_append(v)
             elif isinstance(token, OperandToken):
                 result_append(token.value)
             elif isinstance(token, OperationToken):
                 try:
                     args = [result_pop() for _ in range(token.operands_count)]
                 except IndexError:
-                    raise OperandsMissing(token)
+                    raise OperandsMissing(token, formula)
+
+                args.reverse()
 
                 try:
                     f = EXCEL_FUNCTIONS[token.src_value]
                 except KeyError:
-                    raise FunctionNotSupported(token.value)
-
-                result_append(f(*reversed(args)))
+                    result_append(FunctionNotSupported())
+                    continue
+                try:
+                    v = f(*args)
+                except OperandLikeError as v:
+                    pass
+                except CriticalEFCError:
+                    raise
+                except:
+                    v = OperandLikeError()
+                result_append(v)
 
         if len(result) != 1:
             raise UnusedOperands(result)
