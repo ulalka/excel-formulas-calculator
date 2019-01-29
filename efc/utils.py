@@ -39,3 +39,12 @@ class cached_property(object):
     def __get__(self, instance, cls=None):
         result = instance.__dict__[self.func.__name__] = self.func(instance)
         return result
+
+
+def to_unicode(value):
+    if isinstance(value, str):
+        return value.decode('utf8')
+    elif isinstance(value, unicode):
+        return value
+    else:
+        return str(value).decode('utf8')

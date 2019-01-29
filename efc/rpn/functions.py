@@ -2,6 +2,11 @@
 
 from __future__ import unicode_literals, print_function
 from efc.rpn.errors import OperandLikeError
+from efc.utils import to_unicode
+import six
+
+if six.PY2:
+    str = to_unicode
 
 
 def add_func(a, b):
@@ -13,11 +18,13 @@ def subtract_func(a, b):
 
 
 def divide_func(a, b):
-    return a / b
+    v = float(a) / b
+    return int(v) if v % 1 == 0 else v
 
 
 def multiply_func(a, b):
-    return a * b
+    v = a * b
+    return int(v) if v % 1 == 0 else v
 
 
 def concat_func(a, b):
@@ -52,18 +59,22 @@ def compare_eq_func(a, b):
     return a == b
 
 
-def sum_func(*args):
-    result = 0.0
+def iter_elements(args):
     for arg in (a for a in args if a):
         if isinstance(arg, list):
             if isinstance(arg[0], list):
                 for row in arg:
-                    result += sum(i for i in row if i)
+                    for item in (i for i in row if i):
+                        yield item
             else:
-                result += sum(i for i in arg if i)
+                for item in (i for i in arg if i):
+                    yield item
         else:
-            result += arg
-    return result
+            yield arg
+
+
+def sum_func(*args):
+    return sum(iter_elements(args))
 
 
 def mod_func(a, b):
@@ -76,6 +87,26 @@ def if_func(expr, a, b):
 
 def if_error_func(a, b):
     return b if isinstance(a, OperandLikeError) else a
+
+
+def max_func(*args):
+    return max(list(iter_elements(args)) or [0.0])
+
+
+def min_func(*args):
+    return min(list(iter_elements(args)) or [0.0])
+
+
+def left_func(a, b):
+    return str(a)[:int(b)]
+
+
+def right_func(a, b):
+    return str(a)[-int(b):]
+
+
+def is_blank_func(a):
+    return a is None
 
 
 ARITHMETIC_FUNCTIONS = {
@@ -100,3 +131,8 @@ EXCEL_FUNCTIONS['SUM'] = sum_func
 EXCEL_FUNCTIONS['MOD'] = mod_func
 EXCEL_FUNCTIONS['IF'] = if_func
 EXCEL_FUNCTIONS['IFERROR'] = if_error_func
+EXCEL_FUNCTIONS['MAX'] = max_func
+EXCEL_FUNCTIONS['MIN'] = min_func
+EXCEL_FUNCTIONS['LEFT'] = left_func
+EXCEL_FUNCTIONS['RIGHT'] = right_func
+EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func

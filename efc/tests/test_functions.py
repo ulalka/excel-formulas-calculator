@@ -3,16 +3,19 @@
 from __future__ import unicode_literals, print_function
 import unittest
 
-from efc import get_calculator
+from efc.rpn.calculator import Calculator
 from efc.tests.mock import ExcelMock
 
 
 class TestFunctions(unittest.TestCase):
     def setUp(self):
-        self.calc = get_calculator()
+        self.calc = Calculator().calc
         self.source = ExcelMock()
 
     def test_cell_address(self):
+        import time
+
+        t = time.time()
         # SUM
         self.assertEqual(self.calc('SUM(Sheet4!A1:B3)', 'Yet another sheet', self.source), 64)
         self.assertEqual(self.calc('SUM(Sheet4!A1:B3) + 1', 'Yet another sheet', self.source), 65)
@@ -48,3 +51,4 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('ISBLANK("test")', 'Yet another sheet', self.source), False)
         self.assertEqual(self.calc('ISBLANK("")', 'Yet another sheet', self.source), False)
         self.assertEqual(self.calc('ISBLANK(Sheet4!AA1)', 'Yet another sheet', self.source), True)
+        print(time.time() - t)

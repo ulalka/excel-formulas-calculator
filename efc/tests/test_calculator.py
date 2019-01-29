@@ -43,13 +43,11 @@ class TestFormulaCalculator(unittest.TestCase):
 
     def setUp(self):
         self.calc = Calculator().calc
-        # self.calc = get_calculator()
 
     def run_test_on_examples(self, examples):
         for expr, result in examples:
             calc_result = self.calc(expr, None, None)
-            self.assertEqual(calc_result, result, '%s = %s, expected: %s' % (
-            expr, calc_result, result))
+            self.assertEqual(calc_result, result, '%s = %s, expected: %s' % (expr, calc_result, result))
 
     def test_arithmetic(self):
         self.run_test_on_examples(self.arithmetic_examples)
