@@ -9,6 +9,7 @@ from collections import OrderedDict
 TOKENS_PRIORITY = (
     tokens.FloatToken,
     tokens.IntToken,
+    tokens.BoolToken,
     tokens.StringToken,
     tokens.FunctionToken,
     tokens.CellsRangeToken,

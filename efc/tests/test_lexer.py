@@ -7,6 +7,8 @@ from efc.rpn.lexer import Lexer
 from itertools import izip
 
 operands_examples = (
+    ('FALSE', [tokens.BoolToken]),
+    ('TRUE', [tokens.BoolToken]),
     ('4', [tokens.IntToken]),
     ('5.54', [tokens.FloatToken]),
     ('"hello"', [tokens.StringToken]),
@@ -21,6 +23,7 @@ operands_examples = (
     ('\'List 1\'!hello', [tokens.NamedRangeToken]),
     ('SUM(', [tokens.FunctionToken, tokens.LeftBracketToken]),
     ('SUM', [tokens.NamedRangeToken]),
+    ('SUM TRUE', [tokens.NamedRangeToken, tokens.BoolToken]),
     ('Hello Mister', [tokens.NamedRangeToken, tokens.NamedRangeToken]),
     ('SUM(34,43)',
      [tokens.FunctionToken, tokens.LeftBracketToken, tokens.IntToken,

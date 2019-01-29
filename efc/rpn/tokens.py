@@ -43,6 +43,13 @@ class IntToken(OperandToken):
         return int(super(IntToken, self).to_python(m))
 
 
+class BoolToken(OperandToken):
+    pattern = r'(TRUE|FALSE)'
+
+    def to_python(self, m):
+        return super(BoolToken, self).to_python(m) == 'TRUE'
+
+
 class StringToken(OperandToken):
     pattern = r'"[^"]*"'
 
