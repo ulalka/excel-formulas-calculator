@@ -28,6 +28,10 @@ def multiply_func(a, b):
 
 
 def concat_func(a, b):
+    if isinstance(a, float) and a % 1 == 0:
+        a = int(a)
+    if isinstance(b, float) and b % 1 == 0:
+        b = int(b)
     return '%s%s' % (a, b)
 
 
@@ -113,6 +117,10 @@ def or_function(*args):
     return any(i for i in iter_elements(args) if not isinstance(i, basestring))
 
 
+def round_function(a, b):
+    return round(float(a), int(b))
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -141,3 +149,4 @@ EXCEL_FUNCTIONS['LEFT'] = left_func
 EXCEL_FUNCTIONS['RIGHT'] = right_func
 EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
 EXCEL_FUNCTIONS['OR'] = or_function
+EXCEL_FUNCTIONS['ROUND'] = round_function
