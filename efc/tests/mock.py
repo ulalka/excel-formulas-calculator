@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals, print_function
 from efc.interface import BaseExcelInterface
-from efc.errors import EFCLinkError, EFCNameError
+from efc.rpn.errors import EFCLinkError, EFCNameError
 
 try:
     range = xrange

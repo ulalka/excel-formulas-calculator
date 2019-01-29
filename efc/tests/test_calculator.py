@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 import unittest
 
-from efc import get_calculator
+from efc.rpn.calculator import Calculator
 
 
 class TestFormulaCalculator(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestFormulaCalculator(unittest.TestCase):
     )
 
     def setUp(self):
-        self.calc = get_calculator()
+        self.calc = Calculator().calc
 
     def run_test_on_examples(self, examples):
         for expr, result in examples:
