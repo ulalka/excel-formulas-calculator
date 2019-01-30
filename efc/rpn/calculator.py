@@ -14,11 +14,7 @@ if six.PY2:
 
 
 class Calculator(object):
-    def __init__(self):
-        self.lexer = Lexer()
-        self.parser = Parser()
-
-    def compute_rpn(self, rpn, ws_name, source):
+    def calc(self, rpn, ws_name, source):
         result = []
 
         result_append = result.append
@@ -60,8 +56,3 @@ class Calculator(object):
         if len(result) != 1:
             raise UnusedOperands(result)
         return result[0]
-
-    def calc(self, formula, ws_name, source):
-        tokens_line = self.lexer.parse(formula)
-        rpn = self.parser.to_rpn(tokens_line)
-        return self.compute_rpn(rpn, ws_name, source)

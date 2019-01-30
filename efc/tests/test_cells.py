@@ -5,12 +5,12 @@ import unittest
 
 from efc.tests.mock import ExcelMock
 from efc.rpn.errors import EFCLinkError
-from efc.rpn.calculator import Calculator
+from efc import get_calculator
 
 
 class TestCells(unittest.TestCase):
     def setUp(self):
-        self.calc = Calculator().calc
+        self.calc = get_calculator()
         self.source = ExcelMock()
 
     def test_cell_address(self):

@@ -3,13 +3,13 @@
 from __future__ import unicode_literals, print_function
 import unittest
 
-from efc.rpn.calculator import Calculator
 from efc.tests.mock import ExcelMock
+from efc import get_calculator
 
 
 class TestFunctions(unittest.TestCase):
     def setUp(self):
-        self.calc = Calculator().calc
+        self.calc = get_calculator()
         self.source = ExcelMock()
 
     def test_SUM(self):
