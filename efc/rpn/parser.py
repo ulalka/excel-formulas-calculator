@@ -3,8 +3,8 @@
 from __future__ import unicode_literals, print_function
 
 from efc.rpn import tokens
-from efc.rpn.tokens import (OperandToken, OperationToken, FunctionToken,
-                            LeftBracketToken, RightBracketToken, Separator)
+from efc.rpn.tokens import (OperandToken, OperationToken, FunctionToken, LeftBracketToken, RightBracketToken,
+                            Separator, SubtractToken, ArithmeticToken, AddToken)
 from efc.rpn.errors import InconsistentParentheses, SeparatorWithoutFunction
 
 OPERATORS_PRIORITY = {
@@ -31,6 +31,7 @@ class Parser(object):
         result_append = result.append
         stack_append = stack.append
         stack_pop = stack.pop
+        prev_token = None
         for token in line:
             if isinstance(token, OperandToken):
                 result_append(token)
@@ -40,6 +41,10 @@ class Parser(object):
                 stack_append(token)
                 operands_count.append(1)
             elif isinstance(token, OperationToken):
+                if isinstance(token, (SubtractToken, AddToken)) and \
+                        (isinstance(prev_token, (ArithmeticToken, LeftBracketToken, Separator)) or prev_token is None):
+                    token.operands_count = 1
+
                 priority = get_priority(token)
                 while stack:
                     top_stack_token = stack[-1]
@@ -75,6 +80,7 @@ class Parser(object):
                         result_append(stack_pop())
                 else:
                     raise SeparatorWithoutFunction
+            prev_token = token
 
         for stack_token in reversed(stack):
             if isinstance(stack_token, LeftBracketToken):

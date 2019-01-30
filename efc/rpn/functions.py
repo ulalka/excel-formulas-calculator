@@ -40,11 +40,13 @@ def digit_or_string(*args):
         yield arg
 
 
-def add_func(a, b):
+def add_func(*args):
+    a, b = args if len(args) == 2 else (0, args[0])
     return digit(a) + digit(b)
 
 
-def subtract_func(a, b):
+def subtract_func(*args):
+    a, b = args if len(args) == 2 else (0, args[0])
     return digit(a) - digit(b)
 
 
@@ -160,6 +162,10 @@ def count_function(*args):
     return len([i for i in iter_elements(args) if isinstance(i, (int, float))])
 
 
+def abs_function(a):
+    return abs(digit(a))
+
+
 COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
 
 
@@ -212,3 +218,4 @@ EXCEL_FUNCTIONS['ROUND'] = round_function
 EXCEL_FUNCTIONS['COUNT'] = count_function
 EXCEL_FUNCTIONS['COUNT'] = count_function
 EXCEL_FUNCTIONS['COUNTIF'] = countif_function
+EXCEL_FUNCTIONS['ABS'] = abs_function

@@ -147,51 +147,55 @@ class FunctionToken(OperationToken):
     pattern = r'[A-Z]+(?=\()'
 
 
-class AddToken(OperationToken):
+class ArithmeticToken(OperationToken):
+    pass
+
+
+class AddToken(ArithmeticToken):
     pattern = r'\+'
 
 
-class SubtractToken(OperationToken):
+class SubtractToken(ArithmeticToken):
     pattern = r'\-'
 
 
-class DivideToken(OperationToken):
+class DivideToken(ArithmeticToken):
     pattern = r'/'
 
 
-class MultiplyToken(OperationToken):
+class MultiplyToken(ArithmeticToken):
     pattern = r'\*'
 
 
-class ConcatToken(OperationToken):
+class ConcatToken(ArithmeticToken):
     pattern = r'\&'
 
 
-class ExponentToken(OperationToken):
+class ExponentToken(ArithmeticToken):
     pattern = r'\^'
 
 
-class CompareNotEqToken(OperationToken):
+class CompareNotEqToken(ArithmeticToken):
     pattern = r'\<\>'
 
 
-class CompareGTEToken(OperationToken):
+class CompareGTEToken(ArithmeticToken):
     pattern = r'\>\='
 
 
-class CompareLTEToken(OperationToken):
+class CompareLTEToken(ArithmeticToken):
     pattern = r'\<\='
 
 
-class CompareGTToken(OperationToken):
+class CompareGTToken(ArithmeticToken):
     pattern = r'\>'
 
 
-class CompareLTToken(OperationToken):
+class CompareLTToken(ArithmeticToken):
     pattern = r'\<'
 
 
-class CompareEqToken(OperationToken):
+class CompareEqToken(ArithmeticToken):
     pattern = r'\='
 
 

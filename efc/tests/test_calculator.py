@@ -9,7 +9,9 @@ from efc import get_calculator
 class TestFormulaCalculator(unittest.TestCase):
     arithmetic_examples = (
         ('4', 4),
+        ('-4', -4),
         ('4 + 4', 8),
+        ('-4 + 4', 0),
         ('4 - 2', 2),
         ('4 * 4', 16),
         ('9 ^ 2', 81),
@@ -17,6 +19,7 @@ class TestFormulaCalculator(unittest.TestCase):
         ('1 + 2 * 3', 7),
         ('2 * 3 + 1', 7),
         ('2 - (2 - 3)', 3),
+        ('2 - (-2 - 3)', 7),
         ('2 - 2 * 8 - 3', -17),
         ('2 - 2 - 3 - 6', -9),
         ('2 - 2 - 3', -3),
