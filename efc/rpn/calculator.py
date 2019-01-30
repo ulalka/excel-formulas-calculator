@@ -1,8 +1,6 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn.lexer import Lexer
-from efc.rpn.parser import Parser
 from efc.rpn.functions import EXCEL_FUNCTIONS
 from efc.rpn.tokens import OperandToken, OperationToken, AddressToken
 from efc.rpn.errors import (OperandsMissing, UnusedOperands, FunctionNotSupported, OperandLikeError,

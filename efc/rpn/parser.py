@@ -2,18 +2,18 @@
 
 from __future__ import unicode_literals, print_function
 
-from efc.rpn import tokens
 from efc.rpn.tokens import (OperandToken, OperationToken, FunctionToken, LeftBracketToken, RightBracketToken,
-                            Separator, SubtractToken, ArithmeticToken, AddToken)
+                            Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken, MultiplyToken,
+                            DivideToken, ConcatToken)
 from efc.rpn.errors import InconsistentParentheses, SeparatorWithoutFunction
 
 OPERATORS_PRIORITY = {
-    tokens.ExponentToken: 5,
-    tokens.MultiplyToken: 4,
-    tokens.DivideToken: 4,
-    tokens.SubtractToken: 3,
-    tokens.AddToken: 2,
-    tokens.ConcatToken: 1,
+    ExponentToken: 5,
+    MultiplyToken: 4,
+    DivideToken: 4,
+    SubtractToken: 3,
+    AddToken: 2,
+    ConcatToken: 1,
 }
 
 

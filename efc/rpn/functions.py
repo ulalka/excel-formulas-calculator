@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, print_function
 from efc.rpn.errors import OperandLikeError
 from efc.utils import to_unicode
+
 import six
 import re
 
@@ -215,7 +216,6 @@ EXCEL_FUNCTIONS['RIGHT'] = right_func
 EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
 EXCEL_FUNCTIONS['OR'] = or_function
 EXCEL_FUNCTIONS['ROUND'] = round_function
-EXCEL_FUNCTIONS['COUNT'] = count_function
 EXCEL_FUNCTIONS['COUNT'] = count_function
 EXCEL_FUNCTIONS['COUNTIF'] = countif_function
 EXCEL_FUNCTIONS['ABS'] = abs_function
