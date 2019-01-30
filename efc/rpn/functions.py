@@ -4,27 +4,56 @@ from __future__ import unicode_literals, print_function
 from efc.rpn.errors import OperandLikeError
 from efc.utils import to_unicode
 import six
+import re
 
 if six.PY2:
     str = to_unicode
 
 
+def digit(v):
+    if isinstance(v, basestring):
+        v = float(v)
+    elif isinstance(v, bool):
+        v = int(v)
+    elif v is None:
+        v = 0
+    elif isinstance(v, OperandLikeError):
+        raise v
+    return v
+
+
+def string(v):
+    if isinstance(v, OperandLikeError):
+        raise v
+    return str(v)
+
+
+def digit_or_string(*args):
+    for arg in args:
+        if isinstance(arg, OperandLikeError):
+            raise arg
+        else:
+            try:
+                arg = digit(arg)
+            except ValueError:
+                arg = str(arg)
+        yield arg
+
+
 def add_func(a, b):
-    return a + b
+    return digit(a) + digit(b)
 
 
 def subtract_func(a, b):
-    return a - b
+    return digit(a) - digit(b)
 
 
 def divide_func(a, b):
-    v = float(a) / b
-    return int(v) if v % 1 == 0 else v
+    return 1.0 * digit(a) / digit(b)
 
 
 def multiply_func(a, b):
-    v = a * b
-    return int(v) if v % 1 == 0 else v
+    return digit(a) * digit(b)
 
 
 def concat_func(a, b):
@@ -36,30 +65,36 @@ def concat_func(a, b):
 
 
 def exponent_func(a, b):
-    return a ** b
+    return digit(a) ** digit(b)
 
 
 def compare_not_eq_func(a, b):
+    a, b = digit_or_string(a, b)
     return a != b
 
 
 def compare_gte_func(a, b):
+    a, b = digit_or_string(a, b)
     return a >= b
 
 
 def compare_lte_func(a, b):
+    a, b = digit_or_string(a, b)
     return a <= b
 
 
 def compare_gt_func(a, b):
+    a, b = digit_or_string(a, b)
     return a > b
 
 
 def compare_lt_func(a, b):
+    a, b = digit_or_string(a, b)
     return a < b
 
 
 def compare_eq_func(a, b):
+    a, b = digit_or_string(a, b)
     return a == b
 
 
@@ -82,7 +117,7 @@ def sum_func(*args):
 
 
 def mod_func(a, b):
-    return a % b
+    return digit(a) % digit(b)
 
 
 def if_func(expr, a, b):
@@ -102,11 +137,11 @@ def min_func(*args):
 
 
 def left_func(a, b):
-    return str(a)[:int(b)]
+    return string(a)[:int(b)]
 
 
 def right_func(a, b):
-    return str(a)[-int(b):]
+    return string(a)[-int(b):]
 
 
 def is_blank_func(a):
@@ -118,7 +153,31 @@ def or_function(*args):
 
 
 def round_function(a, b):
-    return round(float(a), int(b))
+    return round(digit(a), int(b))
+
+
+def count_function(*args):
+    return len([i for i in iter_elements(args) if isinstance(i, (int, float))])
+
+
+COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
+
+
+def countif_function(args, expr):
+    if isinstance(expr, basestring):
+        match = COUNT_IF_EXPR.search(expr)
+        if match:
+            match = match.groupdict()
+            operation = match['symbol']
+            operand = match['value']
+        else:
+            operation = '='
+            operand = expr
+    else:
+        operation = '='
+        operand = expr
+    check = ARITHMETIC_FUNCTIONS[operation]
+    return len([i for i in iter_elements(args) if check(i, operand)])
 
 
 ARITHMETIC_FUNCTIONS = {
@@ -150,3 +209,6 @@ EXCEL_FUNCTIONS['RIGHT'] = right_func
 EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
 EXCEL_FUNCTIONS['OR'] = or_function
 EXCEL_FUNCTIONS['ROUND'] = round_function
+EXCEL_FUNCTIONS['COUNT'] = count_function
+EXCEL_FUNCTIONS['COUNT'] = count_function
+EXCEL_FUNCTIONS['COUNTIF'] = countif_function

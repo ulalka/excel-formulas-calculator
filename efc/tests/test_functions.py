@@ -61,3 +61,11 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('ROUND(2.3456, 1)', 'Yet another sheet', self.source), 2.3)
         self.assertEqual(self.calc('ROUND(2, 2)', 'Yet another sheet', self.source), 2.0)
         self.assertEqual(self.calc('ROUND("2.34567", 2)', 'Yet another sheet', self.source), 2.35)
+
+    def test_COUNT(self):
+        self.assertEqual(self.calc('COUNT(1.3456, 1, "tesr")', 'Yet another sheet', self.source), 2)
+        self.assertEqual(self.calc('COUNT(A1:C4)', 'Sheet 1', self.source), 6)
+
+    def test_COUNTIF(self):
+        self.assertEqual(self.calc('COUNTIF(A1:C4, ">4")', 'Sheet 1', self.source), 4)
+        self.assertEqual(self.calc('COUNTIF(A1:C4, "13")', 'Sheet4', self.source), 2)
