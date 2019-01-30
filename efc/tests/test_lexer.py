@@ -4,7 +4,7 @@ from __future__ import unicode_literals, print_function
 import unittest
 from efc.rpn import tokens
 from efc.rpn.lexer import Lexer
-from itertools import izip
+from six.moves import zip
 
 operands_examples = (
     ('FALSE', [tokens.BoolToken]),
@@ -63,7 +63,7 @@ class LexerTestCase(unittest.TestCase):
             self.assertEqual(len(parsed_line), len(result_classes),
                              msg='Len of tokens lines not equal.')
 
-            for c, token in izip(result_classes, parsed_line):
+            for c, token in zip(result_classes, parsed_line):
                 self.assertIsInstance(token, c)
 
     def test_operands(self):

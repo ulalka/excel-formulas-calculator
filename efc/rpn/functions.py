@@ -2,17 +2,14 @@
 
 from __future__ import unicode_literals, print_function
 from efc.rpn.errors import OperandLikeError
-from efc.utils import to_unicode
+from efc.utils import u
 
-import six
+from six import string_types, integer_types
 import re
-
-if six.PY2:
-    str = to_unicode
 
 
 def digit(v):
-    if isinstance(v, basestring):
+    if isinstance(v, string_types):
         v = float(v)
     elif isinstance(v, bool):
         v = int(v)
@@ -26,7 +23,7 @@ def digit(v):
 def string(v):
     if isinstance(v, OperandLikeError):
         raise v
-    return str(v)
+    return u(v)
 
 
 def digit_or_string(*args):
@@ -37,7 +34,7 @@ def digit_or_string(*args):
             try:
                 arg = digit(arg)
             except ValueError:
-                arg = str(arg)
+                arg = u(arg)
         yield arg
 
 
@@ -102,21 +99,21 @@ def compare_eq_func(a, b):
 
 
 def iter_elements(args):
-    for arg in (a for a in args if a):
+    for arg in args:
         if isinstance(arg, list):
-            if isinstance(arg[0], list):
+            if arg and isinstance(arg[0], list):
                 for row in arg:
-                    for item in (i for i in row if i):
+                    for item in row:
                         yield item
             else:
-                for item in (i for i in arg if i):
+                for item in arg:
                     yield item
         else:
             yield arg
 
 
 def sum_func(*args):
-    return sum(iter_elements(args))
+    return sum(i for i in iter_elements(args) if i)
 
 
 def mod_func(a, b):
@@ -132,11 +129,11 @@ def if_error_func(a, b):
 
 
 def max_func(*args):
-    return max(list(iter_elements(args)) or [0.0])
+    return max(list(i for i in iter_elements(args) if i) or [0.0])
 
 
 def min_func(*args):
-    return min(list(iter_elements(args)) or [0.0])
+    return min(list(i for i in iter_elements(args) if i) or [0.0])
 
 
 def left_func(a, b):
@@ -152,7 +149,7 @@ def is_blank_func(a):
 
 
 def or_function(*args):
-    return any(i for i in iter_elements(args) if not isinstance(i, basestring))
+    return any(i for i in iter_elements(args) if i and not isinstance(i, string_types))
 
 
 def round_function(a, b):
@@ -160,7 +157,7 @@ def round_function(a, b):
 
 
 def count_function(*args):
-    return len([i for i in iter_elements(args) if isinstance(i, (int, float))])
+    return len([i for i in iter_elements(args) if i and isinstance(i, (integer_types, float))])
 
 
 def abs_function(a):
@@ -171,7 +168,7 @@ COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
 
 
 def countif_function(args, expr):
-    if isinstance(expr, basestring):
+    if isinstance(expr, string_types):
         match = COUNT_IF_EXPR.search(expr)
         if match:
             match = match.groupdict()
@@ -184,7 +181,7 @@ def countif_function(args, expr):
         operation = '='
         operand = expr
     check = ARITHMETIC_FUNCTIONS[operation]
-    return len([i for i in iter_elements(args) if check(i, operand)])
+    return len([i for i in iter_elements(args) if i and check(i, operand)])
 
 
 ARITHMETIC_FUNCTIONS = {

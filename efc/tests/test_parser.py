@@ -5,7 +5,7 @@ import unittest
 from efc.rpn import tokens
 from efc.rpn.lexer import Lexer
 from efc.rpn.parser import Parser
-from itertools import izip
+from six.moves import zip
 
 operations_examples = (
     ('4 + 5.54 - "hello"',
@@ -40,7 +40,7 @@ class ParserTestCase(unittest.TestCase):
             self.assertEqual(len(parsed_line), len(result_classes),
                              msg='Len of tokens lines not equal.')
 
-            for c, token in izip(result_classes, parsed_line):
+            for c, token in zip(result_classes, parsed_line):
                 self.assertIsInstance(token, c)
 
     def test_operations(self):

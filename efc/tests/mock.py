@@ -3,12 +3,7 @@
 from __future__ import unicode_literals, print_function
 from efc.interface import BaseExcelInterface
 from efc.rpn.errors import EFCLinkError, EFCNameError
-
-try:
-    range = xrange
-except NameError:
-    # Python 3
-    pass
+from six.moves import range
 
 
 class ExcelMock(BaseExcelInterface):

@@ -1,7 +1,8 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from string import uppercase
+from string import ascii_uppercase
+import six
 
 
 def col_str_to_index(col_str):
@@ -14,15 +15,15 @@ def col_str_to_index(col_str):
     :rtype: int
     """
     str_len = len(col_str)
-    base = len(uppercase)
-    return sum((uppercase.index(s) + 1) * base ** (str_len - i)
+    base = len(ascii_uppercase)
+    return sum((ascii_uppercase.index(s) + 1) * base ** (str_len - i)
                for i, s in enumerate(col_str, 1))
 
 
-def to_unicode(value):
-    if isinstance(value, str):
+def u(value):
+    if isinstance(value, six.binary_type):
         return value.decode('utf8')
-    elif isinstance(value, unicode):
+    elif isinstance(value, six.text_type):
         return value
     else:
-        return str(value).decode('utf8')
+        return six.u(value)

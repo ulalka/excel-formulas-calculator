@@ -5,10 +5,7 @@ from efc.rpn.functions import EXCEL_FUNCTIONS
 from efc.rpn.tokens import OperandToken, OperationToken, AddressToken
 from efc.rpn.errors import (OperandsMissing, UnusedOperands, FunctionNotSupported, OperandLikeError,
                             EFCValueError, CriticalEFCError)
-import six
-
-if six.PY2:
-    range = xrange
+from six.moves import range
 
 
 class Calculator(object):
@@ -21,8 +18,8 @@ class Calculator(object):
             if isinstance(token, AddressToken):
                 try:
                     v = token.get_value(ws_name, source)
-                except OperandLikeError as v:
-                    pass
+                except OperandLikeError as e:
+                    v = e
                 except:
                     v = EFCValueError()
                 result_append(v)
@@ -43,8 +40,8 @@ class Calculator(object):
                     continue
                 try:
                     v = f(*args)
-                except OperandLikeError as v:
-                    pass
+                except OperandLikeError as e:
+                    v = e
                 except CriticalEFCError:
                     raise
                 except:
