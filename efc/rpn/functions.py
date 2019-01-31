@@ -2,7 +2,8 @@
 
 from __future__ import unicode_literals, print_function
 from efc.rpn.operands import (ErrorOperand, ValueErrorOperand, Operand, SimpleOperand,
-                              LinkErrorOperand, CellRangeOperand, CellSetOperand, ZeroDivisionErrorOperand)
+                              LinkErrorOperand, CellRangeOperand, CellSetOperand, ZeroDivisionErrorOperand,
+                              SingleCellOperand)
 from efc.rpn.errors import EFCLinkError
 from functools import wraps
 from six import string_types, integer_types
@@ -161,6 +162,24 @@ def count_blank_function(cells):
     return len([op for op in iter_elements(cells) if op.value is None])
 
 
+def offset_function(cell, row_offset, col_offset, height=None, width=None):
+    if not isinstance(cell, SingleCellOperand):
+        return ValueErrorOperand()
+
+    height = int(height) if height is not None else 1
+    width = int(width) if width is not None else 1
+
+    if height == width == 1:
+        return SingleCellOperand(row=cell.row + int(row_offset), column=cell.column + int(col_offset),
+                                 ws_name=cell.ws_name, source=cell.source)
+    else:
+        return CellRangeOperand(row1=cell.row + int(row_offset),
+                                column1=cell.column + int(col_offset),
+                                row2=cell.row + int(row_offset) + height - 1,
+                                column2=cell.column + int(col_offset) + width - 1,
+                                ws_name=cell.ws_name, source=cell.source)
+
+
 def excel_function(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -173,7 +192,7 @@ def excel_function(func):
             return err
         except EFCLinkError:
             return LinkErrorOperand()
-        except TypeError:
+        except (TypeError, ValueError):
             return ValueErrorOperand()
         except ZeroDivisionError:
             return ZeroDivisionErrorOperand()
@@ -214,3 +233,4 @@ EXCEL_FUNCTIONS['COUNT'] = excel_function(count_function)
 EXCEL_FUNCTIONS['COUNTIF'] = excel_function(countif_function)
 EXCEL_FUNCTIONS['COUNTBLANK'] = excel_function(count_blank_function)
 EXCEL_FUNCTIONS['ABS'] = excel_function(abs_function)
+EXCEL_FUNCTIONS['OFFSET'] = excel_function(offset_function)

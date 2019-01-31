@@ -26,11 +26,11 @@ class TestCells(unittest.TestCase):
         self.assertEqual(self.calc('\'Sheet 1\'!C1', 'Yet another sheet', self.source).value, 18)
 
         # test arith with address
-        self.assertEqual(self.calc('A3 + 3', 'Sheet 1', self.source), 7)
-        self.assertEqual(self.calc('C1 / 9', 'Sheet 1', self.source), 2)
+        self.assertEqual(self.calc('A3 + 3', 'Sheet 1', self.source).value, 7)
+        self.assertEqual(self.calc('C1 / 9', 'Sheet 1', self.source).value, 2)
 
-        self.assertEqual(self.calc('Sheet4!A3 ^ 2', 'Yet another sheet', self.source), 16)
-        self.assertEqual(self.calc('\'Sheet 1\'!C1 - 4 - 1', 'Yet another sheet', self.source), 13)
+        self.assertEqual(self.calc('Sheet4!A3 ^ 2', 'Yet another sheet', self.source).value, 16)
+        self.assertEqual(self.calc('\'Sheet 1\'!C1 - 4 - 1', 'Yet another sheet', self.source).value, 13)
 
         result = self.calc('Sheet4!A1:B3', 'Yet another sheet', self.source)
         self.assertEqual([c.value for c in result.value], [13, 16, 13, 16, 4, 2])

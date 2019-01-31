@@ -50,8 +50,4 @@ class Calculator(object):
                 v = f(*args)
                 result_append(v)
 
-        if len(result) == 1:
-            return result[0].value if isinstance(result[0], SimpleOperand) else result[0]
-
-        else:
-            return result
+        return result[0] if len(result) == 1 else result
