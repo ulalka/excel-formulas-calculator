@@ -71,6 +71,10 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('COUNTIF(A1:C4, ">4")', 'Sheet 1', self.source), 4)
         self.assertEqual(self.calc('COUNTIF(A1:C4, "13")', 'Sheet4', self.source), 2)
 
+    def test_COUNTBLANK(self):
+        self.assertEqual(self.calc('COUNTBLANK(A1:C4)', 'Sheet 1', self.source), 6)
+        self.assertEqual(self.calc('COUNTBLANK(A1:B4)', 'Sheet4', self.source), 2)
+
     def test_ABS(self):
         self.assertEqual(self.calc('ABS(1.32)', 'Sheet 1', self.source), 1.32)
         self.assertEqual(self.calc('ABS(-42)', 'Sheet4', self.source), 42)

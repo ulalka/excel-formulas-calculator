@@ -71,7 +71,7 @@ def compare_eq_func(op1, op2):
     return op1.any == op2.any
 
 
-def iter_elements(args):
+def iter_elements(*args):
     for arg in args:
         if isinstance(arg, (CellRangeOperand, CellSetOperand)):
             for cell in arg.value:
@@ -81,7 +81,7 @@ def iter_elements(args):
 
 
 def sum_func(*args):
-    return sum(op.digit for op in iter_elements(args) if op.value is not None)
+    return sum(op.digit for op in iter_elements(*args) if op.value is not None)
 
 
 def mod_func(op1, op2):
@@ -97,11 +97,11 @@ def if_error_func(op1, op2):
 
 
 def max_func(*args):
-    return max([op.digit for op in iter_elements(args) if op.value is not None] or [0])
+    return max([op.digit for op in iter_elements(*args) if op.value is not None] or [0])
 
 
 def min_func(*args):
-    return min([op.digit for op in iter_elements(args) if op.value is not None] or [0])
+    return min([op.digit for op in iter_elements(*args) if op.value is not None] or [0])
 
 
 def left_func(op1, op2):
@@ -117,7 +117,7 @@ def is_blank_func(a):
 
 
 def or_function(*args):
-    for op in iter_elements(args):
+    for op in iter_elements(*args):
         v = op.value
         if v is not None and not isinstance(v, string_types) and v:
             return True
@@ -129,7 +129,7 @@ def round_function(a, b):
 
 
 def count_function(*args):
-    return len([op for op in iter_elements(args)
+    return len([op for op in iter_elements(*args)
                 if op.value is not None and isinstance(op.value, (integer_types, float))])
 
 
@@ -155,6 +155,10 @@ def countif_function(cells, expr):
         operand = expr
     check = ARITHMETIC_FUNCTIONS[operation]
     return len([op for op in cells.value if op.value is not None and check(op, operand).value])
+
+
+def count_blank_function(cells):
+    return len([op for op in iter_elements(cells) if op.value is None])
 
 
 def excel_function(func):
@@ -208,4 +212,5 @@ EXCEL_FUNCTIONS['OR'] = excel_function(or_function)
 EXCEL_FUNCTIONS['ROUND'] = excel_function(round_function)
 EXCEL_FUNCTIONS['COUNT'] = excel_function(count_function)
 EXCEL_FUNCTIONS['COUNTIF'] = excel_function(countif_function)
+EXCEL_FUNCTIONS['COUNTBLANK'] = excel_function(count_blank_function)
 EXCEL_FUNCTIONS['ABS'] = excel_function(abs_function)
