@@ -27,7 +27,8 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('IF(2>1,1,2)', 'Yet another sheet', self.source), 1)
         self.assertEqual(self.calc('IF(TRUE,1,2)', 'Yet another sheet', self.source), 1)
         self.assertEqual(self.calc('IF(FALSE,1,2)', 'Yet another sheet', self.source), 2)
-        self.assertEqual(self.calc('IF(\'Sheet 1\'!A3 = 4,\'Sheet 1\'!C3, 0)', 'Yet another sheet', self.source), 8)
+        self.assertEqual(self.calc('IF(\'Sheet 1\'!A3 = 4,\'Sheet 1\'!C3, 0)', 'Yet another sheet',
+                                   self.source).value, 8)
 
     def test_IFERROR(self):
         self.assertEqual(self.calc('IFERROR(5/0,1)', 'Yet another sheet', self.source), 1)

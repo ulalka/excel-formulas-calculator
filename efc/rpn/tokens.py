@@ -9,17 +9,17 @@ class Token(object):
 
     def __init__(self, match):
         self.src_value = match.group(0)
-        self.value = self.to_python(match.groupdict())
+        self.token_value = self.get_value(match.groupdict())
 
     @classmethod
     def get_group_pattern(cls):
         return r'(?P<%s>%s)' % (cls.__name__, cls.pattern)
 
-    def to_python(self, m):
+    def get_value(self, m):
         return m[self.__class__.__name__]
 
     def __str__(self):
-        return '<%s, %s>' % (self.__class__.__name__, self.value)
+        return '<%s, %s>' % (self.__class__.__name__, self.token_value)
 
     def __repr__(self):
         return str(self)
@@ -32,100 +32,78 @@ class OperandToken(Token):
 class FloatToken(OperandToken):
     pattern = r'\d+\.\d+'
 
-    def to_python(self, m):
-        return float(super(FloatToken, self).to_python(m))
+    def get_value(self, m):
+        return float(super(FloatToken, self).get_value(m))
 
 
 class IntToken(OperandToken):
     pattern = r'\d+'
 
-    def to_python(self, m):
-        return int(super(IntToken, self).to_python(m))
+    def get_value(self, m):
+        return int(super(IntToken, self).get_value(m))
 
 
 class BoolToken(OperandToken):
     pattern = r'(TRUE|FALSE)'
 
-    def to_python(self, m):
-        return super(BoolToken, self).to_python(m) == 'TRUE'
+    def get_value(self, m):
+        return super(BoolToken, self).get_value(m) == 'TRUE'
 
 
 class StringToken(OperandToken):
     pattern = r'"[^"]*"'
 
-    def to_python(self, m):
-        return super(StringToken, self).to_python(m)[1:-1]
+    def get_value(self, m):
+        return super(StringToken, self).get_value(m)[1:-1]
 
 
 class AddressToken(OperandToken):
-    ws_name = None
-
-    def get_value(self, ws_name, source):
-        raise NotImplementedError
-
     @staticmethod
     def clean_ws_name(v):
         if v and v.startswith('\''):
             return v[1:-1]
         return v
 
+    def __getattr__(self, item):
+        return self.token_value[item]
+
 
 class SingleCellToken(AddressToken):
     pattern = (r"((?P<single_ws_name>('[^']+')|(\w+))!)?"
                r"\$?(?P<column>[A-Z]+)\$?(?P<row>[0-9]+)")
-    row, column = None, None
 
-    def to_python(self, m):
-        v = (self.ws_name,
-             self.row, self.column) = (self.clean_ws_name(m['single_ws_name']),
-                                       int(m['row']),
-                                       col_str_to_index(m['column']))
-        return v
-
-    def get_value(self, ws_name, source):
-        ws_name = self.ws_name or ws_name
-        return source.cell_to_value(self.row, self.column,
-                                    ws_name)
+    def get_value(self, m):
+        return {
+            'ws_name': self.clean_ws_name(m['single_ws_name']),
+            'row': int(m['row']),
+            'column': col_str_to_index(m['column'])
+        }
 
 
 class CellsRangeToken(AddressToken):
     pattern = (r"((?P<range_ws_name>('[^']+')|(\w+))!)?"
                r"\$?(?P<column1>[A-Z]+)\$?(?P<row1>[0-9]+)"
                r":\$?(?P<column2>[A-Z]+)\$?(?P<row2>[0-9]+)")
-    row1, column1 = None, None
-    row2, column2 = None, None
 
-    def to_python(self, m):
-        v = (self.ws_name,
-             self.row1, self.column1,
-             self.row2, self.column2) = (self.clean_ws_name(m['range_ws_name']),
-                                         int(m['row1']),
-                                         col_str_to_index(m['column1']),
-                                         int(m['row2']),
-                                         col_str_to_index(m['column2']))
-        return v
-
-    def get_value(self, ws_name, source):
-        ws_name = self.ws_name or ws_name
-        return source.range_to_values(self.row1, self.column1,
-                                      self.row2, self.column2,
-                                      ws_name)
+    def get_value(self, m):
+        return {
+            'ws_name': self.clean_ws_name(m['range_ws_name']),
+            'row1': int(m['row1']),
+            'column1': col_str_to_index(m['column1']),
+            'row2': int(m['row2']),
+            'column2': col_str_to_index(m['column2'])
+        }
 
 
 class NamedRangeToken(AddressToken):
     pattern = (r"((?P<named_range_ws_name>('[^']+')|(\w+))!)?"
                r"(?P<range_name>\w+)")
-    range_name = None
 
-    def to_python(self, m):
-        v = (self.ws_name,
-             self.range_name) = (self.clean_ws_name(m['named_range_ws_name']),
-                                 m['range_name'])
-        return v
-
-    def get_value(self, ws_name, source):
-        ws_name = self.ws_name or ws_name
-        return source.named_range_to_values(self.range_name, ws_name)
+    def get_value(self, m):
+        return {
+            'ws_name': self.clean_ws_name(m['named_range_ws_name']),
+            'name': m['range_name']
+        }
 
 
 class OperationToken(Token):

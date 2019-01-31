@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, print_function
 from string import ascii_uppercase
 import six
+from efc.rpn.errors import OperandLikeError
 
 
 def col_str_to_index(col_str):
@@ -27,3 +28,34 @@ def u(value):
         return value
     else:
         return six.u(value)
+
+
+class cached_property(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, cls=None):
+        result = instance.__dict__[self.func.__name__] = self.func(instance)
+        return result
+
+
+def digit(v):
+    if isinstance(v, six.string_types):
+        v = float(v)
+    elif isinstance(v, bool):
+        v = int(v)
+    elif v is None:
+        v = 0
+    return v
+
+
+def digit_or_string(*args):
+    for arg in args:
+        if isinstance(arg, OperandLikeError):
+            raise arg
+        else:
+            try:
+                arg = digit(arg)
+            except ValueError:
+                arg = u(arg)
+        yield arg

@@ -1,62 +1,41 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn.errors import OperandLikeError
-from efc.utils import u
-
+from efc.rpn.operands import (ErrorOperand, ValueErrorOperand, Operand, SimpleOperand,
+                              LinkErrorOperand, CellRangeOperand, CellSetOperand, ZeroDivisionErrorOperand)
+from efc.rpn.errors import EFCLinkError
+from functools import wraps
 from six import string_types, integer_types
 import re
 
 
-def digit(v):
-    if isinstance(v, string_types):
-        v = float(v)
-    elif isinstance(v, bool):
-        v = int(v)
-    elif v is None:
-        v = 0
-    elif isinstance(v, OperandLikeError):
-        raise v
-    return v
-
-
-def string(v):
-    if isinstance(v, OperandLikeError):
-        raise v
-    return u(v)
-
-
-def digit_or_string(*args):
-    for arg in args:
-        if isinstance(arg, OperandLikeError):
-            raise arg
-        else:
-            try:
-                arg = digit(arg)
-            except ValueError:
-                arg = u(arg)
-        yield arg
-
-
 def add_func(*args):
-    a, b = args if len(args) == 2 else (0, args[0])
-    return digit(a) + digit(b)
+    if len(args) == 2:
+        op1, op2 = args
+        return op1.digit + op2.digit
+    else:
+        return args[0].digit
 
 
 def subtract_func(*args):
-    a, b = args if len(args) == 2 else (0, args[0])
-    return digit(a) - digit(b)
+    if len(args) == 2:
+        op1, op2 = args
+        return op1.digit - op2.digit
+    else:
+        return -args[0].digit
 
 
-def divide_func(a, b):
-    return 1.0 * digit(a) / digit(b)
+def divide_func(op1, op2):
+    return 1.0 * op1.digit / op2.digit
 
 
-def multiply_func(a, b):
-    return digit(a) * digit(b)
+def multiply_func(op1, op2):
+    return op1.digit * op2.digit
 
 
-def concat_func(a, b):
+def concat_func(op1, op2):
+    a = op1.value
+    b = op2.value
     if isinstance(a, float) and a % 1 == 0:
         a = int(a)
     if isinstance(b, float) and b % 1 == 0:
@@ -64,116 +43,110 @@ def concat_func(a, b):
     return '%s%s' % (a, b)
 
 
-def exponent_func(a, b):
-    return digit(a) ** digit(b)
+def exponent_func(op1, op2):
+    return op1.digit ** op2.digit
 
 
-def compare_not_eq_func(a, b):
-    a, b = digit_or_string(a, b)
-    return a != b
+def compare_not_eq_func(op1, op2):
+    return op1.any != op2.any
 
 
-def compare_gte_func(a, b):
-    a, b = digit_or_string(a, b)
-    return a >= b
+def compare_gte_func(op1, op2):
+    return op1.any >= op2.any
 
 
-def compare_lte_func(a, b):
-    a, b = digit_or_string(a, b)
-    return a <= b
+def compare_lte_func(op1, op2):
+    return op1.any <= op2.any
 
 
-def compare_gt_func(a, b):
-    a, b = digit_or_string(a, b)
-    return a > b
+def compare_gt_func(op1, op2):
+    return op1.any > op2.any
 
 
-def compare_lt_func(a, b):
-    a, b = digit_or_string(a, b)
-    return a < b
+def compare_lt_func(op1, op2):
+    return op1.any < op2.any
 
 
-def compare_eq_func(a, b):
-    a, b = digit_or_string(a, b)
-    return a == b
+def compare_eq_func(op1, op2):
+    return op1.any == op2.any
 
 
 def iter_elements(args):
     for arg in args:
-        if isinstance(arg, list):
-            if arg and isinstance(arg[0], list):
-                for row in arg:
-                    for item in row:
-                        yield item
-            else:
-                for item in arg:
-                    yield item
+        if isinstance(arg, (CellRangeOperand, CellSetOperand)):
+            for cell in arg.value:
+                yield cell
         else:
             yield arg
 
 
 def sum_func(*args):
-    return sum(i for i in iter_elements(args) if i)
+    return sum(op.digit for op in iter_elements(args) if op.value is not None)
 
 
-def mod_func(a, b):
-    return digit(a) % digit(b)
+def mod_func(op1, op2):
+    return op1.digit % op2.digit
 
 
-def if_func(expr, a, b):
-    return a if expr else b
+def if_func(expr_op, op1, op2):
+    return op1 if expr_op.value else op2
 
 
-def if_error_func(a, b):
-    return b if isinstance(a, OperandLikeError) else a
+def if_error_func(op1, op2):
+    return op2 if isinstance(op1, ErrorOperand) else op1
 
 
 def max_func(*args):
-    return max(list(i for i in iter_elements(args) if i) or [0.0])
+    return max([op.digit for op in iter_elements(args) if op.value is not None] or [0])
 
 
 def min_func(*args):
-    return min(list(i for i in iter_elements(args) if i) or [0.0])
+    return min([op.digit for op in iter_elements(args) if op.value is not None] or [0])
 
 
-def left_func(a, b):
-    return string(a)[:int(b)]
+def left_func(op1, op2):
+    return str(op1)[:int(op2)]
 
 
-def right_func(a, b):
-    return string(a)[-int(b):]
+def right_func(op1, op2):
+    return str(op1)[-int(op2):]
 
 
 def is_blank_func(a):
-    return a is None
+    return a.value is None
 
 
 def or_function(*args):
-    return any(i for i in iter_elements(args) if i and not isinstance(i, string_types))
+    for op in iter_elements(args):
+        v = op.value
+        if v is not None and not isinstance(v, string_types) and v:
+            return True
+    return False
 
 
 def round_function(a, b):
-    return round(digit(a), int(b))
+    return round(a.digit, int(b))
 
 
 def count_function(*args):
-    return len([i for i in iter_elements(args) if i and isinstance(i, (integer_types, float))])
+    return len([op for op in iter_elements(args)
+                if op.value is not None and isinstance(op.value, (integer_types, float))])
 
 
 def abs_function(a):
-    return abs(digit(a))
+    return abs(a.digit)
 
 
 COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
 
 
-def countif_function(args, expr):
-    if isinstance(expr, string_types):
-        match = COUNT_IF_EXPR.search(expr)
+def countif_function(cells, expr):
+    if isinstance(expr.value, string_types):
+        match = COUNT_IF_EXPR.search(expr.value)
         if match:
             match = match.groupdict()
             operation = match['symbol']
-            operand = match['value']
+            operand = SimpleOperand(match['value'])
         else:
             operation = '='
             operand = expr
@@ -181,38 +154,58 @@ def countif_function(args, expr):
         operation = '='
         operand = expr
     check = ARITHMETIC_FUNCTIONS[operation]
-    return len([i for i in iter_elements(args) if i and check(i, operand)])
+    return len([op for op in cells.value if op.value is not None and check(op, operand).value])
+
+
+def excel_function(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+            if not isinstance(result, Operand):
+                result = SimpleOperand(result)
+            return result
+        except ErrorOperand as err:
+            return err
+        except EFCLinkError:
+            return LinkErrorOperand()
+        except TypeError:
+            return ValueErrorOperand()
+        except ZeroDivisionError:
+            return ZeroDivisionErrorOperand()
+
+    return wrapper
 
 
 ARITHMETIC_FUNCTIONS = {
-    '+': add_func,
-    '-': subtract_func,
-    '/': divide_func,
-    '*': multiply_func,
-    '&': concat_func,
-    '^': exponent_func,
-    '<>': compare_not_eq_func,
-    '>=': compare_gte_func,
-    '<=': compare_lte_func,
-    '>': compare_gt_func,
-    '<': compare_lt_func,
-    '=': compare_eq_func,
+    '+': excel_function(add_func),
+    '-': excel_function(subtract_func),
+    '/': excel_function(divide_func),
+    '*': excel_function(multiply_func),
+    '&': excel_function(concat_func),
+    '^': excel_function(exponent_func),
+    '<>': excel_function(compare_not_eq_func),
+    '>=': excel_function(compare_gte_func),
+    '<=': excel_function(compare_lte_func),
+    '>': excel_function(compare_gt_func),
+    '<': excel_function(compare_lt_func),
+    '=': excel_function(compare_eq_func),
 }
 
 EXCEL_FUNCTIONS = {}
 EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
 
-EXCEL_FUNCTIONS['SUM'] = sum_func
-EXCEL_FUNCTIONS['MOD'] = mod_func
-EXCEL_FUNCTIONS['IF'] = if_func
-EXCEL_FUNCTIONS['IFERROR'] = if_error_func
-EXCEL_FUNCTIONS['MAX'] = max_func
-EXCEL_FUNCTIONS['MIN'] = min_func
-EXCEL_FUNCTIONS['LEFT'] = left_func
-EXCEL_FUNCTIONS['RIGHT'] = right_func
-EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
-EXCEL_FUNCTIONS['OR'] = or_function
-EXCEL_FUNCTIONS['ROUND'] = round_function
-EXCEL_FUNCTIONS['COUNT'] = count_function
-EXCEL_FUNCTIONS['COUNTIF'] = countif_function
-EXCEL_FUNCTIONS['ABS'] = abs_function
+EXCEL_FUNCTIONS['SUM'] = excel_function(sum_func)
+EXCEL_FUNCTIONS['MOD'] = excel_function(mod_func)
+EXCEL_FUNCTIONS['IF'] = excel_function(if_func)
+EXCEL_FUNCTIONS['IFERROR'] = excel_function(if_error_func)
+EXCEL_FUNCTIONS['MAX'] = excel_function(max_func)
+EXCEL_FUNCTIONS['MIN'] = excel_function(min_func)
+EXCEL_FUNCTIONS['LEFT'] = excel_function(left_func)
+EXCEL_FUNCTIONS['RIGHT'] = excel_function(right_func)
+EXCEL_FUNCTIONS['ISBLANK'] = excel_function(is_blank_func)
+EXCEL_FUNCTIONS['OR'] = excel_function(or_function)
+EXCEL_FUNCTIONS['ROUND'] = excel_function(round_function)
+EXCEL_FUNCTIONS['COUNT'] = excel_function(count_function)
+EXCEL_FUNCTIONS['COUNTIF'] = excel_function(countif_function)
+EXCEL_FUNCTIONS['ABS'] = excel_function(abs_function)
