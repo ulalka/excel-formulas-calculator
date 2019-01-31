@@ -43,21 +43,26 @@ class Operand(object):
 
 
 class ErrorOperand(OperandLikeError, Operand):
+    msg = '#ERROR!'
+
     @property
     def value(self):
         raise self
 
+    def __str__(self):
+        return self.msg
+
 
 class ValueErrorOperand(EFCValueError, ErrorOperand):
-    pass
+    msg = '#VALUE!'
 
 
 class LinkErrorOperand(EFCLinkError, ErrorOperand):
-    pass
+    msg = '#REF!'
 
 
-class ZeroDivisionErrorOperand(ErrorOperand):
-    pass
+class ZeroDivisionErrorOperand(ZeroDivisionError, ErrorOperand):
+    msg = '#DIV/0!'
 
 
 class SimpleOperand(Operand):
