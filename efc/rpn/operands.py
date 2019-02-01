@@ -71,13 +71,19 @@ class SimpleOperand(Operand):
         self.value = value
 
 
-class AddressOperand(Operand):
+class CellsOperand(Operand):
     @property
     def value(self):
         raise NotImplementedError
 
+    def get_iter(self):
+        raise NotImplementedError
 
-class SingleCellOperand(AddressOperand):
+    def __iter__(self):
+        return self.get_iter()
+
+
+class SingleCellOperand(CellsOperand):
     def __init__(self, row, column, *args, **kwargs):
         super(SingleCellOperand, self).__init__(*args, **kwargs)
         self.row = row
@@ -89,6 +95,9 @@ class SingleCellOperand(AddressOperand):
             return self.source.cell_to_value(self.row, self.column, self.ws_name)
         except EFCLinkError:
             return LinkErrorOperand()
+
+    def get_iter(self):
+        yield self
 
 
 class SetOperand(Operand):
@@ -112,8 +121,8 @@ class SetOperand(Operand):
     def add_many(self, items, row=0):
         self.check_type(items)
         append = self._items[row].append
-        for cell in items:
-            append(cell)
+        for item in items:
+            append(item)
 
     def add_row(self, items):
         self.check_type(items)
@@ -122,8 +131,8 @@ class SetOperand(Operand):
 
     def get_iter(self):
         for r in sorted(self._items.keys()):
-            for cell in self._items[r]:
-                yield cell
+            for item in self._items[r]:
+                yield item
 
     def __iter__(self):
         return self.get_iter()
@@ -133,7 +142,7 @@ class SetOperand(Operand):
         return list(self)
 
 
-class CellSetOperand(SetOperand):
+class CellSetOperand(SetOperand, CellsOperand):
     operands_type = SingleCellOperand
 
 
@@ -141,7 +150,7 @@ class SimpleSetOperand(SetOperand):
     operands_type = SimpleOperand
 
 
-class CellRangeOperand(AddressOperand):
+class CellRangeOperand(CellsOperand):
     def __init__(self, row1, column1, row2, column2, *args, **kwargs):
         super(CellRangeOperand, self).__init__(*args, **kwargs)
         self.row1 = row1
@@ -165,8 +174,11 @@ class CellRangeOperand(AddressOperand):
 
         return cells_set
 
+    def get_iter(self):
+        return iter(self.value)
 
-class NamedRangeOperand(AddressOperand):
+
+class NamedRangeOperand(CellsOperand):
     def __init__(self, name, *args, **kwargs):
         super(NamedRangeOperand, self).__init__(*args, **kwargs)
         self.name = name
@@ -174,3 +186,6 @@ class NamedRangeOperand(AddressOperand):
     @cached_property
     def value(self):
         return self.source.named_range_to_cells(self.name, self.ws_name)
+
+    def get_iter(self):
+        return iter(self.value)
