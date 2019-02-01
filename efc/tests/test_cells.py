@@ -37,3 +37,4 @@ class TestCells(unittest.TestCase):
 
         self.assertEqual(self.calc('Sheet4!test', 'Yet another sheet', self.source).value, 16)
         self.assertEqual(self.calc('SUM(Sheet4!test2)', 'Yet another sheet', self.source).value, 34)
+        self.assertEqual(self.calc('SUM([0]Sheet4!test2)', 'Yet another sheet', self.source).value, 34)
