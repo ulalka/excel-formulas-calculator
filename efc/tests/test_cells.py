@@ -34,7 +34,6 @@ class TestCells(unittest.TestCase):
 
         result = self.calc('Sheet4!A1:B3', 'Yet another sheet', self.source)
         self.assertEqual([c.value for c in result.value], [13, 16, 13, 16, 4, 2])
-        # self.assertEqual(list(result),
-        #                  [[13, 16], [13, 16], [4, 2]])
 
         self.assertEqual(self.calc('Sheet4!test', 'Yet another sheet', self.source).value, 16)
+        self.assertEqual(self.calc('SUM(Sheet4!test2)', 'Yet another sheet', self.source).value, 34)

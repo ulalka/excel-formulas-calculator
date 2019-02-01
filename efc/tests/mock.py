@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 from efc.interface import BaseExcelInterface
 from efc.rpn.errors import EFCLinkError, EFCNameError
-from efc.rpn.operands import SingleCellOperand
+from efc.rpn.operands import SingleCellOperand, CellSetOperand
 
 
 class ExcelMock(BaseExcelInterface):
@@ -38,10 +38,12 @@ class ExcelMock(BaseExcelInterface):
         if ws_name not in self.data:
             raise EFCLinkError(ws_name)
 
+        op_set = CellSetOperand(ws_name=ws_name, source=self)
+        op_set.add_row([SingleCellOperand(1, 2, ws_name='Sheet 1', source=self),
+                        SingleCellOperand(1, 3, ws_name='Sheet 1', source=self)])
         named_ranges = {
             'test': SingleCellOperand(1, 2, ws_name='Sheet 1', source=self),
-            'test2': [SingleCellOperand(1, 2, ws_name='Sheet 1', source=self),
-                      SingleCellOperand(1, 3, ws_name='Sheet 1', source=self)]
+            'test2': op_set
         }
         if range_name not in named_ranges:
             raise EFCNameError(ws_name)

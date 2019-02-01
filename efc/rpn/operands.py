@@ -91,26 +91,38 @@ class SingleCellOperand(AddressOperand):
             return LinkErrorOperand()
 
 
-class CellSetOperand(AddressOperand):
+class SetOperand(Operand):
+    operands_type = None
+
     def __init__(self, *args, **kwargs):
-        super(CellSetOperand, self).__init__(*args, **kwargs)
-        self._cells = defaultdict(list)
+        super(SetOperand, self).__init__(*args, **kwargs)
+        self._items = defaultdict(list)
 
-    def add_cell(self, cell, row=0):
-        self._cells[row].append(cell)
+    def check_type(self, items):
+        if isinstance(items, list):
+            if any(not isinstance(i, self.operands_type) for i in items):
+                raise ValueErrorOperand()
+        elif not isinstance(items, self.operands_type):
+            raise ValueErrorOperand()
 
-    def add_many(self, cells, row=0):
-        append = self._cells[row].append
-        for cell in cells:
+    def add_cell(self, item, row=0):
+        self.check_type(item)
+        self._items[row].append(item)
+
+    def add_many(self, items, row=0):
+        self.check_type(items)
+        append = self._items[row].append
+        for cell in items:
             append(cell)
 
-    def add_row(self, cells):
-        r = max(self._cells) + 1 if self._cells else 1
-        self.add_many(cells, r)
+    def add_row(self, items):
+        self.check_type(items)
+        r = max(self._items) + 1 if self._items else 1
+        self.add_many(items, r)
 
     def get_iter(self):
-        for r in sorted(self._cells.keys()):
-            for cell in self._cells[r]:
+        for r in sorted(self._items.keys()):
+            for cell in self._items[r]:
                 yield cell
 
     def __iter__(self):
@@ -119,6 +131,14 @@ class CellSetOperand(AddressOperand):
     @cached_property
     def value(self):
         return list(self)
+
+
+class CellSetOperand(SetOperand):
+    operands_type = SingleCellOperand
+
+
+class SimpleSetOperand(SetOperand):
+    operands_type = SimpleOperand
 
 
 class CellRangeOperand(AddressOperand):
@@ -153,16 +173,4 @@ class NamedRangeOperand(AddressOperand):
 
     @cached_property
     def value(self):
-        cells = self.source.named_range_to_cells(self.name, self.ws_name)
-        if isinstance(cells, list):
-            cells_set = CellSetOperand(ws_name=self.ws_name, source=self.source)
-            if isinstance(cells[0], list):
-                for row in cells:
-                    cells_set.add_row(row)
-            else:
-                cells_set.add_row(cells)
-            return cells_set
-        elif isinstance(cells, CellSetOperand):
-            return cells
-        elif isinstance(cells, SingleCellOperand):
-            return cells.value
+        return self.source.named_range_to_cells(self.name, self.ws_name)

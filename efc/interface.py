@@ -19,10 +19,9 @@ class BaseExcelInterface(object):
 
     def named_range_to_cells(self, range_name, ws_name):
         """
-        TEST_RANGE -> CellSetOperand
-        OTHER_RANGE -> SingleCellOperand
-        OTHER2_RANGE -> [SingleCellOperand, SingleCellOperand]
-        OTHER3_RANGE -> [[SingleCellOperand, SingleCellOperand], [SingleCellOperand, SingleCellOperand]]
+        TEST_RANGE -> SingleCellOperand
+        OTHER_RANGE -> CellRangeOperand
+        OTHER2_RANGE -> CellSetOperand
         :type range_name: basestring
         :type ws_name: basestring
         :rtype: list
