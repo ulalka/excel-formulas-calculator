@@ -63,6 +63,16 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('ROUND(2, 2)', 'Yet another sheet', self.source).value, 2.0)
         self.assertEqual(self.calc('ROUND("2.34567", 2)', 'Yet another sheet', self.source).value, 2.35)
 
+    def test_ROUNDDOWN(self):
+        self.assertEqual(self.calc('ROUNDDOWN(1.345,0)', 'Sheet 1', self.source).value, 1.0)
+        self.assertEqual(self.calc('ROUNDDOWN(1.345,1)', 'Sheet 1', self.source).value, 1.3)
+        self.assertEqual(self.calc('ROUNDDOWN(1.345,2)', 'Sheet 1', self.source).value, 1.34)
+
+    def test_FLOOR(self):
+        self.assertEqual(self.calc('FLOOR(10,3)', 'Sheet 1', self.source).value, 9)
+        self.assertEqual(self.calc('FLOOR(16,7)', 'Sheet 1', self.source).value, 14)
+        self.assertEqual(self.calc('FLOOR(26,13)', 'Sheet 1', self.source).value, 26)
+
     def test_COUNT(self):
         self.assertEqual(self.calc('COUNT(1.3456, 1, "tesr")', 'Yet another sheet', self.source).value, 2)
         self.assertEqual(self.calc('COUNT(A1:C4)', 'Sheet 1', self.source).value, 6)

@@ -21,6 +21,19 @@ def col_str_to_index(col_str):
                for i, s in enumerate(col_str, 1))
 
 
+def col_index_to_str(i):
+    base = len(ascii_uppercase)
+    chars = []
+    while i:
+        i, r = divmod(i, base)
+        if r == 0:
+            r = base
+            i -= 1
+        chars.append(ascii_uppercase[r - 1])
+    chars.reverse()
+    return ''.join(chars)
+
+
 def u(value):
     if isinstance(value, six.binary_type):
         return value.decode('utf8')

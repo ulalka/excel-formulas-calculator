@@ -38,8 +38,9 @@ class Parser(object):
             elif isinstance(token, FunctionToken):
                 stack_append(token)
             elif isinstance(token, LeftBracketToken):
+                if isinstance(prev_token, FunctionToken):
+                    operands_count.append(1)
                 stack_append(token)
-                operands_count.append(1)
             elif isinstance(token, OperationToken):
                 if isinstance(token, (SubtractToken, AddToken)) and \
                         (isinstance(prev_token, (ArithmeticToken, LeftBracketToken, Separator)) or prev_token is None):
@@ -69,17 +70,14 @@ class Parser(object):
                 else:
                     raise InconsistentParentheses
             elif isinstance(token, Separator):
-                if not operands_count:
+                try:
+                    while not isinstance(stack[-1], LeftBracketToken):
+                        result_append(stack_pop())
+                except IndexError:
                     raise SeparatorWithoutFunction
 
-                while stack:
-                    if isinstance(stack[-1], LeftBracketToken):
-                        operands_count[-1] += 1
-                        break
-                    else:
-                        result_append(stack_pop())
-                else:
-                    raise SeparatorWithoutFunction
+                if len(stack) > 1 and isinstance(stack[-2], FunctionToken):
+                    operands_count[-1] += 1
             prev_token = token
 
         for stack_token in reversed(stack):

@@ -129,6 +129,16 @@ def round_function(a, b):
     return round(a.digit, int(b))
 
 
+def round_down_function(a, b):
+    base = 10 ** (int(b))
+    return a.digit * base // 1 / base
+
+
+def floor_function(a, multiple):
+    multiple = int(multiple)
+    return int(a.digit / multiple) * multiple
+
+
 def count_function(*args):
     return len([op for op in iter_elements(*args)
                 if op.value is not None and isinstance(op.value, (integer_types, float))])
@@ -229,6 +239,8 @@ EXCEL_FUNCTIONS['RIGHT'] = excel_function(right_func)
 EXCEL_FUNCTIONS['ISBLANK'] = excel_function(is_blank_func)
 EXCEL_FUNCTIONS['OR'] = excel_function(or_function)
 EXCEL_FUNCTIONS['ROUND'] = excel_function(round_function)
+EXCEL_FUNCTIONS['ROUNDDOWN'] = excel_function(round_down_function)
+EXCEL_FUNCTIONS['FLOOR'] = excel_function(floor_function)
 EXCEL_FUNCTIONS['COUNT'] = excel_function(count_function)
 EXCEL_FUNCTIONS['COUNTIF'] = excel_function(countif_function)
 EXCEL_FUNCTIONS['COUNTBLANK'] = excel_function(count_blank_function)

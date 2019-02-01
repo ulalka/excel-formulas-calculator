@@ -13,11 +13,7 @@ from six.moves import range
 class Calculator(object):
     def handle_result(self, result, ws_name, source):
         if len(result) == 1:
-            result = result[0]
-            if isinstance(result, NamedRangeOperand):
-                return result.value
-            else:
-                return result
+            return result[0]
         else:
             # Trying to get first error in result
             for item in (i for i in result if isinstance(i, ErrorOperand)):

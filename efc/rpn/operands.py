@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 from __future__ import unicode_literals
-from efc.utils import cached_property, digit, u
+from efc.utils import cached_property, digit, u, col_index_to_str
 from efc.rpn.errors import OperandLikeError, EFCValueError, EFCLinkError
 from collections import defaultdict
 
@@ -17,20 +17,23 @@ class Operand(object):
     @property
     def digit(self):
         """Digit type"""
-        return digit(self.value)
+        return digit(self.value) if self.value is not None else 0
 
     @property
     def string(self):
         """String type"""
-        return u(self.value)
+        return u(self.value) if self.value is not None else ''
 
     @property
     def any(self):
-        """Any type: digit or string"""
+        """Any type: digit or string or None"""
         try:
-            return self.digit
+            v = self.digit
         except ValueError:
-            return self.string
+            v = self.string
+        if v in (0, ''):
+            v = None
+        return v
 
     def __int__(self):
         return int(self.value)
@@ -98,6 +101,10 @@ class SingleCellOperand(CellsOperand):
 
     def get_iter(self):
         yield self
+
+    @property
+    def address(self):
+        return "'%s'!%s%d" % (self.ws_name, col_index_to_str(self.column), self.row)
 
 
 class SetOperand(Operand):
@@ -176,6 +183,12 @@ class CellRangeOperand(CellsOperand):
 
     def get_iter(self):
         return iter(self.value)
+
+    @property
+    def address(self):
+        return "'%s'!%s%d:%s%d" % (self.ws_name,
+                                   col_index_to_str(self.column1), self.row1,
+                                   col_index_to_str(self.column2), self.row2)
 
 
 class NamedRangeOperand(CellsOperand):
