@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 import unittest
 
-from efc.tests.mock import ExcelMock
+from tests.mock import ExcelMock
 from efc.rpn.operands import LinkErrorOperand
 from efc import get_calculator
 
