@@ -52,6 +52,10 @@ class CriticalEFCError(EFCBaseError):
     """Error when formula cannot be calculated"""
 
 
+class ResultNotFoundError(EFCBaseError):
+    """Result not found"""
+
+
 class OperandsMissing(CriticalEFCError):
     """The number of operands is more than available in stack"""
 

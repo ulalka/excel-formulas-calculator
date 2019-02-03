@@ -27,3 +27,15 @@ class BaseExcelInterface(object):
         :rtype: list
         """
         raise NotImplementedError
+
+    def max_row(self, ws_name):
+        raise NotImplementedError
+
+    def min_row(self, ws_name):
+        raise NotImplementedError
+
+    def max_column(self, ws_name):
+        raise NotImplementedError
+
+    def min_column(self, ws_name):
+        raise NotImplementedError

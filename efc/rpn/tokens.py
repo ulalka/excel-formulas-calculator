@@ -92,16 +92,16 @@ class SingleCellToken(AddressToken):
 
 class CellsRangeToken(AddressToken):
     pattern = (r"((\[(?P<r_doc>\w+)\])?(?P<range_ws_name>('[^']+')|(\w+))?!)?"
-               r"\$?(?P<column1>[A-Z]+)\$?(?P<row1>[0-9]+)"
-               r":\$?(?P<column2>[A-Z]+)\$?(?P<row2>[0-9]+)(?=\b)")
+               r"(\$?(?P<column1>[A-Z]+))?(\$?(?P<row1>[0-9]+))?"
+               r":(\$?(?P<column2>[A-Z]+))?(\$?(?P<row2>[0-9]+))?(?=\b)")
 
     def get_value(self, m):
         return {
             'ws_name': self.clean_ws_name(m['range_ws_name']),
-            'row1': int(m['row1']),
-            'column1': col_str_to_index(m['column1']),
-            'row2': int(m['row2']),
-            'column2': col_str_to_index(m['column2'])
+            'row1': int(m['row1']) if m['row1'] is not None else None,
+            'column1': col_str_to_index(m['column1']) if m['column1'] is not None else None,
+            'row2': int(m['row2']) if m['row2'] is not None else None,
+            'column2': col_str_to_index(m['column2']) if m['column2'] is not None else None,
         }
 
 

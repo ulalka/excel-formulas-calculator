@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 from __future__ import unicode_literals
 from efc.utils import cached_property, digit, u, col_index_to_str
-from efc.rpn.errors import OperandLikeError, EFCValueError, EFCLinkError
+from efc.rpn.errors import OperandLikeError, EFCValueError, EFCLinkError, ResultNotFoundError
 from collections import defaultdict
 
 from six.moves import range
@@ -70,6 +70,10 @@ class LinkErrorOperand(EFCLinkError, ErrorOperand):
 
 class ZeroDivisionErrorOperand(ZeroDivisionError, ErrorOperand):
     msg = '#DIV/0!'
+
+
+class NotFoundErrorOperand(ResultNotFoundError, ErrorOperand):
+    pass
 
 
 class SimpleOperand(Operand):
@@ -169,24 +173,26 @@ class CellRangeOperand(CellsOperand):
         self.row2 = row2
         self.column2 = column2
 
+    def get_iter(self):
+        column1 = self.source.min_column(self.ws_name) if self.column1 is None else self.column1
+        column2 = self.source.max_column(self.ws_name) if self.column2 is None else self.column2
+        row1 = self.source.min_row(self.ws_name) if self.row1 is None else self.row1
+        row2 = self.source.max_row(self.ws_name) if self.row2 is None else self.row2
+
+        if row1 == row2:
+            for c in range(column1, column2 + 1):
+                yield SingleCellOperand(row1, c, self.ws_name, self.source)
+        elif column1 == column2:
+            for r in range(row1, row2 + 1):
+                yield SingleCellOperand(r, column1, self.ws_name, self.source)
+        else:
+            for r in range(row1, row2 + 1):
+                for c in range(column1, column2 + 1):
+                    yield SingleCellOperand(r, c, self.ws_name, self.source)
+
     @cached_property
     def value(self):
-        cells_set = CellSetOperand(ws_name=self.ws_name, source=self.source)
-        if self.row1 == self.row2:
-            cells_set.add_row([SingleCellOperand(self.row1, c, self.ws_name, self.source)
-                               for c in range(self.column1, self.column2 + 1)])
-        elif self.column1 == self.column2:
-            cells_set.add_row([SingleCellOperand(r, self.column1, self.ws_name, self.source)
-                               for r in range(self.row1, self.row2 + 1)])
-        else:
-            for r in range(self.row1, self.row2 + 1):
-                cells_set.add_row([SingleCellOperand(r, c, self.ws_name, self.source)
-                                   for c in range(self.column1, self.column2 + 1)])
-
-        return cells_set
-
-    def get_iter(self):
-        return iter(self.value)
+        return self.get_iter()
 
     @property
     def address(self):
