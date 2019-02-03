@@ -9,6 +9,8 @@ from functools import wraps
 from six import string_types, integer_types
 import re
 
+__all__ = ('EXCEL_FUNCTIONS', )
+
 
 def add_func(*args):
     if len(args) == 2:

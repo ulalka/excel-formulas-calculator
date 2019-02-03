@@ -7,6 +7,9 @@ from efc.rpn.tokens import (OperandToken, OperationToken, FunctionToken, LeftBra
                             DivideToken, ConcatToken)
 from efc.rpn.errors import InconsistentParentheses, SeparatorWithoutFunction
 
+__all__ = ('Parser',)
+
+
 OPERATORS_PRIORITY = {
     ExponentToken: 5,
     MultiplyToken: 4,

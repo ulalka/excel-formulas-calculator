@@ -6,6 +6,10 @@ from collections import defaultdict
 
 from six.moves import range
 
+__all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'LinkErrorOperand',
+           'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
+           'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand')
+
 
 class Operand(object):
     value = None

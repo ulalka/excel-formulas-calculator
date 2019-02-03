@@ -9,6 +9,8 @@ from efc.rpn.operands import (SimpleOperand, SingleCellOperand, CellRangeOperand
 
 from six.moves import range
 
+__all__ = ('Calculator', )
+
 
 class Calculator(object):
     def handle_result(self, result, ws_name, source):

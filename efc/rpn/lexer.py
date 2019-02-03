@@ -6,6 +6,9 @@ from efc.rpn import tokens
 import re
 from collections import OrderedDict
 
+__all__ = ('Lexer',)
+
+
 TOKENS_PRIORITY = (
     tokens.FloatToken,
     tokens.IntToken,

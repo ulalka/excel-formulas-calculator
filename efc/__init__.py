@@ -5,6 +5,9 @@ from efc.rpn.lexer import Lexer
 from efc.rpn.parser import Parser
 from efc.rpn.calculator import Calculator
 
+__author__ = "Gleb Orlov <orlovgb@mail.ru>"
+__version__ = "0.1.0"
+
 
 def calc(formula, ws_name, source):
     return Calculator().calc(formula, ws_name, source)
