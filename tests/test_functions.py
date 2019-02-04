@@ -94,3 +94,26 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('OFFSET(A1,2,1,1)', 'Sheet 1', self.source).value, 2)
         self.assertEqual(self.calc('OFFSET(A1,B3,1)', 'Sheet 1', self.source).value, 2)
         self.assertEqual(self.calc('SUM(OFFSET(A1,2,1,1,2))', 'Sheet 1', self.source).value, 10)
+
+    def test_MID(self):
+        self.assertEqual(self.calc('MID("hello",2,2)', 'Sheet 1', self.source).value, 'el')
+
+    def test_MATCH(self):
+        self.assertEqual(self.calc('MATCH(13,Sheet4!A1:A3)',
+                                   'Yet another sheet', self.source).value, 1)
+
+    def test_SUMIFS(self):
+        self.assertEqual(self.calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,">4")',
+                                   'Yet another sheet', self.source).value, 58)
+        self.assertEqual(self.calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")',
+                                   'Yet another sheet', self.source).value, 26)
+
+    def test_AVERAGE(self):
+        self.assertEqual(self.calc('AVERAGE(Sheet4!A1:B3)',
+                                   'Yet another sheet', self.source).value, 64 / 6)
+        self.assertEqual(self.calc('AVERAGEIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")',
+                                   'Yet another sheet', self.source).value, 13)
+
+    def test_AVERAGEIFS(self):
+        self.assertEqual(self.calc('AVERAGEIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")',
+                                   'Yet another sheet', self.source).value, 13)

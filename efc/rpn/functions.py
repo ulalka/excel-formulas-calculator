@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 from efc.rpn.operands import (ErrorOperand, ValueErrorOperand, Operand, SimpleOperand,
                               LinkErrorOperand, CellRangeOperand, CellSetOperand, ZeroDivisionErrorOperand,
-                              SingleCellOperand)
+                              SingleCellOperand, NotFoundErrorOperand)
 from efc.rpn.errors import EFCLinkError
 from functools import wraps
 from six import string_types, integer_types
@@ -83,8 +83,19 @@ def iter_elements(*args):
             yield arg
 
 
+def iter_digits(yield_none, *args):
+    for op in iter_elements(*args):
+        if not op.value and op.value not in (0, '0') and yield_none:
+            yield None
+        else:
+            try:
+                yield op.digit
+            except:
+                pass
+
+
 def sum_func(*args):
-    return sum(op.digit for op in iter_elements(*args) if op.value is not None)
+    return sum(iter_digits(True, *args))
 
 
 def mod_func(op1, op2):
@@ -100,19 +111,25 @@ def if_error_func(op1, op2):
 
 
 def max_func(*args):
-    return max([op.digit for op in iter_elements(*args) if op.value is not None] or [0])
+    return max(list(iter_digits(False, *args)) or [0])
 
 
 def min_func(*args):
-    return min([op.digit for op in iter_elements(*args) if op.value is not None] or [0])
+    return min(list(iter_digits(False, *args)) or [0])
 
 
 def left_func(op1, op2):
-    return str(op1)[:int(op2)]
+    return op1.string[:int(op2)]
 
 
 def right_func(op1, op2):
-    return str(op1)[-int(op2):]
+    return op1.string[-int(op2):]
+
+
+def mid_func(op1, op2, op3):
+    left = int(op2) - 1
+    right = left + int(op3)
+    return op1.string[left:right]
 
 
 def is_blank_func(a):
@@ -150,10 +167,33 @@ def abs_function(a):
     return abs(a.digit)
 
 
+def match_function(op1, r, match_type=None):
+    match_type = 0 if match_type is None else int(match_type)
+
+    expr = op1.any
+    idx = None
+    if match_type == 1:
+        for idx, item in enumerate(r, 1):
+            if item.any > expr:
+                idx -= 1
+                break
+    elif match_type == -1:
+        for idx, item in enumerate(r, 1):
+            if item.any > expr:
+                break
+    else:
+        for idx, item in enumerate(r, 1):
+            if item.any == expr:
+                break
+    if idx is None:
+        raise NotFoundErrorOperand()
+    return idx
+
+
 COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
 
 
-def countif_function(cells, expr):
+def get_check_function(expr):
     if isinstance(expr.value, string_types):
         match = COUNT_IF_EXPR.search(expr.value)
         if match:
@@ -167,7 +207,48 @@ def countif_function(cells, expr):
         operation = '='
         operand = expr
     check = ARITHMETIC_FUNCTIONS[operation]
+    return check, operand
+
+
+def countif_function(cells, expr):
+    check, operand = get_check_function(expr)
     return len([op for op in cells.value if op.value is not None and check(op, operand).value])
+
+
+def ifs_indexes(*args):
+    args = iter(args)
+    good_indexes = set()
+    first_iteration = True
+    while True:
+        try:
+            op = next(args)
+        except StopIteration:
+            break
+
+        check, expr = get_check_function(next(args))
+        for idx, item in enumerate(op, 1):
+            if check(item, expr).value:
+                if first_iteration:
+                    good_indexes.add(idx)
+            elif idx in good_indexes:
+                good_indexes.remove(idx)
+        first_iteration = False
+    return good_indexes
+
+
+def sum_ifs_function(op1, *args):
+    good_indexes = ifs_indexes(*args)
+    return sum_func(*[c for idx, c in enumerate(op1, 1) if idx in good_indexes])
+
+
+def average_function(*args):
+    values = list(iter_digits(False, *args))
+    return sum(values) / len(values)
+
+
+def average_ifs_function(op1, *args):
+    good_indexes = ifs_indexes(*args)
+    return average_function(*[c for idx, c in enumerate(op1, 1) if idx in good_indexes])
 
 
 def count_blank_function(cells):
@@ -231,6 +312,7 @@ EXCEL_FUNCTIONS = {}
 EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
 
 EXCEL_FUNCTIONS['SUM'] = excel_function(sum_func)
+EXCEL_FUNCTIONS['SUMIFS'] = excel_function(sum_ifs_function)
 EXCEL_FUNCTIONS['MOD'] = excel_function(mod_func)
 EXCEL_FUNCTIONS['IF'] = excel_function(if_func)
 EXCEL_FUNCTIONS['IFERROR'] = excel_function(if_error_func)
@@ -238,6 +320,7 @@ EXCEL_FUNCTIONS['MAX'] = excel_function(max_func)
 EXCEL_FUNCTIONS['MIN'] = excel_function(min_func)
 EXCEL_FUNCTIONS['LEFT'] = excel_function(left_func)
 EXCEL_FUNCTIONS['RIGHT'] = excel_function(right_func)
+EXCEL_FUNCTIONS['MID'] = excel_function(mid_func)
 EXCEL_FUNCTIONS['ISBLANK'] = excel_function(is_blank_func)
 EXCEL_FUNCTIONS['OR'] = excel_function(or_function)
 EXCEL_FUNCTIONS['ROUND'] = excel_function(round_function)
@@ -248,3 +331,6 @@ EXCEL_FUNCTIONS['COUNTIF'] = excel_function(countif_function)
 EXCEL_FUNCTIONS['COUNTBLANK'] = excel_function(count_blank_function)
 EXCEL_FUNCTIONS['ABS'] = excel_function(abs_function)
 EXCEL_FUNCTIONS['OFFSET'] = excel_function(offset_function)
+EXCEL_FUNCTIONS['MATCH'] = excel_function(match_function)
+EXCEL_FUNCTIONS['AVERAGE'] = excel_function(average_function)
+EXCEL_FUNCTIONS['AVERAGEIFS'] = excel_function(average_ifs_function)

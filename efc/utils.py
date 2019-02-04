@@ -42,6 +42,8 @@ def u(value):
         return value.decode('utf8')
     elif isinstance(value, six.text_type):
         return value
+    elif isinstance(value, (six.integer_types, float)):
+        return six.text_type(value)
     else:
         return six.u(value)
 

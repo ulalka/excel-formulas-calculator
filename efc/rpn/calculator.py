@@ -3,9 +3,9 @@
 from __future__ import unicode_literals, print_function
 from efc.rpn.functions import EXCEL_FUNCTIONS
 from efc.rpn.tokens import OperandToken, OperationToken, SingleCellToken, CellsRangeToken, NamedRangeToken
-from efc.rpn.errors import OperandsMissing, FunctionNotSupported
+from efc.rpn.errors import OperandsMissing
 from efc.rpn.operands import (SimpleOperand, SingleCellOperand, CellRangeOperand, NamedRangeOperand, CellSetOperand,
-                              ErrorOperand, SimpleSetOperand, ValueErrorOperand)
+                              ErrorOperand, SimpleSetOperand, ValueErrorOperand, FunctionNotSupported)
 
 from six.moves import range
 
@@ -70,7 +70,7 @@ class Calculator(object):
                 try:
                     f = EXCEL_FUNCTIONS[token.src_value]
                 except KeyError:
-                    result_append(FunctionNotSupported())
+                    result_append(FunctionNotSupported(token.src_value))
                     continue
 
                 v = f(*args)

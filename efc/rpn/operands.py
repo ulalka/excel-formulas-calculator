@@ -8,7 +8,8 @@ from six.moves import range
 
 __all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'LinkErrorOperand',
            'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
-           'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand')
+           'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
+           'FunctionNotSupported', 'NotFoundErrorOperand')
 
 
 class Operand(object):
@@ -21,7 +22,7 @@ class Operand(object):
     @property
     def digit(self):
         """Digit type"""
-        return digit(self.value) if self.value is not None else 0
+        return digit(self.value) if self.value else 0
 
     @property
     def string(self):
@@ -74,6 +75,10 @@ class ZeroDivisionErrorOperand(ZeroDivisionError, ErrorOperand):
 
 class NotFoundErrorOperand(ResultNotFoundError, ErrorOperand):
     pass
+
+
+class FunctionNotSupported(ErrorOperand):
+    """Function not found among available functions"""
 
 
 class SimpleOperand(Operand):
