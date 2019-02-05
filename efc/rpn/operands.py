@@ -40,6 +40,10 @@ class Operand(object):
             v = None
         return v
 
+    @property
+    def is_blank(self):
+        return self.value in (None, '')
+
     def __int__(self):
         return int(self.value)
 
@@ -48,6 +52,9 @@ class Operand(object):
 
     def __str__(self):
         return self.string
+
+    def __deepcopy__(self, memodict):
+        return self.__class__(ws_name=self.ws_name, source=self.source)
 
 
 class ErrorOperand(OperandLikeError, Operand):
@@ -86,6 +93,9 @@ class SimpleOperand(Operand):
         super(SimpleOperand, self).__init__(*args, **kwargs)
         self.value = value
 
+    def __deepcopy__(self, memodict):
+        return self.__class__(value=self.value, ws_name=self.ws_name, source=self.source)
+
 
 class CellsOperand(Operand):
     @property
@@ -118,6 +128,9 @@ class SingleCellOperand(CellsOperand):
     @property
     def address(self):
         return "'%s'!%s%d" % (self.ws_name, col_index_to_str(self.column), self.row)
+
+    def __deepcopy__(self, memodict):
+        return self.__class__(row=self.row, column=self.column, ws_name=self.ws_name, source=self.source)
 
 
 class SetOperand(Operand):
@@ -205,6 +218,11 @@ class CellRangeOperand(CellsOperand):
                                    col_index_to_str(self.column1), self.row1,
                                    col_index_to_str(self.column2), self.row2)
 
+    def __deepcopy__(self, memodict):
+        return self.__class__(row1=self.row1, column1=self.column1,
+                              row2=self.row2, column2=self.column2,
+                              ws_name=self.ws_name, source=self.source)
+
 
 class NamedRangeOperand(CellsOperand):
     def __init__(self, name, *args, **kwargs):
@@ -217,3 +235,6 @@ class NamedRangeOperand(CellsOperand):
 
     def get_iter(self):
         return iter(self.value)
+
+    def __deepcopy__(self, memodict):
+        return self.__class__(name=self.name, ws_name=self.ws_name, source=self.source)

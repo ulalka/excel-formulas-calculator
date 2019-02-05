@@ -7,6 +7,7 @@ from efc.rpn.operands import (ErrorOperand, ValueErrorOperand, Operand, SimpleOp
 from efc.rpn.errors import EFCLinkError
 from functools import wraps
 from six import string_types, integer_types
+from copy import deepcopy
 import re
 
 __all__ = ('EXCEL_FUNCTIONS', )
@@ -77,7 +78,7 @@ def compare_eq_func(op1, op2):
 def iter_elements(*args):
     for arg in args:
         if isinstance(arg, (CellRangeOperand, CellSetOperand)):
-            for cell in arg.value:
+            for cell in arg:
                 yield cell
         else:
             yield arg
@@ -85,8 +86,9 @@ def iter_elements(*args):
 
 def iter_digits(yield_none, *args):
     for op in iter_elements(*args):
-        if not op.value and op.value not in (0, '0') and yield_none:
-            yield None
+        if op.is_blank:
+            if yield_none:
+                yield None
         else:
             try:
                 yield op.digit
@@ -95,7 +97,7 @@ def iter_digits(yield_none, *args):
 
 
 def sum_func(*args):
-    return sum(iter_digits(True, *args))
+    return sum(iter_digits(False, *args))
 
 
 def mod_func(op1, op2):
@@ -160,7 +162,7 @@ def floor_function(a, multiple):
 
 def count_function(*args):
     return len([op for op in iter_elements(*args)
-                if op.value is not None and isinstance(op.value, (integer_types, float))])
+                if not op.is_blank and isinstance(op.value, (integer_types, float))])
 
 
 def abs_function(a):
@@ -174,17 +176,23 @@ def match_function(op1, r, match_type=None):
     idx = None
     if match_type == 1:
         for idx, item in enumerate(r, 1):
-            if item.any > expr:
+            if item.any == expr:
+                break
+            elif item.any > expr:
                 idx -= 1
                 break
     elif match_type == -1:
         for idx, item in enumerate(r, 1):
             if item.any > expr:
                 break
+        else:
+            idx = None
     else:
         for idx, item in enumerate(r, 1):
             if item.any == expr:
                 break
+        else:
+            idx = None
     if idx is None:
         raise NotFoundErrorOperand()
     return idx
@@ -212,7 +220,7 @@ def get_check_function(expr):
 
 def countif_function(cells, expr):
     check, operand = get_check_function(expr)
-    return len([op for op in cells.value if op.value is not None and check(op, operand).value])
+    return len([op for op in cells.value if not op.is_blank and check(op, operand).value])
 
 
 def ifs_indexes(*args):
@@ -252,7 +260,7 @@ def average_ifs_function(op1, *args):
 
 
 def count_blank_function(cells):
-    return len([op for op in iter_elements(cells) if op.value is None])
+    return len([op for op in iter_elements(cells) if op.is_blank])
 
 
 def offset_function(cell, row_offset, col_offset, height=None, width=None):
@@ -271,6 +279,20 @@ def offset_function(cell, row_offset, col_offset, height=None, width=None):
                                 row2=cell.row + int(row_offset) + height - 1,
                                 column2=cell.column + int(col_offset) + width - 1,
                                 ws_name=cell.ws_name, source=cell.source)
+
+
+def vlookup_function(op, rg, column, flag=None):
+    first_col = deepcopy(rg)
+    first_col.column2 = first_col.column1
+
+    if flag is not None and flag.digit or flag is None:
+        idx = match_function(op, first_col, 1)
+        if flag.digit and idx != 1 and list(first_col)[idx - 1].value == op.value:
+            idx -= 1
+    else:
+        idx = match_function(op, first_col, 0)
+    return SingleCellOperand(row=(rg.row1 or 1) + idx - 1, column=(rg.column1 or 1) + column.digit - 1,
+                             ws_name=rg.ws_name, source=rg.source)
 
 
 def excel_function(func):
@@ -334,3 +356,4 @@ EXCEL_FUNCTIONS['OFFSET'] = excel_function(offset_function)
 EXCEL_FUNCTIONS['MATCH'] = excel_function(match_function)
 EXCEL_FUNCTIONS['AVERAGE'] = excel_function(average_function)
 EXCEL_FUNCTIONS['AVERAGEIFS'] = excel_function(average_ifs_function)
+EXCEL_FUNCTIONS['VLOOKUP'] = excel_function(vlookup_function)
