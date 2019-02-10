@@ -104,7 +104,9 @@ def mod_func(op1, op2):
     return op1.digit % op2.digit
 
 
-def if_func(expr_op, op1, op2):
+def if_func(expr_op, op1, op2=None):
+    if op2 is None:
+        op2 = False
     return op1 if expr_op.value else op2
 
 
@@ -120,11 +122,11 @@ def min_func(*args):
     return min(list(iter_digits(False, *args)) or [0])
 
 
-def left_func(op1, op2):
+def left_func(op1, op2=1):
     return op1.string[:int(op2)]
 
 
-def right_func(op1, op2):
+def right_func(op1, op2=1):
     return op1.string[-int(op2):]
 
 
@@ -144,6 +146,22 @@ def or_function(*args):
         if v is not None and not isinstance(v, string_types) and v:
             return True
     return False
+
+
+def and_function(*args):
+    for op in iter_elements(*args):
+        v = op.value
+        if v is not None and not isinstance(v, string_types) and not v:
+            return False
+    return True
+
+
+def small_function(r, op):
+    return sorted(iter_digits(False, r))[int(op) - 1]
+
+
+def large_function(r, op):
+    return sorted(iter_digits(False, r), reverse=True)[int(op) - 1]
 
 
 def round_function(a, b):
@@ -249,6 +267,10 @@ def sum_ifs_function(op1, *args):
     return sum_func(*[c for idx, c in enumerate(op1, 1) if idx in good_indexes])
 
 
+def concatenate(*args):
+    return ''.join(i.string for i in iter_elements(*args) if not i.is_blank)
+
+
 def average_function(*args):
     values = list(iter_digits(False, *args))
     return sum(values) / len(values)
@@ -261,6 +283,11 @@ def average_ifs_function(op1, *args):
 
 def count_blank_function(cells):
     return len([op for op in iter_elements(cells) if op.is_blank])
+
+
+def count_ifs_function(op1, *args):
+    good_indexes = ifs_indexes(*args)
+    return count_function(*[c for idx, c in enumerate(op1, 1) if idx in good_indexes])
 
 
 def offset_function(cell, row_offset, col_offset, height=None, width=None):
@@ -345,6 +372,7 @@ EXCEL_FUNCTIONS['RIGHT'] = excel_function(right_func)
 EXCEL_FUNCTIONS['MID'] = excel_function(mid_func)
 EXCEL_FUNCTIONS['ISBLANK'] = excel_function(is_blank_func)
 EXCEL_FUNCTIONS['OR'] = excel_function(or_function)
+EXCEL_FUNCTIONS['AND'] = excel_function(and_function)
 EXCEL_FUNCTIONS['ROUND'] = excel_function(round_function)
 EXCEL_FUNCTIONS['ROUNDDOWN'] = excel_function(round_down_function)
 EXCEL_FUNCTIONS['FLOOR'] = excel_function(floor_function)
@@ -357,3 +385,7 @@ EXCEL_FUNCTIONS['MATCH'] = excel_function(match_function)
 EXCEL_FUNCTIONS['AVERAGE'] = excel_function(average_function)
 EXCEL_FUNCTIONS['AVERAGEIFS'] = excel_function(average_ifs_function)
 EXCEL_FUNCTIONS['VLOOKUP'] = excel_function(vlookup_function)
+EXCEL_FUNCTIONS['SMALL'] = excel_function(small_function)
+EXCEL_FUNCTIONS['LARGE'] = excel_function(large_function)
+EXCEL_FUNCTIONS['COUNTIFS'] = excel_function(count_ifs_function)
+EXCEL_FUNCTIONS['CONCATENATE'] = excel_function(concatenate)

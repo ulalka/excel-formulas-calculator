@@ -24,16 +24,8 @@ class EFCBaseError(Exception):
         self.exc = exc
 
 
-class EFCNameError(EFCBaseError):
-    """Named range or function does not exists"""
-
-
 class OperandLikeError(EFCBaseError):
     """Errors which can be like operands"""
-
-
-class FunctionNotSupported(OperandLikeError):
-    """Function not found among available functions"""
 
 
 class EFCValueError(OperandLikeError):
@@ -42,10 +34,6 @@ class EFCValueError(OperandLikeError):
 
 class EFCLinkError(OperandLikeError):
     """Worksheet does not exists"""
-
-
-class FunctionError(OperandLikeError):
-    """An error occurred while evaluating function"""
 
 
 class CriticalEFCError(EFCBaseError):
