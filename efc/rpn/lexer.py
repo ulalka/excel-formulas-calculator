@@ -37,29 +37,6 @@ TOKENS_PRIORITY = (
 )
 
 
-class TokensLine(object):
-    def __init__(self):
-        self._tokens = []
-        self._pointer = 0
-
-    def next(self):
-        if self._pointer >= len(self._tokens):
-            return None
-
-        v = self._tokens[self._pointer]
-        self._pointer += 1
-        return v
-
-    def add(self, token):
-        self._tokens.append(token)
-
-    def __len__(self):
-        return len(self._tokens)
-
-    def __iter__(self):
-        return iter(self._tokens)
-
-
 class Lexer(object):
     def __init__(self):
         self.lexer_tokens = OrderedDict()
@@ -77,9 +54,9 @@ class Lexer(object):
     def parse(self, line):
         lexer_tokens = self.lexer_tokens
 
-        tokens_line = TokensLine()
+        tokens_line = []
         for match in re.finditer(self.regexp, line, flags=re.UNICODE):
             cls = lexer_tokens[match.lastgroup]
             if cls != tokens.SpaceToken:
-                tokens_line.add(cls(match))
+                tokens_line.append(cls(match))
         return tokens_line
