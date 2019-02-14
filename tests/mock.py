@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals, print_function
 from efc.interface import BaseExcelInterface
-from efc.rpn.errors import EFCLinkError, EFCNameError
+from efc.rpn.errors import EFCLinkError
 from efc.rpn.operands import SingleCellOperand, CellSetOperand
 
 
@@ -45,7 +45,5 @@ class ExcelMock(BaseExcelInterface):
             'test': SingleCellOperand(1, 2, ws_name='Sheet 1', source=self),
             'test2': op_set
         }
-        if range_name not in named_ranges:
-            raise EFCNameError(ws_name)
 
         return named_ranges[range_name]
