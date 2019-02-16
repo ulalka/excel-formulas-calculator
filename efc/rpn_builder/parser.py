@@ -2,13 +2,13 @@
 
 from __future__ import unicode_literals, print_function
 
-from efc.rpn.tokens import (OperandToken, OperationToken, FunctionToken, LeftBracketToken, RightBracketToken,
-                            Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken, MultiplyToken,
-                            DivideToken, ConcatToken)
-from efc.rpn.errors import InconsistentParentheses, SeparatorWithoutFunction
+from efc.rpn_builder.tokens import (OperandToken, OperationToken, FunctionToken, LeftBracketToken, RightBracketToken,
+                                    Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken, MultiplyToken,
+                                    DivideToken, ConcatToken)
+from efc.rpn_builder.errors import InconsistentParentheses, SeparatorWithoutFunction
+from efc.rpn_builder.rpn import RPN
 
 __all__ = ('Parser',)
-
 
 OPERATORS_PRIORITY = {
     ExponentToken: 5,
@@ -27,7 +27,7 @@ class Parser(object):
 
     def to_rpn(self, line):
         get_priority = self.get_priority
-        result = []
+        result = RPN()
         stack = []
         operands_count = []
 

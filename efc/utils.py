@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 from string import ascii_uppercase
 import six
-from efc.rpn.errors import OperandLikeError
+from efc.rpn_builder.errors import OperandLikeError
 
 
 __all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'digit_or_string')

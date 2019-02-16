@@ -2,9 +2,9 @@
 
 from __future__ import unicode_literals, print_function
 import unittest
-from efc.rpn import tokens
-from efc.rpn.lexer import Lexer
-from efc.rpn.parser import Parser
+from efc.rpn_builder import tokens
+from efc.rpn_builder.lexer import Lexer
+from efc.rpn_builder.parser import Parser
 from six.moves import zip
 
 operations_examples = (

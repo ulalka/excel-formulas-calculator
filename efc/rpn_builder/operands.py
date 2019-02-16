@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 from __future__ import unicode_literals
 from efc.utils import cached_property, digit, u, col_index_to_str
-from efc.rpn.errors import OperandLikeError, EFCValueError, EFCLinkError, ResultNotFoundError
+from efc.rpn_builder.errors import OperandLikeError, EFCValueError, EFCLinkError, ResultNotFoundError
 from collections import defaultdict
 
 from six.moves import range

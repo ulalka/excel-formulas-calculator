@@ -1,18 +1,31 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn.functions import EXCEL_FUNCTIONS
-from efc.rpn.tokens import OperandToken, OperationToken, SingleCellToken, CellsRangeToken, NamedRangeToken
-from efc.rpn.errors import OperandsMissing
-from efc.rpn.operands import (SimpleOperand, SingleCellOperand, CellRangeOperand, NamedRangeOperand, CellSetOperand,
-                              ErrorOperand, SimpleSetOperand, ValueErrorOperand, FunctionNotSupported)
+from efc.rpn_builder.functions import EXCEL_FUNCTIONS
+from efc.rpn_builder.tokens import OperandToken, OperationToken, SingleCellToken, CellsRangeToken, NamedRangeToken
+from efc.rpn_builder.errors import OperandsMissing
+from efc.rpn_builder.operands import (SimpleOperand, SingleCellOperand, CellRangeOperand, NamedRangeOperand,
+                                      CellSetOperand,
+                                      ErrorOperand, SimpleSetOperand, ValueErrorOperand, FunctionNotSupported)
 
 from six.moves import range
 
-__all__ = ('Calculator', )
+__all__ = ('RPN',)
 
 
-class Calculator(object):
+class RPN(object):
+    def __init__(self):
+        self._tokens = []
+
+    def append(self, v):
+        self._tokens.append(v)
+
+    def __iter__(self):
+        return iter(self._tokens)
+
+    def __len__(self):
+        return len(self._tokens)
+
     def handle_result(self, result, ws_name, source):
         if len(result) == 1:
             return result[0]
@@ -36,12 +49,12 @@ class Calculator(object):
             except ValueErrorOperand as err:
                 return err
 
-    def calc(self, rpn, ws_name, source):
+    def calc(self, ws_name, source):
         result = []
 
         result_append = result.append
         result_pop = result.pop
-        for token in rpn:
+        for token in self._tokens:
             if isinstance(token, SingleCellToken):
                 result_append(SingleCellOperand(row=token.row, column=token.column,
                                                 ws_name=token.ws_name or ws_name,
@@ -63,7 +76,7 @@ class Calculator(object):
                 try:
                     args = [result_pop() for _ in range(token.operands_count)]
                 except IndexError:
-                    raise OperandsMissing(token, rpn)
+                    raise OperandsMissing(token, self._tokens)
 
                 args.reverse()
 
