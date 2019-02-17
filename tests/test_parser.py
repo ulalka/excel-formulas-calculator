@@ -2,28 +2,29 @@
 
 from __future__ import unicode_literals, print_function
 import unittest
-from efc.rpn_builder.lexer import Lexer, tokens
+from efc.rpn_builder.lexer import Lexer
+from efc.rpn_builder.parser import operations, operands
 from efc.rpn_builder.parser import Parser
 from six.moves import zip
 
 operations_examples = (
     ('4 + 5.54 - "hello"',
-     [tokens.IntToken, tokens.FloatToken, tokens.StringToken,
-      tokens.SubtractToken, tokens.AddToken]),
+     [operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand,
+      operations.ArithmeticOperation, operations.ArithmeticOperation]),
     ('4 + 5.54 - SUM(1,2,4)',
-     [tokens.IntToken, tokens.FloatToken, tokens.IntToken, tokens.IntToken,
-      tokens.IntToken, tokens.FunctionToken, tokens.SubtractToken,
-      tokens.AddToken]),
+     [operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand,
+      operands.SimpleOperand, operations.FunctionOperation, operations.ArithmeticOperation,
+      operations.ArithmeticOperation]),
     ('4 + 5.54 - SUM(1,SUM(1,2))',
-     [tokens.IntToken, tokens.FloatToken, tokens.IntToken, tokens.IntToken,
-      tokens.IntToken, tokens.FunctionToken, tokens.FunctionToken,
-      tokens.SubtractToken, tokens.AddToken]),
+     [operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand,
+      operands.SimpleOperand, operations.FunctionOperation, operations.FunctionOperation,
+      operations.ArithmeticOperation, operations.ArithmeticOperation]),
     ('SUM(1,2,4) * 5',
-     [tokens.IntToken, tokens.IntToken, tokens.IntToken, tokens.FunctionToken,
-      tokens.IntToken, tokens.MultiplyToken]),
+     [operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand, operations.FunctionOperation,
+      operands.SimpleOperand, operations.ArithmeticOperation]),
     ('SUM(1 + 2,2,4) * 5',
-     [tokens.IntToken, tokens.IntToken, tokens.AddToken, tokens.IntToken,
-      tokens.IntToken, tokens.FunctionToken, tokens.IntToken, tokens.MultiplyToken]),
+     [operands.SimpleOperand, operands.SimpleOperand, operations.ArithmeticOperation, operands.SimpleOperand,
+      operands.SimpleOperand, operations.FunctionOperation, operands.SimpleOperand, operations.ArithmeticOperation]),
 )
 
 
