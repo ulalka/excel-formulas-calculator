@@ -6,7 +6,7 @@ import six
 from efc.rpn_builder.errors import OperandLikeError
 
 __all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'digit_or_string',
-           'TokensLine')
+           'TokensLine', 'BaseEFCException')
 
 
 def col_str_to_index(col_str):
@@ -125,3 +125,17 @@ class TokensLine(object):
 
     def __getitem__(self, item):
         return self._array[item]
+
+
+class BaseEFCException(Exception):
+    code = None
+    msg = None
+
+    def __str__(self):
+        context = {k: u(i) for k, i in six.iteritems(self.__dict__)}
+        msg_list = []
+        if self.code is not None:
+            msg_list.append('Code %d' % self.code)
+        if self.msg:
+            msg_list.append(self.msg.format(**context))
+        return ': '.join(msg_list)
