@@ -16,14 +16,13 @@ operations_examples = (
       operands.SimpleOperand, operations.FunctionOperation, operations.ArithmeticOperation,
       operations.ArithmeticOperation]),
     ('4 + 5.54 - SUM(1,SUM(1,2))',
-     [operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand,
-      operands.SimpleOperand, operations.FunctionOperation, operations.FunctionOperation,
-      operations.ArithmeticOperation, operations.ArithmeticOperation]),
+     [operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand, operands.RPNOperand,
+      operations.FunctionOperation, operations.ArithmeticOperation, operations.ArithmeticOperation]),
     ('SUM(1,2,4) * 5',
      [operands.SimpleOperand, operands.SimpleOperand, operands.SimpleOperand, operations.FunctionOperation,
       operands.SimpleOperand, operations.ArithmeticOperation]),
     ('SUM(1 + 2,2,4) * 5',
-     [operands.SimpleOperand, operands.SimpleOperand, operations.ArithmeticOperation, operands.SimpleOperand,
+     [operands.RPNOperand, operands.SimpleOperand,
       operands.SimpleOperand, operations.FunctionOperation, operands.SimpleOperand, operations.ArithmeticOperation]),
 )
 

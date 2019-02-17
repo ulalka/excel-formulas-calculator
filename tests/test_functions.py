@@ -27,6 +27,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(self.calc('IF(2>1,1,2)', 'Yet another sheet', self.source).value, 1)
         self.assertEqual(self.calc('IF(TRUE,1,2)', 'Yet another sheet', self.source).value, 1)
         self.assertEqual(self.calc('IF(FALSE,1,2)', 'Yet another sheet', self.source).value, 2)
+        self.assertEqual(self.calc('IF(TRUE,1,2 ** 5)', 'Yet another sheet', self.source).value, 1)
         self.assertEqual(self.calc('IF(\'Sheet 1\'!A3 = 4,\'Sheet 1\'!C3, 0)', 'Yet another sheet',
                                    self.source).value, 8)
 

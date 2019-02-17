@@ -116,3 +116,12 @@ class TokensLine(object):
 
     def __iter__(self):
         return iter(self._array)
+
+    def step_back(self, step=1):
+        if step > self._pos + 1:
+            self.reset()
+        else:
+            self._pos -= step
+
+    def __getitem__(self, item):
+        return self._array[item]

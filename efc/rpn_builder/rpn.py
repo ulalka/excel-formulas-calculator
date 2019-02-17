@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 from efc.rpn_builder.errors import OperandsMissing
 from efc.rpn_builder.parser.operands import (SimpleOperand, SingleCellOperand, CellSetOperand,
-                                             ErrorOperand, SimpleSetOperand, ValueErrorOperand, Operand)
+                                             ErrorOperand, SimpleSetOperand, ValueErrorOperand, OperandLikeObject)
 from efc.rpn_builder.parser.operations import Operation
 from efc.utils import TokensLine
 
@@ -42,7 +42,7 @@ class RPN(TokensLine):
         result_append = result.append
         result_pop = result.pop
         for token in self:
-            if isinstance(token, Operand):
+            if isinstance(token, OperandLikeObject):
                 result_append(token)
             elif isinstance(token, Operation):
                 try:

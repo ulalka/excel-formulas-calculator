@@ -1,16 +1,17 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn_builder.parser.operands import (ErrorOperand, ValueErrorOperand, Operand, SimpleOperand,
-                                             LinkErrorOperand, CellRangeOperand, CellSetOperand, ZeroDivisionErrorOperand,
-                                             SingleCellOperand, NotFoundErrorOperand)
+from efc.rpn_builder.parser.operands import (ErrorOperand, ValueErrorOperand, OperandLikeObject, SimpleOperand,
+                                             LinkErrorOperand, CellRangeOperand, CellSetOperand,
+                                             ZeroDivisionErrorOperand, SingleCellOperand, NotFoundErrorOperand,
+                                             RPNOperand)
 from efc.rpn_builder.errors import EFCLinkError
 from functools import wraps
 from six import string_types, integer_types
 from copy import deepcopy
 import re
 
-__all__ = ('EXCEL_FUNCTIONS', )
+__all__ = ('EXCEL_FUNCTIONS',)
 
 
 def add_func(*args):
@@ -77,6 +78,9 @@ def compare_eq_func(op1, op2):
 
 def iter_elements(*args):
     for arg in args:
+        if isinstance(arg, RPNOperand):
+            arg = arg.evaluated_value
+
         if isinstance(arg, (CellRangeOperand, CellSetOperand)):
             for cell in arg:
                 yield cell
@@ -111,7 +115,7 @@ def if_func(expr_op, op1, op2=None):
 
 
 def if_error_func(op1, op2):
-    return op2 if isinstance(op1, ErrorOperand) else op1
+    return op2 if isinstance(op1.value, ErrorOperand) else op1
 
 
 def max_func(*args):
@@ -327,7 +331,7 @@ def excel_function(func):
     def wrapper(*args, **kwargs):
         try:
             result = func(*args, **kwargs)
-            if not isinstance(result, Operand):
+            if not isinstance(result, OperandLikeObject):
                 result = SimpleOperand(result)
             return result
         except ErrorOperand as err:

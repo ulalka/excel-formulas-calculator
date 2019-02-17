@@ -3,21 +3,22 @@ from __future__ import unicode_literals
 from efc.utils import cached_property, digit, u, col_index_to_str
 from efc.rpn_builder.errors import OperandLikeError, EFCValueError, EFCLinkError, ResultNotFoundError
 from collections import defaultdict
-
 from six.moves import range
 
 __all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'LinkErrorOperand',
            'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
            'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
-           'FunctionNotSupported', 'NotFoundErrorOperand')
+           'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject')
 
 
-class Operand(object):
-    value = None
-
+class OperandLikeObject(object):
     def __init__(self, ws_name=None, source=None):
         self.ws_name = ws_name
         self.source = source
+
+
+class Operand(OperandLikeObject):
+    value = None
 
     @property
     def digit(self):
@@ -62,7 +63,7 @@ class ErrorOperand(OperandLikeError, Operand):
 
     @property
     def value(self):
-        raise self
+        return self
 
     def __str__(self):
         return self.msg
@@ -97,7 +98,7 @@ class SimpleOperand(Operand):
         return self.__class__(value=self.value, ws_name=self.ws_name, source=self.source)
 
 
-class CellsOperand(Operand):
+class CellsOperand(OperandLikeObject):
     @property
     def value(self):
         raise NotImplementedError
@@ -109,7 +110,7 @@ class CellsOperand(Operand):
         return self.get_iter()
 
 
-class SingleCellOperand(CellsOperand):
+class SingleCellOperand(CellsOperand, Operand):
     def __init__(self, row, column, *args, **kwargs):
         super(SingleCellOperand, self).__init__(*args, **kwargs)
         self.row = row
@@ -133,7 +134,7 @@ class SingleCellOperand(CellsOperand):
         return self.__class__(row=self.row, column=self.column, ws_name=self.ws_name, source=self.source)
 
 
-class SetOperand(Operand):
+class SetOperand(OperandLikeObject):
     operands_type = None
 
     def __init__(self, *args, **kwargs):
@@ -238,3 +239,17 @@ class NamedRangeOperand(CellsOperand):
 
     def __deepcopy__(self, memodict):
         return self.__class__(name=self.name, ws_name=self.ws_name, source=self.source)
+
+
+class RPNOperand(OperandLikeObject):
+    def __init__(self, rpn, *args, **kwargs):
+        super(RPNOperand, self).__init__(*args, **kwargs)
+        self.rpn = rpn
+        self._result = None
+
+    @cached_property
+    def evaluated_value(self):
+        return self.rpn.calc(ws_name=self.ws_name, source=self.source)
+
+    def __getattr__(self, item):
+        return getattr(self.evaluated_value, item)

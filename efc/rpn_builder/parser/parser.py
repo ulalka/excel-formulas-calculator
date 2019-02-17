@@ -8,7 +8,8 @@ from efc.rpn_builder.lexer.tokens import (OperandToken, OperationToken, Function
                                           MultiplyToken,
                                           DivideToken, ConcatToken, SingleCellToken, CellsRangeToken, NamedRangeToken)
 from efc.rpn_builder.errors import InconsistentParentheses, SeparatorWithoutFunction
-from efc.rpn_builder.parser.operands import SingleCellOperand, NamedRangeOperand, CellRangeOperand, SimpleOperand
+from efc.rpn_builder.parser.operands import (SingleCellOperand, NamedRangeOperand, CellRangeOperand,
+                                             SimpleOperand, RPNOperand)
 from efc.rpn_builder.rpn import RPN
 from efc.rpn_builder.parser.operations import Operation, ArithmeticOperation, FunctionOperation
 
@@ -57,7 +58,7 @@ class Parser(object):
             operation.operands_count = 1
         return operation
 
-    def to_rpn(self, line, ws_name, source):
+    def to_rpn(self, line, ws_name, source, is_operand=False):
         result = RPN()
         stack = []
 
@@ -72,6 +73,8 @@ class Parser(object):
                 stack_append(FunctionOperation(token.src_value))
             elif isinstance(token, LeftBracketToken):
                 stack_append(token)
+                if isinstance(line.prev(), FunctionToken):
+                    result_append(self.to_rpn(line, ws_name, source, is_operand=True))
             elif isinstance(token, OperationToken):
                 operation = self.operation_token_handler(line)
                 while stack:
@@ -88,16 +91,23 @@ class Parser(object):
                     else:
                         result_append(top_stack_token)
                 else:
+                    if is_operand:
+                        line.step_back()
+                        return result[0] if len(result) == 1 else RPNOperand(result, ws_name=ws_name, source=source)
                     raise InconsistentParentheses
             elif isinstance(token, Separator):
                 try:
                     while not isinstance(stack[-1], LeftBracketToken):
                         result_append(stack_pop())
                 except IndexError:
+                    if is_operand:
+                        line.step_back()
+                        return result[0] if len(result) == 1 else RPNOperand(result, ws_name=ws_name, source=source)
                     raise SeparatorWithoutFunction
 
                 if len(stack) > 1 and isinstance(stack[-2], FunctionOperation):
                     stack[-2].operands_count += 1
+                result_append(self.to_rpn(line, ws_name, source, is_operand=True))
 
         for stack_token in reversed(stack):
             if isinstance(stack_token, LeftBracketToken):

@@ -1,7 +1,7 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn_builder.parser.operands import (ErrorOperand, ValueErrorOperand, Operand, SimpleOperand,
+from efc.rpn_builder.parser.operands import (ErrorOperand, ValueErrorOperand, OperandLikeObject, SimpleOperand,
                                              LinkErrorOperand, ZeroDivisionErrorOperand, FunctionNotSupported)
 from efc.rpn_builder.errors import EFCLinkError
 from efc.rpn_builder.parser import functions
@@ -13,7 +13,7 @@ def excel_function(func):
     def wrapper(*args, **kwargs):
         try:
             result = func(*args, **kwargs)
-            if not isinstance(result, Operand):
+            if not isinstance(result, OperandLikeObject):
                 result = SimpleOperand(result)
             return result
         except ErrorOperand as err:
