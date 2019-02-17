@@ -2,11 +2,11 @@
 
 from __future__ import unicode_literals, print_function
 from efc.rpn_builder.functions import EXCEL_FUNCTIONS
-from efc.rpn_builder.tokens import OperandToken, OperationToken, SingleCellToken, CellsRangeToken, NamedRangeToken
+from efc.rpn_builder.tokens import OperationToken
 from efc.rpn_builder.errors import OperandsMissing
-from efc.rpn_builder.operands import (SimpleOperand, SingleCellOperand, CellRangeOperand, NamedRangeOperand,
-                                      CellSetOperand,
-                                      ErrorOperand, SimpleSetOperand, ValueErrorOperand, FunctionNotSupported)
+from efc.rpn_builder.operands import (SimpleOperand, SingleCellOperand, CellSetOperand,
+                                      ErrorOperand, SimpleSetOperand, ValueErrorOperand, FunctionNotSupported,
+                                      Operand)
 
 from six.moves import range
 
@@ -55,23 +55,8 @@ class RPN(object):
         result_append = result.append
         result_pop = result.pop
         for token in self._tokens:
-            if isinstance(token, SingleCellToken):
-                result_append(SingleCellOperand(row=token.row, column=token.column,
-                                                ws_name=token.ws_name or ws_name,
-                                                source=source))
-            elif isinstance(token, CellsRangeToken):
-                result_append(CellRangeOperand(row1=token.row1, column1=token.column1,
-                                               row2=token.row2, column2=token.column2,
-                                               ws_name=token.ws_name or ws_name,
-                                               source=source))
-            elif isinstance(token, NamedRangeToken):
-                result_append(NamedRangeOperand(name=token.name,
-                                                ws_name=token.ws_name or ws_name,
-                                                source=source).value)
-            elif isinstance(token, OperandToken):
-                result_append(SimpleOperand(value=token.token_value,
-                                            ws_name=ws_name,
-                                            source=source))
+            if isinstance(token, Operand):
+                result_append(token)
             elif isinstance(token, OperationToken):
                 try:
                     args = [result_pop() for _ in range(token.operands_count)]

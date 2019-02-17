@@ -4,8 +4,9 @@ from __future__ import unicode_literals, print_function
 
 from efc.rpn_builder.tokens import (OperandToken, OperationToken, FunctionToken, LeftBracketToken, RightBracketToken,
                                     Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken, MultiplyToken,
-                                    DivideToken, ConcatToken)
+                                    DivideToken, ConcatToken, SingleCellToken, CellsRangeToken, NamedRangeToken)
 from efc.rpn_builder.errors import InconsistentParentheses, SeparatorWithoutFunction
+from efc.rpn_builder.operands import SingleCellOperand, NamedRangeOperand, CellRangeOperand, SimpleOperand
 from efc.rpn_builder.rpn import RPN
 
 __all__ = ('Parser',)
@@ -25,7 +26,7 @@ class Parser(object):
     def get_priority(token):
         return OPERATORS_PRIORITY.get(token.__class__, 0)
 
-    def to_rpn(self, line):
+    def to_rpn(self, line, ws_name, source):
         get_priority = self.get_priority
         result = RPN()
         stack = []
@@ -36,8 +37,23 @@ class Parser(object):
         stack_pop = stack.pop
         prev_token = None
         for token in line:
-            if isinstance(token, OperandToken):
-                result_append(token)
+            if isinstance(token, SingleCellToken):
+                result_append(SingleCellOperand(row=token.row, column=token.column,
+                                                ws_name=token.ws_name or ws_name,
+                                                source=source))
+            elif isinstance(token, CellsRangeToken):
+                result_append(CellRangeOperand(row1=token.row1, column1=token.column1,
+                                               row2=token.row2, column2=token.column2,
+                                               ws_name=token.ws_name or ws_name,
+                                               source=source))
+            elif isinstance(token, NamedRangeToken):
+                result_append(NamedRangeOperand(name=token.name,
+                                                ws_name=token.ws_name or ws_name,
+                                                source=source).value)
+            elif isinstance(token, OperandToken):
+                result_append(SimpleOperand(value=token.token_value,
+                                            ws_name=ws_name,
+                                            source=source))
             elif isinstance(token, FunctionToken):
                 stack_append(token)
             elif isinstance(token, LeftBracketToken):
@@ -45,8 +61,9 @@ class Parser(object):
                     operands_count.append(1)
                 stack_append(token)
             elif isinstance(token, OperationToken):
-                if isinstance(token, (SubtractToken, AddToken)) and \
-                        (isinstance(prev_token, (ArithmeticToken, LeftBracketToken, Separator)) or prev_token is None):
+                if (isinstance(token, (SubtractToken, AddToken)) and
+                        (isinstance(prev_token, (ArithmeticToken, LeftBracketToken, Separator))
+                         or prev_token is None)):
                     token.operands_count = 1
 
                 priority = get_priority(token)

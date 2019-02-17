@@ -10,7 +10,7 @@ __version__ = '0.1.3'
 
 
 def calc(formula, ws_name, source):
-    return Parser().to_rpn(Lexer().parse(formula)).calc(formula, ws_name, source)
+    return Parser().to_rpn(Lexer().parse(formula), ws_name, source).calc(formula, ws_name, source)
 
 
 def get_calculator():
@@ -19,7 +19,7 @@ def get_calculator():
 
     def calculate(formula, ws_name, source):
         tokens_line = lexer.parse(formula)
-        rpn = parser.to_rpn(tokens_line)
+        rpn = parser.to_rpn(tokens_line, ws_name, source)
         return rpn.calc(ws_name, source)
 
     return calculate
