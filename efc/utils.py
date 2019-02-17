@@ -6,7 +6,7 @@ import six
 from efc.rpn_builder.errors import OperandLikeError
 
 __all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'digit_or_string',
-           'TokensLine', 'BaseEFCException')
+           'Array', 'BaseEFCException')
 
 
 def col_str_to_index(col_str):
@@ -79,7 +79,7 @@ def digit_or_string(*args):
         yield arg
 
 
-class TokensLine(object):
+class Array(object):
     def __init__(self, array=None):
         self._array = array or []
         self._pos = -1

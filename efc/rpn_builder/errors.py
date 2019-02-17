@@ -7,18 +7,6 @@ class BaseRPNError(Exception):
     pass
 
 
-class ParserError(BaseRPNError):
-    pass
-
-
-class InconsistentParentheses(ParserError):
-    pass
-
-
-class SeparatorWithoutFunction(ParserError):
-    pass
-
-
 class EFCBaseError(Exception):
     def __init__(self, exc=None):
         self.exc = exc

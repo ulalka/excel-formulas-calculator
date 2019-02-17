@@ -5,14 +5,14 @@ from efc.rpn_builder.errors import OperandsMissing
 from efc.rpn_builder.parser.operands import (SimpleOperand, SingleCellOperand, CellSetOperand,
                                              ErrorOperand, SimpleSetOperand, ValueErrorOperand, OperandLikeObject)
 from efc.rpn_builder.parser.operations import Operation
-from efc.utils import TokensLine
+from efc.utils import Array
 
 from six.moves import range
 
 __all__ = ('RPN',)
 
 
-class RPN(TokensLine):
+class RPN(Array):
     def handle_result(self, result, ws_name, source):
         if len(result) == 1:
             return result[0]

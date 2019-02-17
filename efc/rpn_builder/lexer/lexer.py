@@ -4,7 +4,7 @@ from __future__ import unicode_literals, print_function
 
 from efc.rpn_builder.lexer import tokens
 from efc.rpn_builder.lexer.errors import CheckSumError
-from efc.utils import TokensLine
+from efc.utils import Array
 import re
 from collections import OrderedDict
 
@@ -38,6 +38,12 @@ TOKENS_PRIORITY = (
 )
 
 
+class TokensLine(Array):
+    def __init__(self, line):
+        self.src_line = line
+        super(TokensLine, self).__init__()
+
+
 class Lexer(object):
     def __init__(self):
         self.lexer_tokens = OrderedDict()
@@ -56,7 +62,7 @@ class Lexer(object):
         lexer_tokens = self.lexer_tokens
         parsed_line = []
 
-        tokens_line = TokensLine()
+        tokens_line = TokensLine(line)
         for match in re.finditer(self.regexp, line, flags=re.UNICODE):
             token = lexer_tokens[match.lastgroup](match)
             if not isinstance(token, tokens.SpaceToken):

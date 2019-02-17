@@ -7,11 +7,11 @@ from efc.rpn_builder.lexer.tokens import (OperandToken, OperationToken, Function
                                           Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken,
                                           MultiplyToken,
                                           DivideToken, ConcatToken, SingleCellToken, CellsRangeToken, NamedRangeToken)
-from efc.rpn_builder.errors import InconsistentParentheses, SeparatorWithoutFunction
+from efc.rpn_builder.parser.errors import InconsistentParentheses, SeparatorBlockError
 from efc.rpn_builder.parser.operands import (SingleCellOperand, NamedRangeOperand, CellRangeOperand,
                                              SimpleOperand, RPNOperand)
-from efc.rpn_builder.rpn import RPN
 from efc.rpn_builder.parser.operations import Operation, ArithmeticOperation, FunctionOperation
+from efc.rpn_builder.rpn import RPN
 
 __all__ = ('Parser',)
 
@@ -94,7 +94,7 @@ class Parser(object):
                     if is_operand:
                         line.step_back()
                         return result[0] if len(result) == 1 else RPNOperand(result, ws_name=ws_name, source=source)
-                    raise InconsistentParentheses
+                    raise InconsistentParentheses(ws_name, line.src_line)
             elif isinstance(token, Separator):
                 try:
                     while not isinstance(stack[-1], LeftBracketToken):
@@ -103,7 +103,7 @@ class Parser(object):
                     if is_operand:
                         line.step_back()
                         return result[0] if len(result) == 1 else RPNOperand(result, ws_name=ws_name, source=source)
-                    raise SeparatorWithoutFunction
+                    raise SeparatorBlockError(ws_name, line.src_line)
 
                 if len(stack) > 1 and isinstance(stack[-2], FunctionOperation):
                     stack[-2].operands_count += 1
@@ -111,7 +111,7 @@ class Parser(object):
 
         for stack_token in reversed(stack):
             if isinstance(stack_token, LeftBracketToken):
-                raise InconsistentParentheses
+                raise InconsistentParentheses(ws_name, line.src_line)
             result_append(stack_token)
 
         return result
