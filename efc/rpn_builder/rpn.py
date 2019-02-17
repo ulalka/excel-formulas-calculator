@@ -1,12 +1,10 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn_builder.functions import EXCEL_FUNCTIONS
-from efc.rpn_builder.lexer.tokens import OperationToken
 from efc.rpn_builder.errors import OperandsMissing
 from efc.rpn_builder.parser.operands import (SimpleOperand, SingleCellOperand, CellSetOperand,
-                                             ErrorOperand, SimpleSetOperand, ValueErrorOperand, FunctionNotSupported,
-                                             Operand)
+                                             ErrorOperand, SimpleSetOperand, ValueErrorOperand, Operand)
+from efc.rpn_builder.parser.operations import Operation
 
 from six.moves import range
 
@@ -57,7 +55,7 @@ class RPN(object):
         for token in self._tokens:
             if isinstance(token, Operand):
                 result_append(token)
-            elif isinstance(token, OperationToken):
+            elif isinstance(token, Operation):
                 try:
                     args = [result_pop() for _ in range(token.operands_count)]
                 except IndexError:
@@ -65,13 +63,7 @@ class RPN(object):
 
                 args.reverse()
 
-                try:
-                    f = EXCEL_FUNCTIONS[token.src_value]
-                except KeyError:
-                    result_append(FunctionNotSupported(token.src_value))
-                    continue
-
-                v = f(*args)
+                v = token.eval(*args)
                 result_append(v)
 
         return self.handle_result(result, ws_name, source)
