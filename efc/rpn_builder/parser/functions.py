@@ -115,7 +115,9 @@ def if_func(expr_op, op1, op2=None):
 
 
 def if_error_func(op1, op2):
-    return op2 if isinstance(op1.value, ErrorOperand) else op1
+    if isinstance(op1, RPNOperand):
+        op1 = op1.evaluated_value
+    return op2 if isinstance(op1, ErrorOperand) else op1
 
 
 def max_func(*args):

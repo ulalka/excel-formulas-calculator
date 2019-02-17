@@ -63,7 +63,7 @@ class ErrorOperand(OperandLikeError, Operand):
 
     @property
     def value(self):
-        return self
+        raise self
 
     def __str__(self):
         return self.msg
