@@ -4,7 +4,7 @@ from __future__ import unicode_literals, print_function
 import unittest
 
 from tests.mock import ExcelMock
-from efc.rpn_builder.parser.operands import LinkErrorOperand
+from efc.rpn_builder.parser.operands import WorksheetNotExist
 from efc import get_calculator
 
 
@@ -20,7 +20,8 @@ class TestCells(unittest.TestCase):
         self.assertEqual(self.calc('B100', 'Yet another sheet', self.source).value, 2)
         self.assertEqual(self.calc('AA104', 'Yet another sheet', self.source).value, 45)
 
-        self.assertIsInstance(self.calc('F104', 'Some error ws', self.source).value, LinkErrorOperand)
+        with self.assertRaises(WorksheetNotExist):
+            self.calc('F104', 'Some error ws', self.source).value
 
         self.assertEqual(self.calc('Sheet4!A3', 'Yet another sheet', self.source).value, 4)
         self.assertEqual(self.calc('\'Sheet 1\'!C1', 'Yet another sheet', self.source).value, 18)

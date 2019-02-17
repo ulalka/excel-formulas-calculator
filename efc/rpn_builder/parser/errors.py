@@ -1,7 +1,7 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.utils import BaseEFCException
+from efc.base.errors import BaseEFCException
 
 
 class ParserError(BaseEFCException):

@@ -3,10 +3,9 @@
 from __future__ import unicode_literals, print_function
 from string import ascii_uppercase
 import six
-from efc.rpn_builder.errors import OperandLikeError
 
-__all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'digit_or_string',
-           'Array', 'BaseEFCException')
+__all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit',
+           'Array')
 
 
 def col_str_to_index(col_str):
@@ -67,18 +66,6 @@ def digit(v):
     return v
 
 
-def digit_or_string(*args):
-    for arg in args:
-        if isinstance(arg, OperandLikeError):
-            raise arg
-        else:
-            try:
-                arg = digit(arg)
-            except ValueError:
-                arg = u(arg)
-        yield arg
-
-
 class Array(object):
     def __init__(self, array=None):
         self._array = array or []
@@ -125,17 +112,3 @@ class Array(object):
 
     def __getitem__(self, item):
         return self._array[item]
-
-
-class BaseEFCException(Exception):
-    code = None
-    msg = None
-
-    def __str__(self):
-        context = {k: u(i) for k, i in six.iteritems(self.__dict__)}
-        msg_list = []
-        if self.code is not None:
-            msg_list.append('Code %d' % self.code)
-        if self.msg:
-            msg_list.append(self.msg.format(**context))
-        return ': '.join(msg_list)

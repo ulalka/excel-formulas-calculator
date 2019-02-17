@@ -1,12 +1,10 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn_builder.parser.operands import (ErrorOperand, ValueErrorOperand, OperandLikeObject, SimpleOperand,
-                                             LinkErrorOperand, CellRangeOperand, CellSetOperand,
-                                             ZeroDivisionErrorOperand, SingleCellOperand, NotFoundErrorOperand,
+from efc.rpn_builder.parser.operands import (ErrorOperand, ValueErrorOperand, SimpleOperand,
+                                             CellRangeOperand, CellSetOperand,
+                                             SingleCellOperand, NotFoundErrorOperand,
                                              RPNOperand)
-from efc.rpn_builder.errors import EFCLinkError
-from functools import wraps
 from six import string_types, integer_types
 from copy import deepcopy
 import re
@@ -244,7 +242,7 @@ def get_check_function(expr):
 
 def countif_function(cells, expr):
     check, operand = get_check_function(expr)
-    return len([op for op in cells.value if not op.is_blank and check(op, operand).value])
+    return len([op for op in cells.value if not op.is_blank and check(op, operand)])
 
 
 def ifs_indexes(*args):
@@ -259,7 +257,7 @@ def ifs_indexes(*args):
 
         check, expr = get_check_function(next(args))
         for idx, item in enumerate(op, 1):
-            if check(item, expr).value:
+            if check(item, expr):
                 if first_iteration:
                     good_indexes.add(idx)
             elif idx in good_indexes:
@@ -328,70 +326,50 @@ def vlookup_function(op, rg, column, flag=None):
                              ws_name=rg.ws_name, source=rg.source)
 
 
-def excel_function(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            result = func(*args, **kwargs)
-            if not isinstance(result, OperandLikeObject):
-                result = SimpleOperand(result)
-            return result
-        except ErrorOperand as err:
-            return err
-        except EFCLinkError:
-            return LinkErrorOperand()
-        except (TypeError, ValueError):
-            return ValueErrorOperand()
-        except ZeroDivisionError:
-            return ZeroDivisionErrorOperand()
-
-    return wrapper
-
-
 ARITHMETIC_FUNCTIONS = {
-    '+': excel_function(add_func),
-    '-': excel_function(subtract_func),
-    '/': excel_function(divide_func),
-    '*': excel_function(multiply_func),
-    '&': excel_function(concat_func),
-    '^': excel_function(exponent_func),
-    '<>': excel_function(compare_not_eq_func),
-    '>=': excel_function(compare_gte_func),
-    '<=': excel_function(compare_lte_func),
-    '>': excel_function(compare_gt_func),
-    '<': excel_function(compare_lt_func),
-    '=': excel_function(compare_eq_func),
+    '+': add_func,
+    '-': subtract_func,
+    '/': divide_func,
+    '*': multiply_func,
+    '&': concat_func,
+    '^': exponent_func,
+    '<>': compare_not_eq_func,
+    '>=': compare_gte_func,
+    '<=': compare_lte_func,
+    '>': compare_gt_func,
+    '<': compare_lt_func,
+    '=': compare_eq_func,
 }
 
 EXCEL_FUNCTIONS = {}
 EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
 
-EXCEL_FUNCTIONS['SUM'] = excel_function(sum_func)
-EXCEL_FUNCTIONS['SUMIFS'] = excel_function(sum_ifs_function)
-EXCEL_FUNCTIONS['MOD'] = excel_function(mod_func)
-EXCEL_FUNCTIONS['IF'] = excel_function(if_func)
-EXCEL_FUNCTIONS['IFERROR'] = excel_function(if_error_func)
-EXCEL_FUNCTIONS['MAX'] = excel_function(max_func)
-EXCEL_FUNCTIONS['MIN'] = excel_function(min_func)
-EXCEL_FUNCTIONS['LEFT'] = excel_function(left_func)
-EXCEL_FUNCTIONS['RIGHT'] = excel_function(right_func)
-EXCEL_FUNCTIONS['MID'] = excel_function(mid_func)
-EXCEL_FUNCTIONS['ISBLANK'] = excel_function(is_blank_func)
-EXCEL_FUNCTIONS['OR'] = excel_function(or_function)
-EXCEL_FUNCTIONS['AND'] = excel_function(and_function)
-EXCEL_FUNCTIONS['ROUND'] = excel_function(round_function)
-EXCEL_FUNCTIONS['ROUNDDOWN'] = excel_function(round_down_function)
-EXCEL_FUNCTIONS['FLOOR'] = excel_function(floor_function)
-EXCEL_FUNCTIONS['COUNT'] = excel_function(count_function)
-EXCEL_FUNCTIONS['COUNTIF'] = excel_function(countif_function)
-EXCEL_FUNCTIONS['COUNTBLANK'] = excel_function(count_blank_function)
-EXCEL_FUNCTIONS['ABS'] = excel_function(abs_function)
-EXCEL_FUNCTIONS['OFFSET'] = excel_function(offset_function)
-EXCEL_FUNCTIONS['MATCH'] = excel_function(match_function)
-EXCEL_FUNCTIONS['AVERAGE'] = excel_function(average_function)
-EXCEL_FUNCTIONS['AVERAGEIFS'] = excel_function(average_ifs_function)
-EXCEL_FUNCTIONS['VLOOKUP'] = excel_function(vlookup_function)
-EXCEL_FUNCTIONS['SMALL'] = excel_function(small_function)
-EXCEL_FUNCTIONS['LARGE'] = excel_function(large_function)
-EXCEL_FUNCTIONS['COUNTIFS'] = excel_function(count_ifs_function)
-EXCEL_FUNCTIONS['CONCATENATE'] = excel_function(concatenate)
+EXCEL_FUNCTIONS['SUM'] = sum_func
+EXCEL_FUNCTIONS['SUMIFS'] = sum_ifs_function
+EXCEL_FUNCTIONS['MOD'] = mod_func
+EXCEL_FUNCTIONS['IF'] = if_func
+EXCEL_FUNCTIONS['IFERROR'] = if_error_func
+EXCEL_FUNCTIONS['MAX'] = max_func
+EXCEL_FUNCTIONS['MIN'] = min_func
+EXCEL_FUNCTIONS['LEFT'] = left_func
+EXCEL_FUNCTIONS['RIGHT'] = right_func
+EXCEL_FUNCTIONS['MID'] = mid_func
+EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
+EXCEL_FUNCTIONS['OR'] = or_function
+EXCEL_FUNCTIONS['AND'] = and_function
+EXCEL_FUNCTIONS['ROUND'] = round_function
+EXCEL_FUNCTIONS['ROUNDDOWN'] = round_down_function
+EXCEL_FUNCTIONS['FLOOR'] = floor_function
+EXCEL_FUNCTIONS['COUNT'] = count_function
+EXCEL_FUNCTIONS['COUNTIF'] = countif_function
+EXCEL_FUNCTIONS['COUNTBLANK'] = count_blank_function
+EXCEL_FUNCTIONS['ABS'] = abs_function
+EXCEL_FUNCTIONS['OFFSET'] = offset_function
+EXCEL_FUNCTIONS['MATCH'] = match_function
+EXCEL_FUNCTIONS['AVERAGE'] = average_function
+EXCEL_FUNCTIONS['AVERAGEIFS'] = average_ifs_function
+EXCEL_FUNCTIONS['VLOOKUP'] = vlookup_function
+EXCEL_FUNCTIONS['SMALL'] = small_function
+EXCEL_FUNCTIONS['LARGE'] = large_function
+EXCEL_FUNCTIONS['COUNTIFS'] = count_ifs_function
+EXCEL_FUNCTIONS['CONCATENATE'] = concatenate

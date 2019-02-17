@@ -59,7 +59,7 @@ class Parser(object):
         return operation
 
     def to_rpn(self, line, ws_name, source, is_operand=False):
-        result = RPN()
+        result = RPN(line.src_line)
         stack = []
 
         result_append = result.append

@@ -17,12 +17,12 @@ class BaseExcelInterface(object):
         """
         raise NotImplementedError
 
-    def named_range_to_cells(self, range_name, ws_name):
+    def named_range_to_cells(self, name, ws_name):
         """
         TEST_RANGE -> SingleCellOperand
         OTHER_RANGE -> CellRangeOperand
         OTHER2_RANGE -> CellSetOperand
-        :type range_name: basestring
+        :type name: basestring
         :type ws_name: basestring
         :rtype: list
         """
@@ -38,4 +38,10 @@ class BaseExcelInterface(object):
         raise NotImplementedError
 
     def min_column(self, ws_name):
+        raise NotImplementedError
+
+    def is_ws_exists(self, ws_name):
+        raise NotImplementedError
+
+    def is_named_range_exists(self, name, ws):
         raise NotImplementedError

@@ -1,47 +1,17 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
+from efc.base.errors import BaseEFCException
 
 
-class BaseRPNError(Exception):
+class RPNError(BaseEFCException):
     pass
 
 
-class EFCBaseError(Exception):
-    def __init__(self, exc=None):
-        self.exc = exc
+class OperandsMissing(RPNError):
+    code = 300
+    msg = 'The number of operands is more than available in stack for function "{f_name}". Formula: {formula}'
 
-
-class OperandLikeError(EFCBaseError):
-    """Errors which can be like operands"""
-
-
-class EFCValueError(OperandLikeError):
-    """Error getting cell value"""
-
-
-class EFCLinkError(OperandLikeError):
-    """Worksheet does not exists"""
-
-
-class CriticalEFCError(EFCBaseError):
-    """Error when formula cannot be calculated"""
-
-
-class ResultNotFoundError(EFCBaseError):
-    """Result not found"""
-
-
-class OperandsMissing(CriticalEFCError):
-    """The number of operands is more than available in stack"""
-
-    def __init__(self, token, rpn):
-        self.token = token
-        self.rpn = rpn
-
-
-class UnusedOperands(CriticalEFCError):
-    """There are more operations, than operands available"""
-
-    def __init__(self, lost_operands):
-        self.lost_operands = lost_operands
+    def __init__(self, f_name, formula):
+        self.f_name = f_name
+        self.formula = formula

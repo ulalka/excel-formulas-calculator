@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals, print_function
 from efc.interface import BaseExcelInterface
-from efc.rpn_builder.errors import EFCLinkError
 from efc.rpn_builder.parser.operands import SingleCellOperand, CellSetOperand
 
 
@@ -23,27 +22,24 @@ class ExcelMock(BaseExcelInterface):
         },
     }
 
-    named_ranges = {
-        'test': [(1, 1), (2, 2)],
-        'test2': [[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]],
-    }
-
     def cell_to_value(self, row, column, ws_name):
-        if ws_name not in self.data:
-            raise EFCLinkError(ws_name)
-
         return self.data[ws_name].get(row, {}).get(column)
 
-    def named_range_to_cells(self, range_name, ws_name):
-        if ws_name not in self.data:
-            raise EFCLinkError(ws_name)
-
-        op_set = CellSetOperand(ws_name=ws_name, source=self)
+    @property
+    def named_ranges(self):
+        op_set = CellSetOperand(ws_name='Sheet 1', source=self)
         op_set.add_row([SingleCellOperand(1, 2, ws_name='Sheet 1', source=self),
                         SingleCellOperand(1, 3, ws_name='Sheet 1', source=self)])
-        named_ranges = {
+        return {
             'test': SingleCellOperand(1, 2, ws_name='Sheet 1', source=self),
             'test2': op_set
         }
 
-        return named_ranges[range_name]
+    def named_range_to_cells(self, name, ws_name):
+        return self.named_ranges[name]
+
+    def is_ws_exists(self, ws_name):
+        return ws_name in self.data
+
+    def is_named_range_exists(self, name, ws):
+        return name in self.named_ranges

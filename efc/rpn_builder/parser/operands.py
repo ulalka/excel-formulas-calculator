@@ -1,18 +1,19 @@
 # -*- coding: utf8 -*-
 from __future__ import unicode_literals
 from efc.utils import cached_property, digit, u, col_index_to_str
-from efc.rpn_builder.errors import OperandLikeError, EFCValueError, EFCLinkError, ResultNotFoundError
+from efc.base.errors import BaseEFCException
 from collections import defaultdict
 from six.moves import range
 
-__all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'LinkErrorOperand',
+__all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
            'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
            'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
            'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject')
 
 
 class OperandLikeObject(object):
-    def __init__(self, ws_name=None, source=None):
+    def __init__(self, ws_name=None, source=None, *args, **kwargs):
+        super(OperandLikeObject, self).__init__(*args, **kwargs)
         self.ws_name = ws_name
         self.source = source
 
@@ -58,35 +59,65 @@ class Operand(OperandLikeObject):
         return self.__class__(ws_name=self.ws_name, source=self.source)
 
 
-class ErrorOperand(OperandLikeError, Operand):
-    msg = '#ERROR!'
+class ErrorOperand(Operand, BaseEFCException):
+    code = 300
+    msg = 'Unknown error'
+    string_value = '#ERROR!'
+
+    def __init__(self, *args, **kwargs):
+        self.formula = kwargs.pop('formula', None)
+        super(ErrorOperand, self).__init__(*args, **kwargs)
 
     @property
     def value(self):
         raise self
 
-    def __str__(self):
-        return self.msg
+    def string(self):
+        return self.string_value
 
 
-class ValueErrorOperand(EFCValueError, ErrorOperand):
-    msg = '#VALUE!'
+class ValueErrorOperand(ErrorOperand):
+    code = 301
+    msg = 'Cell value error'
+    string_value = '#VALUE!'
 
 
-class LinkErrorOperand(EFCLinkError, ErrorOperand):
-    msg = '#REF!'
+class WorksheetNotExist(ErrorOperand):
+    code = 302
+    msg = 'Worksheet does not exist'
+    string_value = '#REF!'
 
 
-class ZeroDivisionErrorOperand(ZeroDivisionError, ErrorOperand):
-    msg = '#DIV/0!'
+class NamedRangeNotExist(ErrorOperand):
+    code = 303
+    msg = 'Named range "{name}" does not exist'
+    string_value = '#NAME?'
+
+    def __init__(self, name, *args, **kwargs):
+        super(NamedRangeNotExist, self).__init__(*args, **kwargs)
+        self.name = name
 
 
-class NotFoundErrorOperand(ResultNotFoundError, ErrorOperand):
-    pass
+class ZeroDivisionErrorOperand(ErrorOperand):
+    code = 304
+    msg = 'Zero division'
+    string_value = '#DIV/0!'
+
+
+class NotFoundErrorOperand(ErrorOperand):
+    code = 305
+    msg = 'Result not found'
+    string_value = '#VALUE!'
 
 
 class FunctionNotSupported(ErrorOperand):
-    """Function not found among available functions"""
+    code = 306
+    msg = 'Function "{f_name}" not found among available functions'
+    string_value = '#NAME?'
+
+    def __init__(self, f_name, *args, **kwargs):
+        super(FunctionNotSupported, self).__init__(*args, **kwargs)
+        self.f_name = f_name
 
 
 class SimpleOperand(Operand):
@@ -99,9 +130,15 @@ class SimpleOperand(Operand):
 
 
 class CellsOperand(OperandLikeObject):
-    @property
-    def value(self):
+    def address_to_value(self):
         raise NotImplementedError
+
+    @cached_property
+    def value(self):
+        if self.source.is_ws_exists(self.ws_name):
+            return self.address_to_value()
+        else:
+            raise WorksheetNotExist(ws_name=self.ws_name)
 
     def get_iter(self):
         raise NotImplementedError
@@ -116,12 +153,8 @@ class SingleCellOperand(CellsOperand, Operand):
         self.row = row
         self.column = column
 
-    @cached_property
-    def value(self):
-        try:
-            return self.source.cell_to_value(self.row, self.column, self.ws_name)
-        except EFCLinkError:
-            return LinkErrorOperand()
+    def address_to_value(self):
+        return self.source.cell_to_value(self.row, self.column, self.ws_name)
 
     def get_iter(self):
         yield self
@@ -176,7 +209,7 @@ class SetOperand(OperandLikeObject):
         return list(self)
 
 
-class CellSetOperand(SetOperand, CellsOperand):
+class CellSetOperand(SetOperand):
     operands_type = SingleCellOperand
 
 
@@ -209,8 +242,7 @@ class CellRangeOperand(CellsOperand):
                 for c in range(column1, column2 + 1):
                     yield SingleCellOperand(r, c, self.ws_name, self.source)
 
-    @cached_property
-    def value(self):
+    def address_to_value(self):
         return self.get_iter()
 
     @property
@@ -230,9 +262,17 @@ class NamedRangeOperand(CellsOperand):
         super(NamedRangeOperand, self).__init__(*args, **kwargs)
         self.name = name
 
+    def address_to_value(self):
+        return self.source.named_range_to_cells(self.name, self.ws_name)
+
     @cached_property
     def value(self):
-        return self.source.named_range_to_cells(self.name, self.ws_name)
+        if not self.source.is_ws_exists(self.ws_name):
+            raise WorksheetNotExist(ws_name=self.ws_name)
+        elif not self.source.is_named_range_exists(self.name, self.ws_name):
+            raise NamedRangeNotExist(self.name, self.ws_name)
+        else:
+            return self.address_to_value()
 
     def get_iter(self):
         return iter(self.value)
