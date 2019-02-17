@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals, print_function
 
-from efc.rpn_builder import tokens
+from efc.rpn_builder.lexer import tokens
 import re
 from collections import OrderedDict
 

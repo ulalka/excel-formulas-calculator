@@ -2,9 +2,9 @@
 
 from __future__ import unicode_literals, print_function
 
-from efc.rpn_builder.tokens import (OperandToken, OperationToken, FunctionToken, LeftBracketToken, RightBracketToken,
-                                    Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken, MultiplyToken,
-                                    DivideToken, ConcatToken, SingleCellToken, CellsRangeToken, NamedRangeToken)
+from efc.rpn_builder.lexer.tokens import (OperandToken, OperationToken, FunctionToken, LeftBracketToken, RightBracketToken,
+                                          Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken, MultiplyToken,
+                                          DivideToken, ConcatToken, SingleCellToken, CellsRangeToken, NamedRangeToken)
 from efc.rpn_builder.errors import InconsistentParentheses, SeparatorWithoutFunction
 from efc.rpn_builder.operands import SingleCellOperand, NamedRangeOperand, CellRangeOperand, SimpleOperand
 from efc.rpn_builder.rpn import RPN

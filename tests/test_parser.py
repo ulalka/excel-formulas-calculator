@@ -2,8 +2,7 @@
 
 from __future__ import unicode_literals, print_function
 import unittest
-from efc.rpn_builder import tokens
-from efc.rpn_builder.lexer import Lexer
+from efc.rpn_builder.lexer import Lexer, tokens
 from efc.rpn_builder.parser import Parser
 from six.moves import zip
 
@@ -35,7 +34,7 @@ class ParserTestCase(unittest.TestCase):
 
     def classes_compare(self, examples):
         for s, result_classes in examples:
-            parsed_line = self.parser.to_rpn(self.lexer.parse(s))
+            parsed_line = self.parser.to_rpn(self.lexer.parse(s), None, None)
 
             self.assertEqual(len(parsed_line), len(result_classes),
                              msg='Len of tokens lines not equal.')
