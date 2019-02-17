@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, print_function
 
 from efc.rpn_builder.lexer import tokens
+from efc.utils import TokensLine
 import re
 from collections import OrderedDict
 
@@ -34,45 +35,6 @@ TOKENS_PRIORITY = (
     tokens.SpaceToken,
     tokens.Separator,
 )
-
-
-class TokensLine(object):
-    def __init__(self, array=None):
-        self._array = array or []
-        self._pos = -1
-
-    def append(self, v):
-        self._array.append(v)
-
-    @property
-    def is_ended(self):
-        return self._pos + 1 >= len(self._array)
-
-    def __next__(self):
-        if self.is_ended:
-            raise StopIteration()
-        else:
-            self._pos += 1
-            v = self._array[self._pos]
-            return v
-
-    def next(self):
-        return self.__next__()
-
-    def prev(self):
-        return self._array[self._pos - 1] if self._pos > 0 else None
-
-    def current(self):
-        return self._array[self._pos] if self._pos >= 0 else None
-
-    def __len__(self):
-        return len(self._array)
-
-    def reset(self):
-        self._pos = -1
-
-    def __iter__(self):
-        return iter(self._array)
 
 
 class Lexer(object):
