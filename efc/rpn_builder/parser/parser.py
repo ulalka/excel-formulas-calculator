@@ -29,7 +29,7 @@ class Parser(object):
     def get_priority(token):
         return OPERATORS_PRIORITY.get(token.__class__, 0)
 
-    def dispatch_operand(self, token, ws_name, source):
+    def operand_token_handler(self, token, ws_name, source):
         if isinstance(token, SingleCellToken):
             return SingleCellOperand(row=token.row, column=token.column,
                                      ws_name=token.ws_name or ws_name,
@@ -48,7 +48,7 @@ class Parser(object):
                                  ws_name=ws_name,
                                  source=source)
 
-    def dispatch_arithmetic_operation(self, line):
+    def operation_token_handler(self, line):
         current_token = line.current()
         prev_token = line.prev()
         operation = ArithmeticOperation(current_token.src_value, self.get_priority(current_token))
@@ -67,13 +67,13 @@ class Parser(object):
         while not line.is_ended:
             token = next(line)
             if isinstance(token, OperandToken):
-                result_append(self.dispatch_operand(token, ws_name, source))
+                result_append(self.operand_token_handler(token, ws_name, source))
             elif isinstance(token, FunctionToken):
                 stack_append(FunctionOperation(token.src_value))
             elif isinstance(token, LeftBracketToken):
                 stack_append(token)
             elif isinstance(token, OperationToken):
-                operation = self.dispatch_arithmetic_operation(line)
+                operation = self.operation_token_handler(line)
                 while stack:
                     if isinstance(stack[-1], Operation) and stack[-1].priority >= operation.priority:
                         result_append(stack_pop())
