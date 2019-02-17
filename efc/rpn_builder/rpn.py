@@ -5,25 +5,14 @@ from efc.rpn_builder.errors import OperandsMissing
 from efc.rpn_builder.parser.operands import (SimpleOperand, SingleCellOperand, CellSetOperand,
                                              ErrorOperand, SimpleSetOperand, ValueErrorOperand, Operand)
 from efc.rpn_builder.parser.operations import Operation
+from efc.utils import TokensLine
 
 from six.moves import range
 
 __all__ = ('RPN',)
 
 
-class RPN(object):
-    def __init__(self):
-        self._tokens = []
-
-    def append(self, v):
-        self._tokens.append(v)
-
-    def __iter__(self):
-        return iter(self._tokens)
-
-    def __len__(self):
-        return len(self._tokens)
-
+class RPN(TokensLine):
     def handle_result(self, result, ws_name, source):
         if len(result) == 1:
             return result[0]
@@ -52,14 +41,14 @@ class RPN(object):
 
         result_append = result.append
         result_pop = result.pop
-        for token in self._tokens:
+        for token in self:
             if isinstance(token, Operand):
                 result_append(token)
             elif isinstance(token, Operation):
                 try:
                     args = [result_pop() for _ in range(token.operands_count)]
                 except IndexError:
-                    raise OperandsMissing(token, self._tokens)
+                    raise OperandsMissing(token, self)
 
                 args.reverse()
 
