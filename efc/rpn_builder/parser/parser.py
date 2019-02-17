@@ -6,7 +6,7 @@ from efc.rpn_builder.lexer.tokens import (OperandToken, OperationToken, Function
                                           Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken, MultiplyToken,
                                           DivideToken, ConcatToken, SingleCellToken, CellsRangeToken, NamedRangeToken)
 from efc.rpn_builder.errors import InconsistentParentheses, SeparatorWithoutFunction
-from efc.rpn_builder.operands import SingleCellOperand, NamedRangeOperand, CellRangeOperand, SimpleOperand
+from efc.rpn_builder.parser.operands import SingleCellOperand, NamedRangeOperand, CellRangeOperand, SimpleOperand
 from efc.rpn_builder.rpn import RPN
 
 __all__ = ('Parser',)

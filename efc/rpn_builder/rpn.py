@@ -4,9 +4,9 @@ from __future__ import unicode_literals, print_function
 from efc.rpn_builder.functions import EXCEL_FUNCTIONS
 from efc.rpn_builder.lexer.tokens import OperationToken
 from efc.rpn_builder.errors import OperandsMissing
-from efc.rpn_builder.operands import (SimpleOperand, SingleCellOperand, CellSetOperand,
-                                      ErrorOperand, SimpleSetOperand, ValueErrorOperand, FunctionNotSupported,
-                                      Operand)
+from efc.rpn_builder.parser.operands import (SimpleOperand, SingleCellOperand, CellSetOperand,
+                                             ErrorOperand, SimpleSetOperand, ValueErrorOperand, FunctionNotSupported,
+                                             Operand)
 
 from six.moves import range
 

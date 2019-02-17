@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 from efc.interface import BaseExcelInterface
 from efc.rpn_builder.errors import EFCLinkError
-from efc.rpn_builder.operands import SingleCellOperand, CellSetOperand
+from efc.rpn_builder.parser.operands import SingleCellOperand, CellSetOperand
 
 
 class ExcelMock(BaseExcelInterface):

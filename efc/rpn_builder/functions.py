@@ -1,9 +1,9 @@
 # coding: utf8
 
 from __future__ import unicode_literals, print_function
-from efc.rpn_builder.operands import (ErrorOperand, ValueErrorOperand, Operand, SimpleOperand,
-                                      LinkErrorOperand, CellRangeOperand, CellSetOperand, ZeroDivisionErrorOperand,
-                                      SingleCellOperand, NotFoundErrorOperand)
+from efc.rpn_builder.parser.operands import (ErrorOperand, ValueErrorOperand, Operand, SimpleOperand,
+                                             LinkErrorOperand, CellRangeOperand, CellSetOperand, ZeroDivisionErrorOperand,
+                                             SingleCellOperand, NotFoundErrorOperand)
 from efc.rpn_builder.errors import EFCLinkError
 from functools import wraps
 from six import string_types, integer_types
