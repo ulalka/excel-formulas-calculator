@@ -48,9 +48,11 @@ class Parser(object):
                                  ws_name=ws_name,
                                  source=source)
 
-    def dispatch_arithmetic_operation(self, token, prev_token):
-        operation = ArithmeticOperation(token.src_value, self.get_priority(token))
-        if (isinstance(token, (SubtractToken, AddToken)) and (
+    def dispatch_arithmetic_operation(self, line):
+        current_token = line.current()
+        prev_token = line.prev()
+        operation = ArithmeticOperation(current_token.src_value, self.get_priority(current_token))
+        if (isinstance(current_token, (SubtractToken, AddToken)) and (
                 isinstance(prev_token, (ArithmeticToken, LeftBracketToken, Separator)) or prev_token is None)):
             operation.operands_count = 1
         return operation
@@ -62,9 +64,8 @@ class Parser(object):
         result_append = result.append
         stack_append = stack.append
         stack_pop = stack.pop
-        prev_token = None
-        while line:
-            token = line.pop(0)
+        while not line.is_ended:
+            token = next(line)
             if isinstance(token, OperandToken):
                 result_append(self.dispatch_operand(token, ws_name, source))
             elif isinstance(token, FunctionToken):
@@ -72,7 +73,7 @@ class Parser(object):
             elif isinstance(token, LeftBracketToken):
                 stack_append(token)
             elif isinstance(token, OperationToken):
-                operation = self.dispatch_arithmetic_operation(token, prev_token)
+                operation = self.dispatch_arithmetic_operation(line)
                 while stack:
                     if isinstance(stack[-1], Operation) and stack[-1].priority >= operation.priority:
                         result_append(stack_pop())
@@ -97,8 +98,6 @@ class Parser(object):
 
                 if len(stack) > 1 and isinstance(stack[-2], FunctionOperation):
                     stack[-2].operands_count += 1
-
-            prev_token = token
 
         for stack_token in reversed(stack):
             if isinstance(stack_token, LeftBracketToken):

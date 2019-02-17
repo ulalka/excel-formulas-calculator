@@ -8,7 +8,6 @@ from collections import OrderedDict
 
 __all__ = ('Lexer',)
 
-
 TOKENS_PRIORITY = (
     tokens.FloatToken,
     tokens.IntToken,
@@ -37,6 +36,45 @@ TOKENS_PRIORITY = (
 )
 
 
+class TokensLine(object):
+    def __init__(self, array=None):
+        self._array = array or []
+        self._pos = -1
+
+    def append(self, v):
+        self._array.append(v)
+
+    @property
+    def is_ended(self):
+        return self._pos + 1 >= len(self._array)
+
+    def __next__(self):
+        if self.is_ended:
+            raise StopIteration()
+        else:
+            self._pos += 1
+            v = self._array[self._pos]
+            return v
+
+    def next(self):
+        return self.__next__()
+
+    def prev(self):
+        return self._array[self._pos - 1] if self._pos > 0 else None
+
+    def current(self):
+        return self._array[self._pos] if self._pos >= 0 else None
+
+    def __len__(self):
+        return len(self._array)
+
+    def reset(self):
+        self._pos = -1
+
+    def __iter__(self):
+        return iter(self._array)
+
+
 class Lexer(object):
     def __init__(self):
         self.lexer_tokens = OrderedDict()
@@ -54,7 +92,7 @@ class Lexer(object):
     def parse(self, line):
         lexer_tokens = self.lexer_tokens
 
-        tokens_line = []
+        tokens_line = TokensLine()
         for match in re.finditer(self.regexp, line, flags=re.UNICODE):
             cls = lexer_tokens[match.lastgroup]
             if cls != tokens.SpaceToken:
