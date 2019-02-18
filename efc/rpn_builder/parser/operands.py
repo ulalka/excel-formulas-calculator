@@ -56,7 +56,7 @@ class Operand(OperandLikeObject):
         return self.string
 
 
-class ErrorOperand(Operand, BaseEFCException):
+class ErrorOperand(OperandLikeObject, BaseEFCException):
     code = 300
     msg = 'Unknown error'
     string_value = '#ERROR!'

@@ -10,7 +10,7 @@ class BaseEFCException(Exception):
     msg = None
 
     def __str__(self):
-        context = {k: u(i) for k, i in six.iteritems(self.__dict__)}
+        context = {k: u(i) for k, i in six.iteritems(self.__dict__) if i is not None}
         msg_list = []
         if self.code is not None:
             msg_list.append('Code %d' % self.code)
