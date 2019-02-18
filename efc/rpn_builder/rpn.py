@@ -42,6 +42,7 @@ class RPN(Array):
                 return err
 
     def calc(self, ws_name, source):
+        self.reset()
         result = []
 
         result_append = result.append
