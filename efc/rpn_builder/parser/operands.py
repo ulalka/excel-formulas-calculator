@@ -69,8 +69,12 @@ class ErrorOperand(OperandLikeObject, BaseEFCException):
     def value(self):
         raise self
 
+    @property
     def string(self):
         return self.string_value
+
+    def __getattr__(self, item):
+        raise self
 
 
 class ValueErrorOperand(ErrorOperand):
