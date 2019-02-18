@@ -38,8 +38,8 @@ class ExcelMock(BaseExcelInterface):
     def named_range_to_cells(self, name, ws_name):
         return self.named_ranges[name]
 
-    def is_ws_exists(self, ws_name):
+    def has_worksheet(self, ws_name):
         return ws_name in self.data
 
-    def is_named_range_exists(self, name, ws):
+    def has_named_range(self, name, ws_name):
         return name in self.named_ranges

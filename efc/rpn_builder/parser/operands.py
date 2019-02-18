@@ -135,7 +135,7 @@ class CellsOperand(OperandLikeObject):
 
     @cached_property
     def value(self):
-        if self.source.is_ws_exists(self.ws_name):
+        if self.source.has_worksheet(self.ws_name):
             return self.address_to_value()
         else:
             raise WorksheetNotExist(ws_name=self.ws_name)
@@ -267,9 +267,9 @@ class NamedRangeOperand(CellsOperand):
 
     @cached_property
     def value(self):
-        if not self.source.is_ws_exists(self.ws_name):
+        if not self.source.has_worksheet(self.ws_name):
             raise WorksheetNotExist(ws_name=self.ws_name)
-        elif not self.source.is_named_range_exists(self.name, self.ws_name):
+        elif not self.source.has_named_range(self.name, self.ws_name):
             raise NamedRangeNotExist(self.name, self.ws_name)
         else:
             return self.address_to_value()

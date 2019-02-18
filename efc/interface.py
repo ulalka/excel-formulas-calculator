@@ -40,8 +40,8 @@ class BaseExcelInterface(object):
     def min_column(self, ws_name):
         raise NotImplementedError
 
-    def is_ws_exists(self, ws_name):
+    def has_worksheet(self, ws_name):
         raise NotImplementedError
 
-    def is_named_range_exists(self, name, ws):
+    def has_named_range(self, name, ws_name):
         raise NotImplementedError
