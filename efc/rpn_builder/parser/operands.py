@@ -318,4 +318,4 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
         return getattr(self.evaluated_value, item)
 
     def offset(self, row_offset=0, col_offset=0):
-        return self.rpn.offset(row_offset, col_offset)
+        return RPNOperand(rpn=self.rpn.offset(row_offset, col_offset), ws_name=self.ws_name, source=self.source)
