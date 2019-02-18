@@ -313,7 +313,7 @@ def offset_function(cell, row_offset, col_offset, height=None, width=None):
 
 
 def vlookup_function(op, rg, column, flag=None):
-    first_col = deepcopy(rg)
+    first_col = rg.offset()
     first_col.column2 = first_col.column1
 
     if flag is not None and flag.digit or flag is None:

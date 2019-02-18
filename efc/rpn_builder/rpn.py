@@ -4,7 +4,7 @@ from __future__ import unicode_literals, print_function
 from efc.rpn_builder.errors import OperandsMissing
 from efc.rpn_builder.parser.operands import (SimpleOperand, SingleCellOperand, CellSetOperand,
                                              ErrorOperand, SimpleSetOperand, ValueErrorOperand, OperandLikeObject,
-                                             ZeroDivisionErrorOperand)
+                                             ZeroDivisionErrorOperand, OffsetMixin)
 from efc.rpn_builder.parser.operations import Operation
 from efc.utils import Array
 
@@ -74,3 +74,15 @@ class RPN(Array):
                 result_append(v)
 
         return self.handle_result(result, ws_name, source)
+
+    def offset(self, row_offset=0, col_offset=0):
+        self.reset()
+
+        new_rpn = RPN(formula=self.formula)
+        for token in self:
+            if isinstance(token, OffsetMixin):
+                new_token = token.offset(row_offset=row_offset, col_offset=col_offset)
+            else:
+                new_token = token
+            new_rpn.append(new_token)
+        return new_rpn

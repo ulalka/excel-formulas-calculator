@@ -8,7 +8,7 @@ from six.moves import range
 __all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
            'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
            'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
-           'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject')
+           'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin')
 
 
 class OperandLikeObject(object):
@@ -54,9 +54,6 @@ class Operand(OperandLikeObject):
 
     def __str__(self):
         return self.string
-
-    def __deepcopy__(self, memodict):
-        return self.__class__(ws_name=self.ws_name, source=self.source)
 
 
 class ErrorOperand(Operand, BaseEFCException):
@@ -125,9 +122,6 @@ class SimpleOperand(Operand):
         super(SimpleOperand, self).__init__(*args, **kwargs)
         self.value = value
 
-    def __deepcopy__(self, memodict):
-        return self.__class__(value=self.value, ws_name=self.ws_name, source=self.source)
-
 
 class CellsOperand(OperandLikeObject):
     def address_to_value(self):
@@ -147,11 +141,18 @@ class CellsOperand(OperandLikeObject):
         return self.get_iter()
 
 
-class SingleCellOperand(CellsOperand, Operand):
-    def __init__(self, row, column, *args, **kwargs):
+class OffsetMixin(object):
+    def offset(self, row_offset=0, col_offset=0):
+        raise NotImplementedError
+
+
+class SingleCellOperand(CellsOperand, Operand, OffsetMixin):
+    def __init__(self, row, column, row_fixed=False, column_fixed=False, *args, **kwargs):
         super(SingleCellOperand, self).__init__(*args, **kwargs)
         self.row = row
         self.column = column
+        self.row_fixed = row_fixed
+        self.column_fixed = column_fixed
 
     def address_to_value(self):
         return self.source.cell_to_value(self.row, self.column, self.ws_name)
@@ -163,8 +164,15 @@ class SingleCellOperand(CellsOperand, Operand):
     def address(self):
         return "'%s'!%s%d" % (self.ws_name, col_index_to_str(self.column), self.row)
 
-    def __deepcopy__(self, memodict):
-        return self.__class__(row=self.row, column=self.column, ws_name=self.ws_name, source=self.source)
+    def offset(self, row_offset=0, col_offset=0):
+        new_operand = SingleCellOperand(row=self.row, column=self.column,
+                                        row_fixed=self.row_fixed, column_fixed=self.column_fixed,
+                                        ws_name=self.ws_name, source=self.source)
+        if not new_operand.row_fixed:
+            new_operand.row += row_offset
+        if not new_operand.column_fixed:
+            new_operand.column += col_offset
+        return new_operand
 
 
 class SetOperand(OperandLikeObject):
@@ -217,13 +225,20 @@ class SimpleSetOperand(SetOperand):
     operands_type = SimpleOperand
 
 
-class CellRangeOperand(CellsOperand):
-    def __init__(self, row1, column1, row2, column2, *args, **kwargs):
+class CellRangeOperand(CellsOperand, OffsetMixin):
+    def __init__(self, row1, column1, row2, column2,
+                 row1_fixed=False, column1_fixed=False, row2_fixed=False, column2_fixed=False,
+                 *args, **kwargs):
         super(CellRangeOperand, self).__init__(*args, **kwargs)
         self.row1 = row1
         self.column1 = column1
         self.row2 = row2
         self.column2 = column2
+
+        self.row1_fixed = row1_fixed
+        self.column1_fixed = column1_fixed
+        self.row2_fixed = row2_fixed
+        self.column2_fixed = column2_fixed
 
     def get_iter(self):
         column1 = self.source.min_column(self.ws_name) if self.column1 is None else self.column1
@@ -233,14 +248,14 @@ class CellRangeOperand(CellsOperand):
 
         if row1 == row2:
             for c in range(column1, column2 + 1):
-                yield SingleCellOperand(row1, c, self.ws_name, self.source)
+                yield SingleCellOperand(row1, c, ws_name=self.ws_name, source=self.source)
         elif column1 == column2:
             for r in range(row1, row2 + 1):
-                yield SingleCellOperand(r, column1, self.ws_name, self.source)
+                yield SingleCellOperand(r, column1, ws_name=self.ws_name, source=self.source)
         else:
             for r in range(row1, row2 + 1):
                 for c in range(column1, column2 + 1):
-                    yield SingleCellOperand(r, c, self.ws_name, self.source)
+                    yield SingleCellOperand(r, c, ws_name=self.ws_name, source=self.source)
 
     def address_to_value(self):
         return self.get_iter()
@@ -251,10 +266,21 @@ class CellRangeOperand(CellsOperand):
                                    col_index_to_str(self.column1), self.row1,
                                    col_index_to_str(self.column2), self.row2)
 
-    def __deepcopy__(self, memodict):
-        return self.__class__(row1=self.row1, column1=self.column1,
-                              row2=self.row2, column2=self.column2,
-                              ws_name=self.ws_name, source=self.source)
+    def offset(self, row_offset=0, col_offset=0):
+        new_operand = CellRangeOperand(row1=self.row1, column1=self.column1,
+                                       row2=self.row2, column2=self.column2,
+                                       row1_fixed=self.row1_fixed, column1_fixed=self.column1_fixed,
+                                       row2_fixed=self.row2_fixed, column2_fixed=self.column2_fixed,
+                                       ws_name=self.ws_name, source=self.source)
+        if not new_operand.row1_fixed:
+            new_operand.row1 += row_offset
+        if not new_operand.column1_fixed:
+            new_operand.column1 += col_offset
+        if not new_operand.row2_fixed:
+            new_operand.row2 += row_offset
+        if not new_operand.column2_fixed:
+            new_operand.column2 += col_offset
+        return new_operand
 
 
 class NamedRangeOperand(CellsOperand):
@@ -277,11 +303,8 @@ class NamedRangeOperand(CellsOperand):
     def get_iter(self):
         return iter(self.value)
 
-    def __deepcopy__(self, memodict):
-        return self.__class__(name=self.name, ws_name=self.ws_name, source=self.source)
 
-
-class RPNOperand(OperandLikeObject):
+class RPNOperand(OperandLikeObject, OffsetMixin):
     def __init__(self, rpn, *args, **kwargs):
         super(RPNOperand, self).__init__(*args, **kwargs)
         self.rpn = rpn
@@ -293,3 +316,6 @@ class RPNOperand(OperandLikeObject):
 
     def __getattr__(self, item):
         return getattr(self.evaluated_value, item)
+
+    def offset(self, row_offset=0, col_offset=0):
+        return self.rpn.offset(row_offset, col_offset)

@@ -32,9 +32,6 @@ class Token(object):
     def __str__(self):
         return '<%s, %s>' % (self.__class__.__name__, self.token_value)
 
-    def __deepcopy__(self, memodict):
-        return self.__class__(self._match)
-
 
 class OperandToken(Token):
     pass
@@ -141,11 +138,6 @@ class OperationToken(Token):
     @operands_count.setter
     def operands_count(self, v):
         self._operands_count = v
-
-    def __deepcopy__(self, memodict):
-        c = super(OperationToken, self).__deepcopy__(memodict)
-        c._operands_count = self._operands_count
-        return c
 
 
 class FunctionToken(OperationToken):

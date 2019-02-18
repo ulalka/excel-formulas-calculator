@@ -33,11 +33,14 @@ class Parser(object):
     def operand_token_handler(self, token, ws_name, source):
         if isinstance(token, SingleCellToken):
             return SingleCellOperand(row=token.row, column=token.column,
+                                     row_fixed=token.row_fixed, column_fixed=token.column_fixed,
                                      ws_name=token.ws_name or ws_name,
                                      source=source)
         elif isinstance(token, CellsRangeToken):
             return CellRangeOperand(row1=token.row1, column1=token.column1,
+                                    row1_fixed=token.row1_fixed, column1_fixed=token.column1_fixed,
                                     row2=token.row2, column2=token.column2,
+                                    row2_fixed=token.row2_fixed, column2_fixed=token.column2_fixed,
                                     ws_name=token.ws_name or ws_name,
                                     source=source)
         elif isinstance(token, NamedRangeToken):
