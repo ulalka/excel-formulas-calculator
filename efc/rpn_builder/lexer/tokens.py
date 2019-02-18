@@ -205,7 +205,7 @@ class RightBracketToken(Token):
 
 
 class SpaceToken(Token):
-    pattern = r'[ ]+'
+    pattern = r'[ \n]+'
 
 
 class Separator(Token):
