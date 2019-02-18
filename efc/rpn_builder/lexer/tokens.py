@@ -52,7 +52,7 @@ class IntToken(OperandToken):
 
 
 class BoolToken(OperandToken):
-    pattern = r'(TRUE|FALSE)'
+    pattern = r'\b(TRUE|FALSE)\b'
 
     def get_value(self, m):
         return super(BoolToken, self).get_value(m) == 'TRUE'
@@ -78,7 +78,7 @@ class AddressToken(OperandToken):
 
 class SingleCellToken(AddressToken):
     pattern = (r"((\[(?P<s_doc>\w+)\])?(?P<single_ws_name>('[^']+')|(\w+))?!)?"
-               r"(?P<column_fixed>\$)?(?P<column>[A-Z]+)(?P<row_fixed>\$)?(?P<row>[0-9]+)(?=\b)")
+               r"(?P<column_fixed>\$)?(?P<column>[A-Z]+)(?P<row_fixed>\$)?(?P<row>[0-9]+)\b")
 
     def get_value(self, m):
         return {
@@ -93,7 +93,7 @@ class SingleCellToken(AddressToken):
 class CellsRangeToken(AddressToken):
     pattern = (r"((\[(?P<r_doc>\w+)\])?(?P<range_ws_name>('[^']+')|(\w+))?!)?"
                r"((?P<column1_fixed>\$)?(?P<column1>[A-Z]+))?((?P<row1_fixed>\$)?(?P<row1>[0-9]+))?"
-               r":((?P<column2_fixed>\$)?(?P<column2>[A-Z]+))?((?P<row2_fixed>\$)?(?P<row2>[0-9]+))?(?=\b)")
+               r":((?P<column2_fixed>\$)?(?P<column2>[A-Z]+))?((?P<row2_fixed>\$)?(?P<row2>[0-9]+))?\b")
 
     def get_value(self, m):
         return {
