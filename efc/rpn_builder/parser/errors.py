@@ -12,9 +12,9 @@ class ParserError(BaseEFCException):
 
 class InconsistentParentheses(ParserError):
     code = 200
-    msg = 'Formula on ws "{ws_name}" has inconsistent parentheses. Formula: {formula}'
+    msg = 'Formula on ws "{ws_name}" has inconsistent parentheses'
 
 
 class SeparatorBlockError(ParserError):
     code = 201
-    msg = 'Separator without brackets on ws "{ws_name}. Should be like "(op1, op2)". Formula: {formula}'
+    msg = 'Separator without brackets on ws "{ws_name}. Should be like "(op1, op2)"'

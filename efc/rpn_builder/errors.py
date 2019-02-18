@@ -10,7 +10,7 @@ class RPNError(BaseEFCException):
 
 class OperandsMissing(RPNError):
     code = 300
-    msg = 'The number of operands is more than available in stack for function "{f_name}". Formula: {formula}'
+    msg = 'The number of operands is more than available in stack for function "{f_name}"'
 
     def __init__(self, f_name, formula):
         self.f_name = f_name
