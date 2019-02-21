@@ -55,6 +55,9 @@ class Operand(OperandLikeObject):
     def __str__(self):
         return self.string
 
+    def __trunc__(self):
+        return self.__int__()
+
 
 class ErrorOperand(OperandLikeObject, BaseEFCException):
     code = 300
