@@ -1,0 +1,17 @@
+# coding: utf8
+
+from __future__ import unicode_literals, print_function
+from efc.rpn_builder.lexer.errors import CheckSumError
+import pytest
+
+
+def test_check_sum_error_class():
+    src_line = '1 + 2'
+    parsed_line = '1+2'
+
+    e = CheckSumError(src_line=src_line, parsed_line=parsed_line)
+    template = 'Code 100. Some symbols from line are lost. Src line: {src_line}. Parsed line: {parsed_line}.'
+    assert str(e) == template.format(src_line=src_line, parsed_line=parsed_line)
+
+    with pytest.raises(CheckSumError):
+        raise e
