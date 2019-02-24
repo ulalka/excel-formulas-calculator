@@ -318,7 +318,7 @@ def vlookup_function(op, rg, column, flag=None):
 
     if flag is not None and flag.digit or flag is None:
         idx = match_function(op, first_col, 1)
-        if flag.digit and idx != 1 and list(first_col)[idx - 1].value == op.value:
+        if flag is not None and flag.digit and idx != 1 and list(first_col)[idx - 1].value == op.value:
             idx -= 1
     else:
         idx = match_function(op, first_col, 0)

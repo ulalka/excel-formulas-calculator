@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function
 from efc.rpn_builder.parser.operands import WorksheetNotExist
 from efc import get_calculator
-from tests.rpn.mock import ExcelMock
+from tests.test_rpn.mock import ExcelMock
 
 import pytest
 

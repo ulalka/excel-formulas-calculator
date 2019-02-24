@@ -29,7 +29,12 @@ class Operand(OperandLikeObject):
     @property
     def string(self):
         """String type"""
-        return u(self.value) if self.value is not None else ''
+        if isinstance(self.value, bool):
+            return u(self.value).upper()
+        elif self.value is not None:
+            return u(self.value)
+        else:
+            return ''
 
     @property
     def any(self):

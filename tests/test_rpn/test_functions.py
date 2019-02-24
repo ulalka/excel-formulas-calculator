@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals, print_function
 from efc import get_calculator
-from tests.rpn.mock import ExcelMock
+from tests.test_rpn.mock import ExcelMock
 
 import pytest
 
@@ -19,6 +19,11 @@ def test_SUM(calc):
     assert calc('SUM(Sheet4!A1:B3) + 1', 'Yet another sheet').value == 65
     assert calc('SUM(Sheet4!A1:B3,A2:B3)', 'Sheet4').value == 99
     assert calc('SUM(Sheet4!A1:B3,SUM(A3:B3))', 'Sheet4').value == 70
+
+
+def test_SUMIFS(calc):
+    assert calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,">4")', 'Yet another sheet').value == 58
+    assert calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 26
 
 
 def test_MOD(calc):
@@ -58,6 +63,10 @@ def test_RIGHT(calc):
     assert calc('RIGHT("test", 2)', 'Yet another sheet').value == 'st'
 
 
+def test_MID(calc):
+    assert calc('MID("hello",2,2)', 'Sheet 1').value == 'el'
+
+
 def test_ISBLANK(calc):
     assert calc('ISBLANK("test")', 'Yet another sheet').value is False
     assert calc('ISBLANK("")', 'Yet another sheet').value is False
@@ -68,6 +77,12 @@ def test_OR(calc):
     assert calc('OR(0,0,0,TRUE)', 'Yet another sheet').value is True
     assert calc('OR(FALSE, 0)', 'Yet another sheet').value is False
     assert calc('OR(FALSE, 0 + 2)', 'Yet another sheet').value is True
+
+
+def test_AND(calc):
+    assert calc('AND(1,1,1,TRUE)', 'Yet another sheet').value is True
+    assert calc('AND(FALSE, 0)', 'Yet another sheet').value is False
+    assert calc('AND(TRUE, 0 + 2)', 'Yet another sheet').value is True
 
 
 def test_ROUND(calc):
@@ -115,17 +130,8 @@ def test_OFFSET(calc):
     assert calc('SUM(OFFSET(A1,2,1,1,2))', 'Sheet 1').value == 10
 
 
-def test_MID(calc):
-    assert calc('MID("hello",2,2)', 'Sheet 1').value == 'el'
-
-
 def test_MATCH(calc):
     assert calc('MATCH(13,Sheet4!A1:A3)', 'Yet another sheet').value == 1
-
-
-def test_SUMIFS(calc):
-    assert calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,">4")', 'Yet another sheet').value == 58
-    assert calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 26
 
 
 def test_AVERAGE(calc):
@@ -135,3 +141,29 @@ def test_AVERAGE(calc):
 
 def test_AVERAGEIFS(calc):
     assert calc('AVERAGEIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 13
+
+
+def test_VLOOKUP(calc):
+    assert calc('VLOOKUP(13,Sheet4!A1:B3,2)', 'Yet another sheet').value == 16
+
+
+def test_SMALL(calc):
+    assert calc('SMALL(Sheet4!A1:B3,1)', 'Yet another sheet').value == 2
+    assert calc('SMALL(Sheet4!A1:B3,2)', 'Yet another sheet').value == 4
+    assert calc('SMALL(Sheet4!A1:B3,4)', 'Yet another sheet').value == 13
+
+
+def test_LARGE(calc):
+    assert calc('LARGE(Sheet4!A1:B3,1)', 'Yet another sheet').value == 16
+    assert calc('LARGE(Sheet4!A1:B3,2)', 'Yet another sheet').value == 16
+    assert calc('LARGE(Sheet4!A1:B3,4)', 'Yet another sheet').value == 13
+
+
+def test_COUNTIFS(calc):
+    assert calc('COUNTIFS(Sheet4!A1:B3,Sheet4!A1:B3,">4")', 'Yet another sheet').value == 4
+    assert calc('COUNTIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 2
+
+
+def test_CONCATENATE(calc):
+    assert calc('CONCATENATE(Sheet4!A1,Sheet4!B3,"13")', 'Yet another sheet').value == '13213'
+    assert calc('CONCATENATE("",Sheet4!B3,TRUE)', 'Yet another sheet').value == '2TRUE'
