@@ -119,25 +119,9 @@ class NamedRangeToken(AddressToken):
             'name': m['range_name']
         }
 
-    @property
-    def address(self):
-        ws_name = "'%s'!" % self.ws_name if self.ws_name else ''
-        return "%s%s" % (ws_name, self.name)
-
 
 class OperationToken(Token):
-    _operands_count = 2
-
-    def __init__(self, *args, **kwargs):
-        super(OperationToken, self).__init__(*args, **kwargs)
-
-    @property
-    def operands_count(self):
-        return self._operands_count
-
-    @operands_count.setter
-    def operands_count(self, v):
-        self._operands_count = v
+    pass
 
 
 class FunctionToken(OperationToken):
