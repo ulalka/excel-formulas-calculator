@@ -38,14 +38,14 @@ class OperandToken(Token):
 
 
 class FloatToken(OperandToken):
-    pattern = r'\d+\.\d+'
+    pattern = r'\d+\.\d+\b'
 
     def get_value(self, m):
         return float(super(FloatToken, self).get_value(m))
 
 
 class IntToken(OperandToken):
-    pattern = r'\d+'
+    pattern = r'\d+\b'
 
     def get_value(self, m):
         return int(super(IntToken, self).get_value(m))
