@@ -284,13 +284,14 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
                                        row1_fixed=self.row1_fixed, column1_fixed=self.column1_fixed,
                                        row2_fixed=self.row2_fixed, column2_fixed=self.column2_fixed,
                                        ws_name=self.ws_name, source=self.source)
-        if not new_operand.row1_fixed:
+
+        if not new_operand.row1_fixed and new_operand.row1 is not None:
             new_operand.row1 += row_offset
-        if not new_operand.column1_fixed:
+        if not new_operand.column1_fixed and new_operand.column1 is not None:
             new_operand.column1 += col_offset
-        if not new_operand.row2_fixed:
+        if not new_operand.row2_fixed and new_operand.row2 is not None:
             new_operand.row2 += row_offset
-        if not new_operand.column2_fixed:
+        if not new_operand.column2_fixed and new_operand.column2 is not None:
             new_operand.column2 += col_offset
         return new_operand
 
