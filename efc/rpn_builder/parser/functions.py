@@ -165,11 +165,21 @@ def not_func(op):
 
 
 def small_function(r, op):
-    return sorted(iter_digits(False, r))[int(op) - 1]
+    items = sorted(iter_digits(False, r))
+    index = int(op) - 1
+    try:
+        return items[index]
+    except IndexError:
+        return ValueErrorOperand()
 
 
 def large_function(r, op):
-    return sorted(iter_digits(False, r), reverse=True)[int(op) - 1]
+    items = sorted(iter_digits(False, r), reverse=True)
+    index = int(op) - 1
+    try:
+        return items[index]
+    except IndexError:
+        return ValueErrorOperand()
 
 
 def round_function(a, b):
