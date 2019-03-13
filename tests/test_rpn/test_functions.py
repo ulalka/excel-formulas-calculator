@@ -85,6 +85,18 @@ def test_AND(calc):
     assert calc('AND(TRUE, 0 + 2)', 'Yet another sheet').value is True
 
 
+def test_not(calc):
+    assert calc('NOT(1)', 'Yet another sheet').value is False
+    assert calc('NOT(0)', 'Yet another sheet').value is True
+    assert calc('NOT(123)', 'Yet another sheet').value is False
+    assert calc('NOT(TRUE)', 'Yet another sheet').value is False
+    assert calc('NOT(FALSE)', 'Yet another sheet').value is True
+    assert calc('NOT(A1)', 'Yet another sheet').value is True
+    assert calc('NOT(A1)', 'Sheet4').value is False
+    assert calc('NOT("")', 'Yet another sheet').value is True
+    assert calc('NOT(NOT(""))', 'Yet another sheet').value is False
+
+
 def test_ROUND(calc):
     assert calc('ROUND(2.3456, 1)', 'Yet another sheet').value == 2.3
     assert calc('ROUND(2, 2)', 'Yet another sheet').value == 2.0

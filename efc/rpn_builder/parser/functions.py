@@ -160,6 +160,10 @@ def and_function(*args):
     return True
 
 
+def not_func(op):
+    return not op.value
+
+
 def small_function(r, op):
     return sorted(iter_digits(False, r))[int(op) - 1]
 
@@ -357,6 +361,7 @@ EXCEL_FUNCTIONS['MID'] = mid_func
 EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
 EXCEL_FUNCTIONS['OR'] = or_function
 EXCEL_FUNCTIONS['AND'] = and_function
+EXCEL_FUNCTIONS['NOT'] = not_func
 EXCEL_FUNCTIONS['ROUND'] = round_function
 EXCEL_FUNCTIONS['ROUNDDOWN'] = round_down_function
 EXCEL_FUNCTIONS['FLOOR'] = floor_function
