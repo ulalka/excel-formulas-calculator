@@ -324,7 +324,10 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
 
     @cached_property
     def evaluated_value(self):
-        return self.rpn.calc(ws_name=self.ws_name, source=self.source)
+        v = self.rpn.calc(ws_name=self.ws_name, source=self.source)
+        if isinstance(v, RPNOperand):
+            v = v.evaluated_value
+        return v
 
     def __getattr__(self, item):
         return getattr(self.evaluated_value, item)
