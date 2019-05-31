@@ -36,11 +36,11 @@ classifiers = [
 with open('README.rst', 'r') as fp:
     long_description = fp.read()
 
-setup(name='excel-formula-calculator',
+setup(name='excel-formulas-calculator',
       version=efc.__version__,
       author='Gleb Orlov',
       author_email='orlovgb@mail.ru',
-      url='https://github.com/peredryaga/excel-formula-calculator',
+      url='https://github.com/ulalka/excel-formulas-calculator',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['six'],
