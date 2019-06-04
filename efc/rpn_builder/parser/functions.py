@@ -1,13 +1,12 @@
 # coding: utf8
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from __future__ import unicode_literals, print_function
-from efc.rpn_builder.parser.operands import (ErrorOperand, ValueErrorOperand, SimpleOperand,
-                                             CellRangeOperand, CellSetOperand,
-                                             SingleCellOperand, NotFoundErrorOperand,
-                                             RPNOperand)
-from six import string_types, integer_types
-from copy import deepcopy
 import re
+
+from six import integer_types, string_types
+
+from efc.rpn_builder.parser.operands import (CellRangeOperand, CellSetOperand, ErrorOperand, NotFoundErrorOperand,
+                                             RPNOperand, SimpleOperand, SingleCellOperand, ValueErrorOperand)
 
 __all__ = ('EXCEL_FUNCTIONS',)
 

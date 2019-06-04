@@ -1,11 +1,10 @@
 # coding: utf8
-
-from __future__ import unicode_literals, print_function
-from efc.rpn_builder.lexer import tokens
-from efc.rpn_builder.lexer import Lexer
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest
 from six.moves import zip
+
+from efc.rpn_builder.lexer import Lexer, tokens
 
 
 @pytest.fixture(scope='module')

@@ -1,8 +1,8 @@
 # coding: utf8
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from __future__ import unicode_literals, print_function
 from efc.interface import BaseExcelInterface
-from efc.rpn_builder.parser.operands import SingleCellOperand, CellSetOperand
+from efc.rpn_builder.parser.operands import CellSetOperand, SingleCellOperand
 
 
 class ExcelMock(BaseExcelInterface):

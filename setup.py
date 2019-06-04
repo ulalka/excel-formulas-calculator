@@ -17,11 +17,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-
-from __future__ import unicode_literals, print_function
-
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 import efc
 

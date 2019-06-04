@@ -1,11 +1,12 @@
 # coding: utf8
-
-from __future__ import unicode_literals, print_function
-from efc.rpn_builder.lexer import tokens
-from efc.utils import col_str_to_index
-import pytest
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+
+import pytest
+
+from efc.rpn_builder.lexer import tokens
+from efc.utils import col_str_to_index
 
 
 @pytest.mark.parametrize(

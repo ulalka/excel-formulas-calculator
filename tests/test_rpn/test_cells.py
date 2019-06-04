@@ -1,11 +1,11 @@
 # coding: utf8
-
-from __future__ import unicode_literals, print_function
-from efc.rpn_builder.parser.operands import WorksheetNotExist
-from efc import get_calculator
-from tests.test_rpn.mock import ExcelMock
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest
+
+from efc import get_calculator
+from efc.rpn_builder.parser.operands import WorksheetNotExist
+from tests.test_rpn.mock import ExcelMock
 
 
 @pytest.fixture(scope='session')

@@ -1,9 +1,10 @@
 # coding: utf8
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from __future__ import unicode_literals, print_function
-from efc.rpn_builder.parser.operands import OperandLikeObject, SimpleOperand, FunctionNotSupported
-from efc.rpn_builder.parser.functions import EXCEL_FUNCTIONS
 from functools import wraps
+
+from efc.rpn_builder.parser.functions import EXCEL_FUNCTIONS
+from efc.rpn_builder.parser.operands import FunctionNotSupported, OperandLikeObject, SimpleOperand
 
 
 def excel_function(func):

@@ -1,9 +1,12 @@
 # -*- coding: utf8 -*-
-from __future__ import unicode_literals
-from efc.utils import cached_property, digit, u, col_index_to_str
-from efc.base.errors import BaseEFCException
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from collections import defaultdict
+
 from six.moves import range
+
+from efc.base.errors import BaseEFCException
+from efc.utils import cached_property, col_index_to_str, digit, u
 
 __all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
            'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',

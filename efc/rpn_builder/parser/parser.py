@@ -1,16 +1,14 @@
 # coding: utf8
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from __future__ import unicode_literals, print_function
-
-from efc.rpn_builder.lexer.tokens import (OperandToken, OperationToken, FunctionToken, LeftBracketToken,
-                                          RightBracketToken,
-                                          Separator, SubtractToken, ArithmeticToken, AddToken, ExponentToken,
-                                          MultiplyToken,
-                                          DivideToken, ConcatToken, SingleCellToken, CellsRangeToken, NamedRangeToken)
+from efc.rpn_builder.lexer.tokens import (AddToken, ArithmeticToken, CellsRangeToken, ConcatToken, DivideToken,
+                                          ExponentToken, FunctionToken, LeftBracketToken, MultiplyToken,
+                                          NamedRangeToken, OperandToken, OperationToken, RightBracketToken, Separator,
+                                          SingleCellToken, SubtractToken)
 from efc.rpn_builder.parser.errors import InconsistentParentheses, SeparatorBlockError
-from efc.rpn_builder.parser.operands import (SingleCellOperand, NamedRangeOperand, CellRangeOperand,
-                                             SimpleOperand, RPNOperand)
-from efc.rpn_builder.parser.operations import Operation, ArithmeticOperation, FunctionOperation
+from efc.rpn_builder.parser.operands import (CellRangeOperand, NamedRangeOperand, RPNOperand, SimpleOperand,
+                                             SingleCellOperand)
+from efc.rpn_builder.parser.operations import ArithmeticOperation, FunctionOperation, Operation
 from efc.rpn_builder.rpn import RPN
 
 __all__ = ('Parser',)
