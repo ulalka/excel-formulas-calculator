@@ -18,7 +18,8 @@ class RPN(Array):
         super(RPN, self).__init__()
         self.formula = formula
 
-    def handle_result(self, result, ws_name, source):
+    @staticmethod
+    def handle_result(result, ws_name, source):
         if len(result) == 1:
             return result[0]
         else:

@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import pytest
 
 from efc.rpn_builder.lexer.errors import CheckSumError
+from efc.utils import u
 
 
 def test_check_sum_error_class():
@@ -12,7 +13,7 @@ def test_check_sum_error_class():
 
     e = CheckSumError(src_line=src_line, parsed_line=parsed_line)
     template = 'Code 100. Some symbols from line are lost. Src line: {src_line}. Parsed line: {parsed_line}.'
-    assert str(e) == template.format(src_line=src_line, parsed_line=parsed_line)
+    assert u(e) == template.format(src_line=src_line, parsed_line=parsed_line)
 
     with pytest.raises(CheckSumError):
         raise e

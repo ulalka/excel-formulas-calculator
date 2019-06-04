@@ -5,8 +5,9 @@ from efc.utils import u
 import six
 
 
+@six.python_2_unicode_compatible
 class BaseEFCException(Exception):
-    code = None
+    code = 0
     msg = None
 
     def __str__(self):

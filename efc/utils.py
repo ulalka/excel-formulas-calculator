@@ -37,15 +37,25 @@ def col_index_to_str(i):
     return ''.join(chars)
 
 
+if six.PY2:
+    b_from_default_type = str
+
+    def u_from_default_type(v):
+        return str(v).decode('utf8')
+else:
+    def b_from_default_type(v):
+        return str(v).encode('utf8')
+
+    u_from_default_type = str
+
+
 def u(value):
     if isinstance(value, six.binary_type):
         return value.decode('utf8')
     elif isinstance(value, six.text_type):
         return value
-    elif isinstance(value, (six.integer_types, float)):
-        return six.text_type(value)
     else:
-        return six.u(value)
+        return u_from_default_type(value)
 
 
 class cached_property(object):

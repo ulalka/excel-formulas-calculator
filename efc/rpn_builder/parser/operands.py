@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from collections import defaultdict
 
+from six import python_2_unicode_compatible
 from six.moves import range
 
 from efc.base.errors import BaseEFCException
@@ -21,6 +22,7 @@ class OperandLikeObject(object):
         self.source = source
 
 
+@python_2_unicode_compatible
 class Operand(OperandLikeObject):
     value = None
 
@@ -220,7 +222,7 @@ class SetOperand(OperandLikeObject):
         self.add_many(items, r)
 
     def get_iter(self):
-        for r in sorted(self._items.keys()):
+        for r in sorted(self._items):
             for item in self._items[r]:
                 yield item
 

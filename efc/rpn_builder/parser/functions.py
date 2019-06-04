@@ -28,7 +28,7 @@ def subtract_func(*args):
 
 
 def divide_func(op1, op2):
-    return 1.0 * op1.digit / op2.digit
+    return op1.digit / op2.digit
 
 
 def multiply_func(op1, op2):

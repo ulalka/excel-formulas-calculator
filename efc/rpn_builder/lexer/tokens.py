@@ -1,6 +1,8 @@
 # coding: utf8
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from six import python_2_unicode_compatible
+
 from efc.utils import col_str_to_index
 
 __all__ = ('FloatToken', 'IntToken', 'BoolToken',
@@ -14,6 +16,7 @@ __all__ = ('FloatToken', 'IntToken', 'BoolToken',
            'OperandToken', 'OperationToken', 'ArithmeticToken')
 
 
+@python_2_unicode_compatible
 class Token(object):
     pattern = None
 

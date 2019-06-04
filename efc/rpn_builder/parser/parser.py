@@ -28,7 +28,8 @@ class Parser(object):
     def get_priority(token):
         return OPERATORS_PRIORITY.get(token.__class__, 0)
 
-    def operand_token_handler(self, token, ws_name, source):
+    @staticmethod
+    def operand_token_handler(token, ws_name, source):
         if isinstance(token, SingleCellToken):
             return SingleCellOperand(row=token.row, column=token.column,
                                      row_fixed=token.row_fixed, column_fixed=token.column_fixed,
