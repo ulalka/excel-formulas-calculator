@@ -5,7 +5,7 @@ import pytest
 
 from efc import get_calculator
 from efc.rpn_builder.parser.operands import WorksheetNotExist
-from tests.test_rpn.mock import ExcelMock
+from .mock import ExcelMock
 
 
 @pytest.fixture(scope='session')
