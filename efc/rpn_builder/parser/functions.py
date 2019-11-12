@@ -1,4 +1,4 @@
-# coding: utf8
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
@@ -20,6 +20,10 @@ def _get_type_id(obj):
 
 
 def type_mixin(a, b):
+    if a is None:
+        a = '' if isinstance(b, string_types) else 0
+    if b is None:
+        b = '' if isinstance(a, string_types) else 0
     return (_get_type_id(a), a), (_get_type_id(b), b)
 
 
