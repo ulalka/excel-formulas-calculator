@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from collections import defaultdict
 
-from six import python_2_unicode_compatible
+from six import python_2_unicode_compatible, text_type
 from six.moves import range
 
 from efc.base.errors import BaseEFCException
@@ -40,17 +40,6 @@ class Operand(OperandLikeObject):
             return u(self.value)
         else:
             return ''
-
-    @property
-    def any(self):
-        """Any type: digit or string or None"""
-        try:
-            v = self.digit
-        except ValueError:
-            v = self.string
-        if v in (0, ''):
-            v = None
-        return v
 
     @property
     def is_blank(self):
@@ -322,6 +311,7 @@ class NamedRangeOperand(CellsOperand):
         return iter(self.value)
 
 
+@python_2_unicode_compatible
 class RPNOperand(OperandLikeObject, OffsetMixin):
     def __init__(self, rpn, *args, **kwargs):
         super(RPNOperand, self).__init__(*args, **kwargs)
@@ -340,3 +330,15 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
 
     def offset(self, row_offset=0, col_offset=0):
         return RPNOperand(rpn=self.rpn.offset(row_offset, col_offset), ws_name=self.ws_name, source=self.source)
+
+    def __int__(self):
+        return int(self.evaluated_value)
+
+    def __float__(self):
+        return float(self.evaluated_value)
+
+    def __str__(self):
+        return text_type(self.evaluated_value)
+
+    def __trunc__(self):
+        return self.__int__()

@@ -11,6 +11,18 @@ from efc.rpn_builder.parser.operands import (CellRangeOperand, CellSetOperand, E
 __all__ = ('EXCEL_FUNCTIONS',)
 
 
+def _get_type_id(obj):
+    if isinstance(obj, bool):
+        return 2
+    elif isinstance(obj, string_types):
+        return 1
+    return 0
+
+
+def type_mixin(a, b):
+    return (_get_type_id(a), a), (_get_type_id(b), b)
+
+
 def add_func(*args):
     if len(args) == 2:
         op1, op2 = args
@@ -50,27 +62,33 @@ def exponent_func(op1, op2):
 
 
 def compare_not_eq_func(op1, op2):
-    return op1.any != op2.any
+    op1, op2 = type_mixin(op1.value, op2.value)
+    return op1 != op2
 
 
 def compare_gte_func(op1, op2):
-    return op1.any >= op2.any
+    op1, op2 = type_mixin(op1.value, op2.value)
+    return op1 >= op2
 
 
 def compare_lte_func(op1, op2):
-    return op1.any <= op2.any
+    op1, op2 = type_mixin(op1.value, op2.value)
+    return op1 <= op2
 
 
 def compare_gt_func(op1, op2):
-    return op1.any > op2.any
+    op1, op2 = type_mixin(op1.value, op2.value)
+    return op1 > op2
 
 
 def compare_lt_func(op1, op2):
-    return op1.any < op2.any
+    op1, op2 = type_mixin(op1.value, op2.value)
+    return op1 < op2
 
 
 def compare_eq_func(op1, op2):
-    return op1.any == op2.any
+    op1, op2 = type_mixin(op1.value, op2.value)
+    return op1 == op2
 
 
 def iter_elements(*args):
@@ -207,24 +225,27 @@ def abs_function(a):
 def match_function(op1, r, match_type=None):
     match_type = 0 if match_type is None else int(match_type)
 
-    expr = op1.any
+    expr = op1.value
     idx = None
     if match_type == 1:
         for idx, item in enumerate(r, 1):
-            if item.any == expr:
+            a, b = type_mixin(item.value, expr)
+            if a == b:
                 break
-            elif item.any > expr:
+            elif a > b:
                 idx -= 1
                 break
     elif match_type == -1:
         for idx, item in enumerate(r, 1):
-            if item.any > expr:
+            a, b = type_mixin(item.value, expr)
+            if a > b:
                 break
         else:
             idx = None
     else:
         for idx, item in enumerate(r, 1):
-            if item.any == expr:
+            a, b = type_mixin(item.value, expr)
+            if a == b:
                 break
         else:
             idx = None
@@ -242,15 +263,21 @@ def get_check_function(expr):
         if match:
             match = match.groupdict()
             operation = match['symbol']
-            operand = SimpleOperand(match['value'])
+            operand = match['value']
         else:
             operation = '='
-            operand = expr
+            operand = expr.value
     else:
         operation = '='
-        operand = expr
+        operand = expr.value
+
+    try:
+        operand = float(operand)
+    except (TypeError, ValueError):
+        pass
+
     check = ARITHMETIC_FUNCTIONS[operation]
-    return check, operand
+    return check, SimpleOperand(operand)
 
 
 def countif_function(cells, expr):
@@ -331,8 +358,10 @@ def vlookup_function(op, rg, column, flag=None):
 
     if flag is not None and flag.digit or flag is None:
         idx = match_function(op, first_col, 1)
-        if flag is not None and flag.digit and idx != 1 and list(first_col)[idx - 1].value == op.value:
-            idx -= 1
+        if flag is not None and flag.digit and idx != 1:
+            a, b = type_mixin(list(first_col)[idx - 1].value, op.value)
+            if a == b:
+                idx -= 1
     else:
         idx = match_function(op, first_col, 0)
     return SingleCellOperand(row=(rg.row1 or 1) + idx - 1, column=(rg.column1 or 1) + column.digit - 1,

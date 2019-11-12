@@ -50,6 +50,21 @@ def test_arithmetic(calculate, line, result):
             ('4 + 1 > 4', True),
             ('4 > 4 - 3', True),
             ('4 * 2 + 2 <> 4 / 3 - 1', True),
+
+            ('1 > TRUE', False),
+            ('1 > FALSE', False),
+            ('1 > "1"', False),
+            ('"1" > 1', True),
+
+            ('1 = TRUE', False),
+            ('1 = FALSE', False),
+            ('1 = "1"', False),
+            ('"1" = 1', False),
+
+            ('1 < TRUE', True),
+            ('1 < FALSE', True),
+            ('1 < "1"', True),
+            ('"1" < 1', False),
     )
 )
 def test_compare(calculate, line, result):
