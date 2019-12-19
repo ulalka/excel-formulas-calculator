@@ -7,6 +7,7 @@ from six import integer_types, string_types
 
 from efc.rpn_builder.parser.operands import (CellRangeOperand, CellSetOperand, ErrorOperand, NotFoundErrorOperand,
                                              RPNOperand, SimpleOperand, SingleCellOperand, ValueErrorOperand)
+from efc.utils import is_float
 
 __all__ = ('EXCEL_FUNCTIONS',)
 
@@ -275,10 +276,8 @@ def get_check_function(expr):
         operation = '='
         operand = expr.value
 
-    try:
+    if is_float(operand):
         operand = float(operand)
-    except (TypeError, ValueError):
-        pass
 
     check = ARITHMETIC_FUNCTIONS[operation]
     return check, SimpleOperand(operand)

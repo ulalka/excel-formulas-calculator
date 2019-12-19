@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import re
 from string import ascii_uppercase
 
 import six
 
-__all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit',
-           'Array')
+__all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'Array', 'is_float')
 
 
 def col_str_to_index(col_str):
@@ -40,11 +40,13 @@ def col_index_to_str(i):
 if six.PY2:
     b_from_default_type = str
 
+
     def u_from_default_type(v):
         return str(v).decode('utf8')
 else:
     def b_from_default_type(v):
         return str(v).encode('utf8')
+
 
     u_from_default_type = str
 
@@ -67,9 +69,21 @@ class cached_property(object):
         return result
 
 
+IS_FLOAT_REGEXP = br"^-?\d+(?:\.\d+)?$"
+IS_FLOAT_REGEXP = re.compile(IS_FLOAT_REGEXP.decode('raw_unicode_escape'), re.U | re.I)
+
+
+def is_float(v):
+    return IS_FLOAT_REGEXP.match(v)
+
+
 def digit(v):
     if isinstance(v, six.string_types):
-        v = float(v)
+        # workaround for PEP 515
+        if is_float(v):
+            v = float(v)
+        else:
+            raise ValueError(v)
     elif isinstance(v, bool):
         v = int(v)
     elif v is None:
