@@ -12,7 +12,8 @@ from efc.utils import cached_property, col_index_to_str, digit, u
 __all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
            'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
            'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
-           'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin')
+           'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin',
+           'BadReference')
 
 
 class OperandLikeObject(object):
@@ -121,6 +122,12 @@ class FunctionNotSupported(ErrorOperand):
     def __init__(self, f_name, *args, **kwargs):
         super(FunctionNotSupported, self).__init__(*args, **kwargs)
         self.f_name = f_name
+
+
+class BadReference(ErrorOperand):
+    code = 307
+    msg = 'Bad reference'
+    string_value = '#REF!'
 
 
 class SimpleOperand(Operand):

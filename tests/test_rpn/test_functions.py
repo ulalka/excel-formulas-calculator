@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import pytest
 
 from efc import get_calculator
+from efc.rpn_builder.parser.operands import BadReference
 from .mock import ExcelMock
 
 
@@ -179,3 +180,32 @@ def test_COUNTIFS(calc):
 def test_CONCATENATE(calc):
     assert calc('CONCATENATE(Sheet4!A1,Sheet4!B3,"13")', 'Yet another sheet').value == '13213'
     assert calc('CONCATENATE("",Sheet4!B3,TRUE)', 'Yet another sheet').value == '2TRUE'
+
+
+def test_INDEX(calc):
+    assert calc('INDEX(Sheet4!A1:A3,1)', 'Yet another sheet').value == 13
+    assert calc('INDEX(Sheet4!A1:A3,3)', 'Yet another sheet').value == 4
+
+    with pytest.raises(BadReference):
+        assert calc('INDEX(Sheet4!A1:A3,100,1)', 'Yet another sheet').value
+
+    with pytest.raises(BadReference):
+        assert calc('INDEX(Sheet4!A1:A3,1,100)', 'Yet another sheet').value
+
+    assert calc('INDEX(Sheet4!A1:C3,1,1)', 'Yet another sheet').value == 13
+    assert calc('INDEX(Sheet4!A1:C3,1,3)', 'Yet another sheet').value == 18
+
+    with pytest.raises(BadReference):
+        assert calc('INDEX(Sheet4!A1:C3,1)', 'Yet another sheet').value
+
+    with pytest.raises(BadReference):
+        assert calc('INDEX(Sheet4!A1:C3,100,1)', 'Yet another sheet').value
+
+    with pytest.raises(BadReference):
+        assert calc('INDEX(Sheet4!A1:C3,1,100)', 'Yet another sheet').value
+
+    with pytest.raises(BadReference):
+        assert calc('INDEX(Sheet4!A1:C3,0,100)', 'Yet another sheet').value
+
+    with pytest.raises(BadReference):
+        assert calc('INDEX(Sheet4!A1:C3,1,0)', 'Yet another sheet').value

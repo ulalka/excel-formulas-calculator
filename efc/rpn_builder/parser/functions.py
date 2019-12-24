@@ -5,8 +5,9 @@ import re
 
 from six import integer_types, string_types
 
-from efc.rpn_builder.parser.operands import (CellRangeOperand, CellSetOperand, ErrorOperand, NotFoundErrorOperand,
-                                             RPNOperand, SimpleOperand, SingleCellOperand, ValueErrorOperand)
+from efc.rpn_builder.parser.operands import (BadReference, CellRangeOperand, CellSetOperand, ErrorOperand,
+                                             NotFoundErrorOperand, RPNOperand, SimpleOperand, SingleCellOperand,
+                                             ValueErrorOperand)
 from efc.utils import is_float
 
 __all__ = ('EXCEL_FUNCTIONS',)
@@ -371,6 +372,37 @@ def vlookup_function(op, rg, column, flag=None):
                              ws_name=rg.ws_name, source=rg.source)
 
 
+def index_function(rg, row, column=None):
+    if rg.row1 != rg.row2 and rg.column1 != rg.column2:
+        rg_size = 2
+    else:
+        rg_size = 1
+
+    row = row.digit
+    if column is not None:
+        column = column.digit
+
+    if row <= 0 or column is not None and column <= 0:
+        return BadReference()
+
+    if rg_size == 1 and column is not None or rg_size == 2 and column is None:
+        return BadReference()
+
+    if rg_size == 1:
+        if rg.row1 == rg.row2:
+            if rg.column2 - rg.column1 + 1 < row:
+                return BadReference()
+            return SingleCellOperand(rg.row1, rg.column1 - 1 + row, ws_name=rg.ws_name, source=rg.source)
+        else:
+            if rg.row2 - rg.row1 + 1 < row:
+                return BadReference()
+            return SingleCellOperand(rg.row1 - 1 + row, rg.column1, ws_name=rg.ws_name, source=rg.source)
+    else:
+        if rg.row2 - rg.row1 + 1 < row or rg.column2 - rg.column1 + 1 < column:
+            return BadReference()
+        return SingleCellOperand(rg.row1 - 1 + row, rg.column1 - 1 + column, ws_name=rg.ws_name, source=rg.source)
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -419,3 +451,4 @@ EXCEL_FUNCTIONS['SMALL'] = small_function
 EXCEL_FUNCTIONS['LARGE'] = large_function
 EXCEL_FUNCTIONS['COUNTIFS'] = count_ifs_function
 EXCEL_FUNCTIONS['CONCATENATE'] = concatenate
+EXCEL_FUNCTIONS['INDEX'] = index_function
