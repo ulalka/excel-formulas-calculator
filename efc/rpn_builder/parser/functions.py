@@ -75,7 +75,7 @@ def sub(op1, op2):
 
 def subtract_func(op1, op2=None):
     if op2 is not None:
-        return op1.digit - op2.digit
+        return sub(op1, op2)
     else:
         return -op1.digit
 
