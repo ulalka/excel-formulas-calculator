@@ -3,17 +3,19 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from collections import defaultdict
 
-from six import python_2_unicode_compatible, text_type
+from six import itervalues, python_2_unicode_compatible, text_type
 from six.moves import range
 
 from efc.base.errors import BaseEFCException
 from efc.utils import cached_property, col_index_to_str, digit, u
 
-__all__ = ('Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
-           'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
-           'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
-           'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin',
-           'BadReference')
+__all__ = (
+    'Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
+    'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
+    'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
+    'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin',
+    'SetOperand', 'BadReference', 'ValueNotAvailable',
+)
 
 
 class OperandLikeObject(object):
@@ -130,6 +132,12 @@ class BadReference(ErrorOperand):
     string_value = '#REF!'
 
 
+class ValueNotAvailable(ErrorOperand):
+    code = 308
+    msg = 'Value not available'
+    string_value = '#N/A'
+
+
 class SimpleOperand(Operand):
     def __init__(self, value, *args, **kwargs):
         super(SimpleOperand, self).__init__(*args, **kwargs)
@@ -199,7 +207,7 @@ class SetOperand(OperandLikeObject):
         if isinstance(items, list):
             if any(not isinstance(i, self.operands_type) for i in items):
                 raise ValueErrorOperand()
-        elif not isinstance(items, self.operands_type):
+        elif not isinstance(items, (self.operands_type, ValueNotAvailable)):
             raise ValueErrorOperand()
 
     def add_cell(self, item, row=0):
@@ -228,6 +236,20 @@ class SetOperand(OperandLikeObject):
     @cached_property
     def value(self):
         return list(self)
+
+    def get_cell(self, row, column):
+        try:
+            return self._items[row - 1][column - 1]
+        except KeyError:
+            return BadReference()
+
+    @property
+    def rows_count(self):
+        return len(self._items)
+
+    @property
+    def columns_count(self):
+        return max(len(c) for c in itervalues(self._items))
 
 
 class CellSetOperand(SetOperand):
@@ -296,6 +318,11 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
             new_operand.column2 += col_offset
         return new_operand
 
+    def get_cell(self, row, column):
+        if self.row1 <= row <= self.row2 and self.column1 <= column <= self.column2:
+            return SingleCellOperand(row, column, ws_name=self.ws_name, source=self.source)
+        return BadReference()
+
 
 class NamedRangeOperand(CellsOperand):
     def __init__(self, name, *args, **kwargs):
@@ -325,7 +352,7 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
         self.rpn = rpn
         self._result = None
 
-    @cached_property
+    @property
     def evaluated_value(self):
         v = self.rpn.calc(ws_name=self.ws_name, source=self.source)
         if isinstance(v, RPNOperand):
@@ -349,3 +376,6 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
 
     def __trunc__(self):
         return self.__int__()
+
+    def __iter__(self):
+        return iter(self.evaluated_value)

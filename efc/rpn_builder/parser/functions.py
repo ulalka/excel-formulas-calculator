@@ -2,12 +2,15 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+from functools import wraps
 
 from six import integer_types, string_types
+from six.moves import range, zip_longest
 
 from efc.rpn_builder.parser.operands import (BadReference, CellRangeOperand, CellSetOperand, ErrorOperand,
-                                             NotFoundErrorOperand, RPNOperand, SimpleOperand, SingleCellOperand,
-                                             ValueErrorOperand)
+                                             NotFoundErrorOperand, RPNOperand, SetOperand, SimpleOperand,
+                                             SimpleSetOperand, SingleCellOperand, ValueErrorOperand, ValueNotAvailable,
+                                             NamedRangeOperand)
 from efc.utils import is_float
 
 __all__ = ('EXCEL_FUNCTIONS',)
@@ -29,30 +32,65 @@ def type_mixin(a, b):
     return (_get_type_id(a), a), (_get_type_id(b), b)
 
 
-def add_func(*args):
-    if len(args) == 2:
-        op1, op2 = args
-        return op1.digit + op2.digit
+def set_mixin(foo):
+    @wraps(foo)
+    def wrapper(op1, op2):
+        fill_value = None
+
+        op1_is_set = isinstance(op1, SetOperand)
+        op2_is_set = isinstance(op2, SetOperand)
+
+        if op1_is_set or op2_is_set:
+            if not op1_is_set:
+                op1, fill_value = tuple(), op1
+            elif not op2_is_set:
+                op2, fill_value = tuple(), op2
+
+            result = SimpleSetOperand()
+            for v1, v2 in zip_longest(op1, op2, fillvalue=fill_value):
+                result.add_cell(ValueNotAvailable() if v1 is None or v2 is None else SimpleOperand(foo(v1, v2)))
+        else:
+            result = foo(op1, op2)
+        return result
+
+    return wrapper
+
+
+@set_mixin
+def add(op1, op2):
+    return op1.digit + op2.digit
+
+
+def add_func(op1, op2=None):
+    if op2 is not None:
+        return add(op1, op2)
     else:
-        return args[0].digit
+        return op1.digit
 
 
-def subtract_func(*args):
-    if len(args) == 2:
-        op1, op2 = args
+@set_mixin
+def sub(op1, op2):
+    return op1.digit - op2.digit
+
+
+def subtract_func(op1, op2=None):
+    if op2 is not None:
         return op1.digit - op2.digit
     else:
-        return -args[0].digit
+        return -op1.digit
 
 
+@set_mixin
 def divide_func(op1, op2):
     return op1.digit / op2.digit
 
 
+@set_mixin
 def multiply_func(op1, op2):
     return op1.digit * op2.digit
 
 
+@set_mixin
 def concat_func(op1, op2):
     a = op1.value
     b = op2.value
@@ -63,35 +101,42 @@ def concat_func(op1, op2):
     return '%s%s' % (a, b)
 
 
+@set_mixin
 def exponent_func(op1, op2):
     return op1.digit ** op2.digit
 
 
+@set_mixin
 def compare_not_eq_func(op1, op2):
     op1, op2 = type_mixin(op1.value, op2.value)
     return op1 != op2
 
 
+@set_mixin
 def compare_gte_func(op1, op2):
     op1, op2 = type_mixin(op1.value, op2.value)
     return op1 >= op2
 
 
+@set_mixin
 def compare_lte_func(op1, op2):
     op1, op2 = type_mixin(op1.value, op2.value)
     return op1 <= op2
 
 
+@set_mixin
 def compare_gt_func(op1, op2):
     op1, op2 = type_mixin(op1.value, op2.value)
     return op1 > op2
 
 
+@set_mixin
 def compare_lt_func(op1, op2):
     op1, op2 = type_mixin(op1.value, op2.value)
     return op1 < op2
 
 
+@set_mixin
 def compare_eq_func(op1, op2):
     op1, op2 = type_mixin(op1.value, op2.value)
     return op1 == op2
@@ -164,7 +209,23 @@ def mid_func(op1, op2, op3):
 
 
 def is_blank_func(a):
-    return a.value is None
+    while True:
+        if isinstance(a, (NamedRangeOperand, SingleCellOperand)):
+            a = SimpleOperand(a.address_to_value())
+        elif isinstance(a, RPNOperand):
+            a = a.evaluated_value
+        else:
+            break
+
+    try:
+        it = iter(a)
+    except TypeError:
+        return a.value is None
+
+    new_set = SimpleSetOperand()
+    for v in it:
+        new_set.add_cell(SimpleOperand(v.value is None))
+    return new_set
 
 
 def or_function(*args):
@@ -373,34 +434,45 @@ def vlookup_function(op, rg, column, flag=None):
 
 
 def index_function(rg, row, column=None):
-    if rg.row1 != rg.row2 and rg.column1 != rg.column2:
-        rg_size = 2
+    if isinstance(rg, RPNOperand):
+        rg = rg.evaluated_value
+
+    if isinstance(rg, SetOperand):
+        set_type = SimpleSetOperand
+        row1 = 1
+        row2 = rg.rows_count
+        column1 = 1
+        column2 = rg.columns_count
     else:
-        rg_size = 1
+        set_type = CellSetOperand
+        row1 = rg.row1
+        row2 = rg.row2
+        column1 = rg.column1
+        column2 = rg.column2
+
+    rg_size = 2 if row1 != row2 and column1 != column2 else 1
 
     row = row.digit
     if column is not None:
         column = column.digit
+    elif rg_size == 1:
+        column = 1
 
-    if row <= 0 or column is not None and column <= 0:
+    if rg_size == 1 and column > 1 or rg_size == 2 and (column is None or row == 0 or column == 0):
         return BadReference()
 
-    if rg_size == 1 and column is not None or rg_size == 2 and column is None:
-        return BadReference()
-
-    if rg_size == 1:
-        if rg.row1 == rg.row2:
-            if rg.column2 - rg.column1 + 1 < row:
-                return BadReference()
-            return SingleCellOperand(rg.row1, rg.column1 - 1 + row, ws_name=rg.ws_name, source=rg.source)
-        else:
-            if rg.row2 - rg.row1 + 1 < row:
-                return BadReference()
-            return SingleCellOperand(rg.row1 - 1 + row, rg.column1, ws_name=rg.ws_name, source=rg.source)
+    if row == 0:
+        result = set_type()
+        for c in range(column1, column2 + 1):
+            result.add_cell(rg.get_cell(1, c))
+    elif column == 0:
+        result = set_type()
+        for r in range(row1, row2 + 1):
+            result.add_cell(rg.get_cell(r, 1))
     else:
-        if rg.row2 - rg.row1 + 1 < row or rg.column2 - rg.column1 + 1 < column:
-            return BadReference()
-        return SingleCellOperand(rg.row1 - 1 + row, rg.column1 - 1 + column, ws_name=rg.ws_name, source=rg.source)
+        result = rg.get_cell(row, column)
+
+    return result
 
 
 ARITHMETIC_FUNCTIONS = {
