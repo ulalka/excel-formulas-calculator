@@ -352,7 +352,7 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
         self.rpn = rpn
         self._result = None
 
-    @property
+    @cached_property
     def evaluated_value(self):
         v = self.rpn.calc(ws_name=self.ws_name, source=self.source)
         if isinstance(v, RPNOperand):
