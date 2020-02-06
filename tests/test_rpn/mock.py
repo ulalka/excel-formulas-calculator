@@ -20,6 +20,11 @@ class ExcelMock(BaseExcelInterface):
             2: {1: 13, 2: 16, 3: 18},
             3: {1: 4, 2: 2, 3: 8},
         },
+        'Sheet5': {
+            1: {1: '', 2: 16, 3: None},
+            2: {1: 13, 2: '', 3: 18},
+            3: {1: None, 2: 2, 3: ''},
+        },
     }
 
     def cell_to_value(self, row, column, ws_name):

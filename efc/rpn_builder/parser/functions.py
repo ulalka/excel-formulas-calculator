@@ -350,6 +350,10 @@ def countif_function(cells, expr):
     return len([op for op in cells.value if not op.is_blank and check(op, operand)])
 
 
+def counta_function(cells):
+    return len([op for op in cells.value if op.value is not None])
+
+
 def ifs_indexes(*args):
     args = iter(args)
     good_indexes = set()
@@ -513,6 +517,7 @@ EXCEL_FUNCTIONS['FLOOR'] = floor_function
 EXCEL_FUNCTIONS['COUNT'] = count_function
 EXCEL_FUNCTIONS['COUNTIF'] = countif_function
 EXCEL_FUNCTIONS['COUNTBLANK'] = count_blank_function
+EXCEL_FUNCTIONS['COUNTA'] = counta_function
 EXCEL_FUNCTIONS['ABS'] = abs_function
 EXCEL_FUNCTIONS['OFFSET'] = offset_function
 EXCEL_FUNCTIONS['MATCH'] = match_function

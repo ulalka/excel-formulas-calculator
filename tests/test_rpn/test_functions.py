@@ -177,6 +177,11 @@ def test_COUNTIFS(calc):
     assert calc('COUNTIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 2
 
 
+def test_COUNTA(calc):
+    assert calc('COUNTA(Sheet4!A1:B4)', 'Yet another sheet').value == 6
+    assert calc('COUNTA(Sheet5!A1:B4)', 'Yet another sheet').value == 5
+
+
 def test_CONCATENATE(calc):
     assert calc('CONCATENATE(Sheet4!A1,Sheet4!B3,"13")', 'Yet another sheet').value == '13213'
     assert calc('CONCATENATE("",Sheet4!B3,TRUE)', 'Yet another sheet').value == '2TRUE'
