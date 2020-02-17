@@ -74,7 +74,7 @@ IS_FLOAT_REGEXP = re.compile(IS_FLOAT_REGEXP.decode('raw_unicode_escape'), re.U 
 
 
 def is_float(v):
-    return IS_FLOAT_REGEXP.match(v)
+    return isinstance(v, (six.integer_types, float)) or isinstance(v, six.string_types) and IS_FLOAT_REGEXP.match(v)
 
 
 def digit(v):
