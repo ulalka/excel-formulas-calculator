@@ -27,6 +27,11 @@ def test_SUMIFS(calc):
     assert calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 26
 
 
+def test_SUMIF(calc):
+    assert calc('SUMIF(Sheet4!A1:B3,">4",Sheet4!A1:B3)', 'Yet another sheet').value == 58
+    assert calc('SUMIF(Sheet4!A1:B3,"13",Sheet4!A1:B3)', 'Yet another sheet').value == 26
+
+
 def test_MOD(calc):
     assert calc('MOD(\'Sheet 1\'!B3,4)', 'Yet another sheet').value == 2
     assert calc('MOD(\'Sheet 1\'!A3,\'Sheet 1\'!C3)', 'Yet another sheet').value == 4
@@ -214,3 +219,9 @@ def test_INDEX(calc):
 
     with pytest.raises(BadReference):
         assert calc('INDEX(Sheet4!A1:C3,1,0)', 'Yet another sheet').value
+
+
+def test_SUBSTITUTE(calc):
+    assert calc('SUBSTITUTE("123123123","1","22")', 'Yet another sheet').value == "222322232223"
+    assert calc('SUBSTITUTE("123123123","1","22", 2)', 'Yet another sheet').value == "22232223123"
+    assert calc('SUBSTITUTE("123123123","1","22", -1)', 'Yet another sheet').value == "222322232223"

@@ -8,6 +8,6 @@ Functionality
 * Arithmetic: ``-, +, *, /, ^, ()``
 * Comparison: ``<>, >, >=, <, <=, =``
 * String concatenation: ``&``
-* Functions: ``ABS, AND, AVERAGE, AVERAGEIFS, CONCATENATE, COUNT, COUNTA, COUNTIF, COUNTIFS, COUNTBLANK, IF, IFERROR, INDEX, ISBLANK, FLOOR, LARGE, LEFT, MAX, MATCH, MID, MIN, MOD, OFFSET, OR, SMALL, RIGHT, ROUND, ROUNDDOWN, SUM, SUMIFS, VLOOKUP``
+* Functions: ``ABS, AND, AVERAGE, AVERAGEIFS, CONCATENATE, COUNT, COUNTA, COUNTIF, COUNTIFS, COUNTBLANK, IF, IFERROR, INDEX, ISBLANK, FLOOR, LARGE, LEFT, MAX, MATCH, MID, MIN, MOD, OFFSET, OR, SMALL, SUBSTITUTE, RIGHT, ROUND, ROUNDDOWN, SUM, SUMIF, SUMIFS, VLOOKUP``
 * All variations of the spelling of the cell and range addresses (linked docs will be skipped)
 * Formula cell offset - this can be useful when calculating shared formulas

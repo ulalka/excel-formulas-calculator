@@ -483,7 +483,8 @@ def index_function(rg, row, column=None):
     return result
 
 
-def substitute_func(text, old_text, new_text, instance_num=-1):
+def substitute_func(text, old_text, new_text, instance_num=None):
+    instance_num = instance_num.digit if instance_num is not None else -1
     return text.string.replace(old_text.string, new_text.string, instance_num)
 
 
