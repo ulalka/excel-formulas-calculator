@@ -167,7 +167,7 @@ def iter_digits(yield_none, *args):
 
 
 def sum_func(*args):
-    return sum(iter_digits(False, *args))
+    return sum(d or 0 for d in iter_digits(False, *args))
 
 
 def mod_func(op1, op2):
@@ -187,11 +187,11 @@ def if_error_func(op1, op2):
 
 
 def max_func(*args):
-    return max(list(iter_digits(False, *args)) or [0])
+    return max(list(d or 0 for d in iter_digits(False, *args)) or [0])
 
 
 def min_func(*args):
-    return min(list(iter_digits(False, *args)) or [0])
+    return min(list(d or 0 for d in iter_digits(False, *args)) or [0])
 
 
 def left_func(op1, op2=1):
@@ -380,6 +380,10 @@ def sum_ifs_function(op1, *args):
     return sum_func(*[c for idx, c in enumerate(op1, 1) if idx in good_indexes])
 
 
+def sum_if_function(r, expr, op1):
+    return sum_ifs_function(op1, r, expr)
+
+
 def concatenate(*args):
     return ''.join(i.string for i in iter_elements(*args) if not i.is_blank)
 
@@ -479,6 +483,10 @@ def index_function(rg, row, column=None):
     return result
 
 
+def substitute_func(text, old_text, new_text, instance_num=-1):
+    return text.string.replace(old_text.string, new_text.string, instance_num)
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -498,6 +506,7 @@ EXCEL_FUNCTIONS = {}
 EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
 
 EXCEL_FUNCTIONS['SUM'] = sum_func
+EXCEL_FUNCTIONS['SUMIF'] = sum_if_function
 EXCEL_FUNCTIONS['SUMIFS'] = sum_ifs_function
 EXCEL_FUNCTIONS['MOD'] = mod_func
 EXCEL_FUNCTIONS['IF'] = if_func
@@ -529,3 +538,4 @@ EXCEL_FUNCTIONS['LARGE'] = large_function
 EXCEL_FUNCTIONS['COUNTIFS'] = count_ifs_function
 EXCEL_FUNCTIONS['CONCATENATE'] = concatenate
 EXCEL_FUNCTIONS['INDEX'] = index_function
+EXCEL_FUNCTIONS['SUBSTITUTE'] = substitute_func

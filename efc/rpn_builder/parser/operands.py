@@ -32,7 +32,7 @@ class Operand(OperandLikeObject):
     @property
     def digit(self):
         """Digit type"""
-        return digit(self.value) if self.value else 0
+        return digit(self.value)
 
     @property
     def string(self):
