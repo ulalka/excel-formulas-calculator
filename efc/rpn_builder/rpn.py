@@ -6,7 +6,7 @@ from six.moves import range
 from efc.rpn_builder.errors import OperandsMissing
 from efc.rpn_builder.parser.operands import (CellSetOperand, ErrorOperand, OffsetMixin, OperandLikeObject,
                                              SimpleOperand, SimpleSetOperand, SingleCellOperand, ValueErrorOperand,
-                                             ZeroDivisionErrorOperand)
+                                             ZeroDivisionErrorOperand, FunctionNotSupported)
 from efc.rpn_builder.parser.operations import Operation
 from efc.utils import Array
 
@@ -61,6 +61,8 @@ class RPN(Array):
 
                 try:
                     v = token.eval(*args)
+                except FunctionNotSupported:
+                    raise
                 except ErrorOperand as err:
                     v = err
                 except (TypeError, ValueError):
@@ -72,6 +74,9 @@ class RPN(Array):
                     v.formula = self.formula
                     if v.ws_name is None:
                         v.ws_name = ws_name
+                    if isinstance(v, FunctionNotSupported):
+                        raise v
+
                 result_append(v)
 
         return self.handle_result(result, ws_name, source)
