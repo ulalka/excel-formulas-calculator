@@ -41,17 +41,23 @@ class OperandToken(Token):
 
 
 class FloatToken(OperandToken):
-    pattern = r'\d+\.\d+\b'
+    pattern = r'(?P<float_value>\d+\.\d+)((?P<float_percent>%)|\b)'
 
     def get_value(self, m):
-        return float(super(FloatToken, self).get_value(m))
+        v = float(m['float_value'])
+        if m['float_percent'] is not None:
+            v /= 100
+        return v
 
 
 class IntToken(OperandToken):
-    pattern = r'\d+\b'
+    pattern = r'(?P<int_value>\d+)((?P<int_percent>%)|\b)'
 
     def get_value(self, m):
-        return int(super(IntToken, self).get_value(m))
+        v = int(m['int_value'])
+        if m['int_percent'] is not None:
+            v /= 100
+        return v
 
 
 class BoolToken(OperandToken):
