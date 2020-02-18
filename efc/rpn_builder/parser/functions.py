@@ -92,6 +92,10 @@ def multiply_func(op1, op2):
 
 @set_mixin
 def concat_func(op1, op2):
+    if isinstance(op1, ErrorOperand):
+        raise op1
+    if isinstance(op2, ErrorOperand):
+        raise op2
     return op1.string + op2.string
 
 
