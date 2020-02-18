@@ -8,6 +8,8 @@ from six.moves import range
 
 from efc.base.errors import BaseEFCException
 from efc.utils import cached_property, col_index_to_str, digit, u
+from efc import settings
+
 
 __all__ = (
     'Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
@@ -37,10 +39,17 @@ class Operand(OperandLikeObject):
     @property
     def string(self):
         """String type"""
-        if isinstance(self.value, bool):
-            return u(self.value).upper()
-        elif self.value is not None:
-            return u(self.value)
+        value = self.value
+
+        if isinstance(value, bool):
+            return text_type(value).upper()
+        elif isinstance(value, float):
+            if value % 1 == 0:
+                return text_type(int(value))
+            else:
+                return text_type(value).replace('.', settings.FLOAT_DELIMITER)
+        elif value is not None:
+            return u(value)
         else:
             return ''
 

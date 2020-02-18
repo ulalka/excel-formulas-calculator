@@ -92,13 +92,7 @@ def multiply_func(op1, op2):
 
 @set_mixin
 def concat_func(op1, op2):
-    a = op1.value
-    b = op2.value
-    if isinstance(a, float) and a % 1 == 0:
-        a = int(a)
-    if isinstance(b, float) and b % 1 == 0:
-        b = int(b)
-    return '%s%s' % (a, b)
+    return op1.string + op2.string
 
 
 @set_mixin
@@ -267,12 +261,20 @@ def large_function(r, op):
 
 
 def round_function(a, b):
-    return round(a.digit, int(b))
+    b = int(b)
+    v = round(a.digit, b)
+    if b == 0:
+        v = int(v)
+    return v
 
 
 def round_down_function(a, b):
-    base = 10 ** (int(b))
-    return a.digit * base // 1 / base
+    b = int(b)
+    base = 10 ** b
+    v = a.digit * base // 1 / base
+    if b == 0:
+        v = int(v)
+    return v
 
 
 def floor_function(a, multiple):
