@@ -152,12 +152,9 @@ def iter_elements(*args):
             yield arg
 
 
-def iter_digits(yield_none, *args):
+def iter_digits(*args):
     for op in iter_elements(*args):
-        if op.is_blank:
-            if yield_none:
-                yield None
-        else:
+        if not op.is_blank:
             try:
                 yield op.digit
             except:
@@ -165,7 +162,7 @@ def iter_digits(yield_none, *args):
 
 
 def sum_func(*args):
-    return sum(d or 0 for d in iter_digits(False, *args))
+    return sum(d or 0 for d in iter_digits(*args))
 
 
 def mod_func(op1, op2):
@@ -185,11 +182,11 @@ def if_error_func(op1, op2):
 
 
 def max_func(*args):
-    return max(list(d or 0 for d in iter_digits(False, *args)) or [0])
+    return max(list(d or 0 for d in iter_digits(*args)) or [0])
 
 
 def min_func(*args):
-    return min(list(d or 0 for d in iter_digits(False, *args)) or [0])
+    return min(list(d or 0 for d in iter_digits(*args)) or [0])
 
 
 def left_func(op1, op2=1):
@@ -247,7 +244,7 @@ def not_func(op):
 
 
 def small_function(r, op):
-    items = sorted(iter_digits(False, r))
+    items = sorted(iter_digits(r))
     index = int(op) - 1
     try:
         return items[index]
@@ -256,7 +253,7 @@ def small_function(r, op):
 
 
 def large_function(r, op):
-    items = sorted(iter_digits(False, r), reverse=True)
+    items = sorted(iter_digits(r), reverse=True)
     index = int(op) - 1
     try:
         return items[index]
@@ -287,8 +284,7 @@ def floor_function(a, multiple):
 
 
 def count_function(*args):
-    return len([op for op in iter_elements(*args)
-                if not op.is_blank and isinstance(op.value, (integer_types, float))])
+    return len([op for op in iter_elements(*args) if isinstance(op.value, (integer_types, float))])
 
 
 def abs_function(a):
@@ -353,7 +349,7 @@ def get_check_function(expr):
 
 def countif_function(cells, expr):
     check, operand = get_check_function(expr)
-    return len([op for op in cells.value if not op.is_blank and check(op, operand)])
+    return len([op for op in cells.value if check(op, operand)])
 
 
 def counta_function(cells):
@@ -391,11 +387,11 @@ def sum_if_function(r, expr, op1):
 
 
 def concatenate(*args):
-    return ''.join(i.string for i in iter_elements(*args) if not i.is_blank)
+    return ''.join(i.string for i in iter_elements(*args))
 
 
 def average_function(*args):
-    values = list(iter_digits(False, *args))
+    values = list(iter_digits(*args))
     return sum(values) / len(values)
 
 
