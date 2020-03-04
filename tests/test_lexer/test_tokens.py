@@ -65,13 +65,16 @@ def test_simple_type_tokens(line, token_type, result):
     assert token.token_value == result
 
 
-def gen_address_ws_name(doc, ws_name):
+def gen_address_ws_name(doc, ws_name, quote=False):
     name_list = []
     if doc is not None:
         name_list.append('[%s]' % doc)
 
     if ws_name is not None:
         name_list.append('%s' % ws_name)
+
+    if quote and name_list:
+        name_list = ["'%s'" % ''.join(name_list)]
 
     if doc is not None or ws_name is not None:
         name_list.append('!')
@@ -85,13 +88,17 @@ def gen_cell(row, row_fixed, col, col_fixed):
 
 
 @pytest.mark.parametrize('doc', [None, 'src'])
-@pytest.mark.parametrize('ws_name', [None, 'word', '1_word', '\'two words\''])
+@pytest.mark.parametrize('ws_name', [None, 'word', '1_word', 'two words'])
 @pytest.mark.parametrize('row', ['1', '100'])
 @pytest.mark.parametrize('column', ['A', 'AA'])
 @pytest.mark.parametrize('row_fixed', [True, False])
 @pytest.mark.parametrize('column_fixed', [True, False])
-def test_single_cell_token(doc, ws_name, row, column, row_fixed, column_fixed):
-    address = gen_address_ws_name(doc, ws_name) + gen_cell(row, row_fixed, column, column_fixed)
+@pytest.mark.parametrize('quote', [False, True])
+def test_single_cell_token(doc, ws_name, row, column, row_fixed, column_fixed, quote):
+    if ws_name and ' ' in ws_name and not quote:
+        return
+
+    address = gen_address_ws_name(doc, ws_name, quote) + gen_cell(row, row_fixed, column, column_fixed)
 
     match = re.match('(?P<%s>%s)' % (tokens.SingleCellToken.__name__, tokens.SingleCellToken.pattern), address)
     token = tokens.SingleCellToken(match)
@@ -109,7 +116,7 @@ def test_single_cell_token(doc, ws_name, row, column, row_fixed, column_fixed):
 
 
 @pytest.mark.parametrize('doc', [None, 'src'])
-@pytest.mark.parametrize('ws_name', [None, 'word', '1_word', '\'two words\''])
+@pytest.mark.parametrize('ws_name', [None, 'word', '1_word', 'two words'])
 @pytest.mark.parametrize('row1', ['1', '100'])
 @pytest.mark.parametrize('column1', ['A', 'AA'])
 @pytest.mark.parametrize('row1_fixed', [True, False])
@@ -118,12 +125,16 @@ def test_single_cell_token(doc, ws_name, row, column, row_fixed, column_fixed):
 @pytest.mark.parametrize('column2', ['A', 'AA'])
 @pytest.mark.parametrize('row2_fixed', [True, False])
 @pytest.mark.parametrize('column2_fixed', [True, False])
+@pytest.mark.parametrize('quote', [False, True])
 def test_cells_range_token(doc, ws_name,
                            row1, column1, row1_fixed, column1_fixed,
-                           row2, column2, row2_fixed, column2_fixed):
+                           row2, column2, row2_fixed, column2_fixed, quote):
+    if ws_name and ' ' in ws_name and not quote:
+        return
+
     cells_range = '%s:%s' % (gen_cell(row1, row1_fixed, column1, column1_fixed),
                              gen_cell(row2, row2_fixed, column2, column2_fixed))
-    address = gen_address_ws_name(doc, ws_name) + cells_range
+    address = gen_address_ws_name(doc, ws_name, quote) + cells_range
 
     match = re.match('(?P<%s>%s)' % (tokens.CellsRangeToken.__name__, tokens.CellsRangeToken.pattern), address)
     token = tokens.CellsRangeToken(match)
@@ -146,10 +157,14 @@ def test_cells_range_token(doc, ws_name,
 
 
 @pytest.mark.parametrize('doc', [None, 'src'])
-@pytest.mark.parametrize('ws_name', [None, 'word', '1_word', '\'two words\''])
+@pytest.mark.parametrize('ws_name', [None, 'word', '1_word', 'two words'])
 @pytest.mark.parametrize('range_name', ['name', '1_name'])
-def test_named_range_token(doc, ws_name, range_name):
-    address = gen_address_ws_name(doc, ws_name) + range_name
+@pytest.mark.parametrize('quote', [False, True])
+def test_named_range_token(doc, ws_name, range_name, quote):
+    if ws_name and ' ' in ws_name and not quote:
+        return
+
+    address = gen_address_ws_name(doc, ws_name, quote) + range_name
 
     match = re.match('(?P<%s>%s)' % (tokens.NamedRangeToken.__name__, tokens.NamedRangeToken.pattern), address)
     token = tokens.NamedRangeToken(match)

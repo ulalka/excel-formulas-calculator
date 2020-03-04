@@ -86,7 +86,7 @@ class AddressToken(OperandToken):
 
 
 class SingleCellToken(AddressToken):
-    pattern = (r"((\[(?P<s_doc>\w+)\])?(?P<single_ws_name>('[^']+')|(\w+))?!)?"
+    pattern = (r"((?P<q1>')?(\[(?P<s_doc>\w+)\])?(?P<single_ws_name>(?(q1)[^']|\w)+)?(?(q1)'|)!)?"
                r"(?P<column_fixed>\$)?(?P<column>[A-Z]+)(?P<row_fixed>\$)?(?P<row>[0-9]+)\b")
 
     def get_value(self, m):
@@ -100,7 +100,7 @@ class SingleCellToken(AddressToken):
 
 
 class CellsRangeToken(AddressToken):
-    pattern = (r"((\[(?P<r_doc>\w+)\])?(?P<range_ws_name>('[^']+')|(\w+))?!)?"
+    pattern = (r"((?P<q2>')?(\[(?P<r_doc>\w+)\])?(?P<range_ws_name>(?(q2)[^']|\w)+)?(?(q2)'|)!)?"
                r"((?P<column1_fixed>\$)?(?P<column1>[A-Z]+))?((?P<row1_fixed>\$)?(?P<row1>[0-9]+))?"
                r":((?P<column2_fixed>\$)?(?P<column2>[A-Z]+))?((?P<row2_fixed>\$)?(?P<row2>[0-9]+))?\b")
 
@@ -119,7 +119,7 @@ class CellsRangeToken(AddressToken):
 
 
 class NamedRangeToken(AddressToken):
-    pattern = (r"((\[(?P<n_doc>\w+)\])?(?P<named_range_ws_name>('[^']+')|(\w+))?!)?"
+    pattern = (r"((?P<q3>')?(\[(?P<n_doc>\w+)\])?(?P<named_range_ws_name>(?(q3)[^']|\w)+)?(?(q3)'|)!)?"
                r"(?P<range_name>\w+)")
 
     def get_value(self, m):
