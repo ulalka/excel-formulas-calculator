@@ -31,12 +31,12 @@ class OperandLikeObject(object):
 class Operand(OperandLikeObject):
     value = None
 
-    @property
+    @cached_property
     def digit(self):
         """Digit type"""
         return digit(self.value)
 
-    @property
+    @cached_property
     def string(self):
         """String type"""
         value = self.value
@@ -53,9 +53,9 @@ class Operand(OperandLikeObject):
         else:
             return ''
 
-    @property
+    @cached_property
     def is_blank(self):
-        return self.value in (None, '')
+        return self.value in {None, ''}
 
     def __int__(self):
         return int(self.value)
