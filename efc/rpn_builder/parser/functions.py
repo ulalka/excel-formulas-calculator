@@ -359,21 +359,25 @@ def counta_function(cells):
 def ifs_indexes(*args):
     args = iter(args)
     good_indexes = set()
-    first_iteration = True
+
+    operands = []
+    conditions = []
     while True:
         try:
-            op = next(args)
+            operands.append(next(args))
         except StopIteration:
             break
 
-        check, expr = get_check_function(next(args))
-        for idx, item in enumerate(op, 1):
-            if check(item, expr):
-                if first_iteration:
-                    good_indexes.add(idx)
-            elif idx in good_indexes:
-                good_indexes.remove(idx)
-        first_iteration = False
+        conditions.append(get_check_function(next(args)))
+
+    for idx, items in enumerate(zip_longest(*operands, fillvalue=None), 1):
+        for item, (check, expr) in zip(items, conditions):
+            if item is None:
+                raise ValueErrorOperand
+            elif not check(item, expr):
+                break
+        else:
+            good_indexes.add(idx)
     return good_indexes
 
 
