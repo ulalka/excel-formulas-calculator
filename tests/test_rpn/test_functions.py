@@ -17,6 +17,7 @@ def calc():
 
 def test_SUM(calc):
     assert calc('SUM(Sheet4!A1:B3)', 'Yet another sheet').value == 64
+    assert calc('SUM([0]Sheet4!A1:B3)', 'Yet another sheet').value == 64
     assert calc('SUM(Sheet4!A1:B3) + 1', 'Yet another sheet').value == 65
     assert calc('SUM(Sheet4!A1:B3,A2:B3)', 'Sheet4').value == 99
     assert calc('SUM(Sheet4!A1:B3,SUM(A3:B3))', 'Sheet4').value == 70

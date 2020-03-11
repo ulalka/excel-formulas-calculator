@@ -6,6 +6,17 @@ class BaseExcelInterface(object):
     """
     Base class to working with excel document
     """
+    clear_cache_bind = None
+    remove_cell_bind = None
+    use_cache = False
+
+    def clear_cache(self):
+        if self.clear_cache_bind is not None:
+            self.clear_cache_bind()
+
+    def remove_cell_cache(self, ws_name, row, column):
+        if self.remove_cell_bind is not None:
+            self.remove_cell_bind(ws_name, row, column)
 
     def cell_to_value(self, row, column, ws_name):
         """

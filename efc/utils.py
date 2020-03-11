@@ -80,7 +80,7 @@ def is_float(v):
 def digit(v):
     if isinstance(v, six.string_types):
         # workaround for PEP 515
-        if is_float(v):
+        if IS_FLOAT_REGEXP.match(v):
             v = float(v)
         else:
             raise ValueError(v)

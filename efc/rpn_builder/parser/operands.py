@@ -2,14 +2,14 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from collections import defaultdict
+from weakref import WeakKeyDictionary
 
-from six import itervalues, python_2_unicode_compatible, text_type
+from six import add_metaclass, itervalues, python_2_unicode_compatible, text_type
 from six.moves import range
 
+from efc import settings
 from efc.base.errors import BaseEFCException
 from efc.utils import cached_property, col_index_to_str, digit, u
-from efc import settings
-
 
 __all__ = (
     'Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
@@ -176,6 +176,51 @@ class OffsetMixin(object):
         raise NotImplementedError
 
 
+class MetaSingleCellOperandCache(type):
+    _sources = WeakKeyDictionary()
+
+    def _bind_source(cls, source):
+        def clear_cache():
+            if source in cls._sources:
+                cls._sources[source].clear()
+
+        def remove_cell(ws_name, row, column):
+            if source in cls._sources:
+                cache = cls._sources[source]
+
+                # TODO so ugly
+                for row_fixed, column_fixed in ((False, False), (False, True), (True, False), (True, True)):
+                    key = (ws_name, row, column, row_fixed, column_fixed)
+                    if key in cache:
+                        del cache[key]
+
+        source.clear_cache_bind = clear_cache
+        source.remove_cell_bind = remove_cell
+
+    def _get_source_cache(cls, source):
+        if source not in cls._sources:
+            cls._sources[source] = {}
+            cls._bind_source(source)
+
+        return cls._sources[source]
+
+    def __call__(cls, row, column, row_fixed=False, column_fixed=False, ws_name=None, source=None):
+        if source is not None and ws_name is not None and source.use_cache:
+            cache = cls._get_source_cache(source)
+            key = (ws_name, row, column, row_fixed, column_fixed)
+
+            if key not in cache:
+                cache[key] = super(MetaSingleCellOperandCache, cls).__call__(row, column, row_fixed=row_fixed,
+                                                                             column_fixed=column_fixed, ws_name=ws_name,
+                                                                             source=source)
+            return cache[key]
+        else:
+            return super(MetaSingleCellOperandCache, cls).__call__(row, column, row_fixed=row_fixed,
+                                                                   column_fixed=column_fixed, ws_name=ws_name,
+                                                                   source=source)
+
+
+@add_metaclass(MetaSingleCellOperandCache)
 class SingleCellOperand(CellsOperand, Operand, OffsetMixin):
     def __init__(self, row, column, row_fixed=False, column_fixed=False, *args, **kwargs):
         super(SingleCellOperand, self).__init__(*args, **kwargs)
@@ -195,14 +240,17 @@ class SingleCellOperand(CellsOperand, Operand, OffsetMixin):
         return "'%s'!%s%d" % (self.ws_name, col_index_to_str(self.column), self.row)
 
     def offset(self, row_offset=0, col_offset=0):
-        new_operand = SingleCellOperand(row=self.row, column=self.column,
-                                        row_fixed=self.row_fixed, column_fixed=self.column_fixed,
-                                        ws_name=self.ws_name, source=self.source)
-        if not new_operand.row_fixed:
-            new_operand.row += row_offset
-        if not new_operand.column_fixed:
-            new_operand.column += col_offset
-        return new_operand
+        row = self.row
+        column = self.column
+
+        if not self.row_fixed:
+            row += row_offset
+        if not self.column_fixed:
+            column += col_offset
+
+        return SingleCellOperand(row=row, column=column,
+                                 row_fixed=self.row_fixed, column_fixed=self.column_fixed,
+                                 ws_name=self.ws_name, source=self.source)
 
 
 class SetOperand(OperandLikeObject):
@@ -311,21 +359,25 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
                                    col_index_to_str(self.column2), self.row2)
 
     def offset(self, row_offset=0, col_offset=0):
-        new_operand = CellRangeOperand(row1=self.row1, column1=self.column1,
-                                       row2=self.row2, column2=self.column2,
-                                       row1_fixed=self.row1_fixed, column1_fixed=self.column1_fixed,
-                                       row2_fixed=self.row2_fixed, column2_fixed=self.column2_fixed,
-                                       ws_name=self.ws_name, source=self.source)
+        row1 = self.row1
+        column1 = self.column1
+        row2 = self.row2
+        column2 = self.column2
 
-        if not new_operand.row1_fixed and new_operand.row1 is not None:
-            new_operand.row1 += row_offset
-        if not new_operand.column1_fixed and new_operand.column1 is not None:
-            new_operand.column1 += col_offset
-        if not new_operand.row2_fixed and new_operand.row2 is not None:
-            new_operand.row2 += row_offset
-        if not new_operand.column2_fixed and new_operand.column2 is not None:
-            new_operand.column2 += col_offset
-        return new_operand
+        if not self.row1_fixed and self.row1 is not None:
+            row1 += row_offset
+        if not self.column1_fixed and self.column1 is not None:
+            column1 += col_offset
+        if not self.row2_fixed and self.row2 is not None:
+            row2 += row_offset
+        if not self.column2_fixed and self.column2 is not None:
+            column2 += col_offset
+
+        return CellRangeOperand(row1=row1, column1=column1,
+                                row2=row2, column2=column2,
+                                row1_fixed=self.row1_fixed, column1_fixed=self.column1_fixed,
+                                row2_fixed=self.row2_fixed, column2_fixed=self.column2_fixed,
+                                ws_name=self.ws_name, source=self.source)
 
     def get_cell(self, row, column):
         if self.row1 <= row <= self.row2 and self.column1 <= column <= self.column2:
