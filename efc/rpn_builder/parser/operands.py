@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from collections import defaultdict
-from weakref import WeakKeyDictionary
+from weakref import WeakKeyDictionary, WeakValueDictionary
 
 from six import add_metaclass, itervalues, python_2_unicode_compatible, text_type
 from six.moves import range
@@ -198,22 +198,26 @@ class MetaSingleCellOperandCache(type):
         source.remove_cell_bind = remove_cell
 
     def _get_source_cache(cls, source):
-        if source not in cls._sources:
-            cls._sources[source] = {}
+        try:
+            return cls._sources[source]
+        except KeyError:
+            cache = cls._sources[source] = {}
             cls._bind_source(source)
-
-        return cls._sources[source]
+            return cache
 
     def __call__(cls, row, column, row_fixed=False, column_fixed=False, ws_name=None, source=None):
         if source is not None and ws_name is not None and source.use_cache:
             cache = cls._get_source_cache(source)
             key = (ws_name, row, column, row_fixed, column_fixed)
 
-            if key not in cache:
-                cache[key] = super(MetaSingleCellOperandCache, cls).__call__(row, column, row_fixed=row_fixed,
-                                                                             column_fixed=column_fixed, ws_name=ws_name,
-                                                                             source=source)
-            return cache[key]
+            try:
+                return cache[key]
+            except KeyError:
+                value = cache[key] = super(MetaSingleCellOperandCache, cls).__call__(row, column, row_fixed=row_fixed,
+                                                                                     column_fixed=column_fixed,
+                                                                                     ws_name=ws_name,
+                                                                                     source=source)
+                return value
         else:
             return super(MetaSingleCellOperandCache, cls).__call__(row, column, row_fixed=row_fixed,
                                                                    column_fixed=column_fixed, ws_name=ws_name,
