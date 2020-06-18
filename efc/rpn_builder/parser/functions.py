@@ -7,10 +7,10 @@ from functools import wraps
 from six import integer_types, string_types
 from six.moves import range, zip_longest
 
-from efc.rpn_builder.parser.operands import (BadReference, CellRangeOperand, CellSetOperand, ErrorOperand,
-                                             NotFoundErrorOperand, RPNOperand, SetOperand, SimpleOperand,
-                                             SimpleSetOperand, SingleCellOperand, ValueErrorOperand, ValueNotAvailable,
-                                             NamedRangeOperand)
+from efc.rpn_builder.parser.operands import (
+    BadReference, CellRangeOperand, CellSetOperand, ErrorOperand, NamedRangeOperand, NotFoundErrorOperand, RPNOperand,
+    SetOperand, SimpleOperand, SimpleSetOperand, SingleCellOperand, ValueErrorOperand, ValueNotAvailable,
+)
 from efc.utils import is_float
 
 __all__ = ('EXCEL_FUNCTIONS',)
@@ -376,9 +376,10 @@ def ifs_indexes(*args):
                 raise ValueErrorOperand
             else:
                 # convert expr value to item type
-                if isinstance(item.value, string_types):
+                if isinstance(item.value, string_types) and not isinstance(expr.value, string_types):
                     expr = SimpleOperand(expr.string)
-                elif isinstance(item.value, integer_types):
+                elif isinstance(item.value, (integer_types, float)) and not isinstance(expr.value,
+                                                                                       (integer_types, float)):
                     try:
                         expr = SimpleOperand(expr.digit)
                     except ValueError:
