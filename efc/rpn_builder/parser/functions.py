@@ -379,7 +379,10 @@ def ifs_indexes(*args):
                 if isinstance(item.value, string_types):
                     expr = SimpleOperand(expr.string)
                 elif isinstance(item.value, integer_types):
-                    expr = SimpleOperand(expr.digit)
+                    try:
+                        expr = SimpleOperand(expr.digit)
+                    except ValueError:
+                        pass
 
                 if not check(item, expr):
                     break
