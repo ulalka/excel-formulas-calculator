@@ -374,8 +374,15 @@ def ifs_indexes(*args):
         for item, (check, expr) in zip(items, conditions):
             if item is None:
                 raise ValueErrorOperand
-            elif not check(item, expr):
-                break
+            else:
+                # convert expr value to item type
+                if isinstance(item.value, string_types):
+                    expr = SimpleOperand(expr.string)
+                elif isinstance(item.value, integer_types):
+                    expr = SimpleOperand(expr.digit)
+
+                if not check(item, expr):
+                    break
         else:
             good_indexes.add(idx)
     return good_indexes
