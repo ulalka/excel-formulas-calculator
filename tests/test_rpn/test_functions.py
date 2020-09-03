@@ -194,8 +194,9 @@ def test_CONCATENATE(calc):
 
 
 def test_INDEX(calc):
-    assert calc('INDEX(Sheet4!A1:A3,1)', 'Yet another sheet').value == 13
-    assert calc('INDEX(Sheet4!A1:A3,3)', 'Yet another sheet').value == 4
+    assert calc('INDEX(Sheet4!A1:A3,1)', 'Yet another sheet').value == 13  # A1
+    assert calc('INDEX(Sheet4!A1:A3,3)', 'Yet another sheet').value == 4  # A3
+    assert calc('INDEX(Sheet4!A2:A3,2)', 'Yet another sheet').value == 4  # A3
 
     with pytest.raises(BadReference):
         assert calc('INDEX(Sheet4!A1:A3,100,1)', 'Yet another sheet').value

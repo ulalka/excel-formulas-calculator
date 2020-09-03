@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from collections import defaultdict
-from weakref import WeakKeyDictionary, WeakValueDictionary
+from weakref import WeakKeyDictionary
 
 from six import add_metaclass, itervalues, python_2_unicode_compatible, text_type
 from six.moves import range
@@ -384,6 +384,9 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
                                 ws_name=self.ws_name, source=self.source)
 
     def get_cell(self, row, column):
+        row = self.row1 + row - 1
+        column = self.column1 + column - 1
+
         if self.row1 <= row <= self.row2 and self.column1 <= column <= self.column2:
             return SingleCellOperand(row, column, ws_name=self.ws_name, source=self.source)
         return BadReference()
