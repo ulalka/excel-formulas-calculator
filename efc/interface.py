@@ -10,6 +10,9 @@ class BaseExcelInterface(object):
     remove_cell_bind = None
     use_cache = False
 
+    def __init__(self):
+        self.ifs_range_cache = {} if self.use_cache else None
+
     def clear_cache(self):
         if self.clear_cache_bind is not None:
             self.clear_cache_bind()
@@ -17,6 +20,22 @@ class BaseExcelInterface(object):
     def remove_cell_cache(self, ws_name, row, column):
         if self.remove_cell_bind is not None:
             self.remove_cell_bind(ws_name, row, column)
+
+        if self.ifs_range_cache:
+            self._remove_from_range_cache(ws_name, row, column, self.ifs_range_cache)
+
+    @staticmethod
+    def _remove_from_range_cache(ws_name, row, column, cache):
+        for key in list(cache):
+            if ws_name == key[0]:
+                if key[1] is None:
+                    if key[2] >= column >= key[4]:
+                        del cache[key]
+                elif key[2] is None:
+                    if key[1] >= row >= key[3]:
+                        del cache[key]
+                elif key[1] >= row >= key[3] and key[2] >= column >= key[4]:
+                    del cache[key]
 
     def cell_to_value(self, row, column, ws_name):
         """

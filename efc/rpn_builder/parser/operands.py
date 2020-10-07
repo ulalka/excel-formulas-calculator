@@ -2,13 +2,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from collections import defaultdict
-from weakref import WeakKeyDictionary
 
 from six import add_metaclass, itervalues, python_2_unicode_compatible, text_type
 from six.moves import range
 
 from efc import settings
 from efc.base.errors import BaseEFCException
+from efc.rpn_builder.parser.metaclasses import MetaCellRangeOperandCache, MetaSingleCellOperandCache
 from efc.utils import cached_property, col_index_to_str, digit, u
 
 __all__ = (
@@ -167,61 +167,17 @@ class CellsOperand(OperandLikeObject):
     def get_iter(self):
         raise NotImplementedError
 
+    @cached_property
+    def cached_iterable_items(self):
+        return list(self.get_iter())
+
     def __iter__(self):
-        return self.get_iter()
+        return iter(self.cached_iterable_items)
 
 
 class OffsetMixin(object):
     def offset(self, row_offset=0, col_offset=0):
         raise NotImplementedError
-
-
-class MetaSingleCellOperandCache(type):
-    _sources = WeakKeyDictionary()
-
-    def _bind_source(cls, source):
-        def clear_cache():
-            if source in cls._sources:
-                cls._sources[source].clear()
-
-        def remove_cell(ws_name, row, column):
-            if source in cls._sources:
-                cache = cls._sources[source]
-
-                # TODO so ugly
-                for row_fixed, column_fixed in ((False, False), (False, True), (True, False), (True, True)):
-                    key = (ws_name, row, column, row_fixed, column_fixed)
-                    if key in cache:
-                        del cache[key]
-
-        source.clear_cache_bind = clear_cache
-        source.remove_cell_bind = remove_cell
-
-    def _get_source_cache(cls, source):
-        try:
-            return cls._sources[source]
-        except KeyError:
-            cache = cls._sources[source] = {}
-            cls._bind_source(source)
-            return cache
-
-    def __call__(cls, row, column, row_fixed=False, column_fixed=False, ws_name=None, source=None):
-        if source is not None and ws_name is not None and source.use_cache:
-            cache = cls._get_source_cache(source)
-            key = (ws_name, row, column, row_fixed, column_fixed)
-
-            try:
-                return cache[key]
-            except KeyError:
-                value = cache[key] = super(MetaSingleCellOperandCache, cls).__call__(row, column, row_fixed=row_fixed,
-                                                                                     column_fixed=column_fixed,
-                                                                                     ws_name=ws_name,
-                                                                                     source=source)
-                return value
-        else:
-            return super(MetaSingleCellOperandCache, cls).__call__(row, column, row_fixed=row_fixed,
-                                                                   column_fixed=column_fixed, ws_name=ws_name,
-                                                                   source=source)
 
 
 @add_metaclass(MetaSingleCellOperandCache)
@@ -321,6 +277,7 @@ class SimpleSetOperand(SetOperand):
     operands_type = SimpleOperand
 
 
+@add_metaclass(MetaCellRangeOperandCache)
 class CellRangeOperand(CellsOperand, OffsetMixin):
     def __init__(self, row1, column1, row2, column2,
                  row1_fixed=False, column1_fixed=False, row2_fixed=False, column2_fixed=False,
@@ -358,9 +315,16 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
 
     @property
     def address(self):
-        return "'%s'!%s%d:%s%d" % (self.ws_name,
-                                   col_index_to_str(self.column1), self.row1,
-                                   col_index_to_str(self.column2), self.row2)
+        if self.column1 is not None and self.row1 is not None:
+            return "'%s'!%s%d:%s%d" % (self.ws_name,
+                                       col_index_to_str(self.column1), self.row1,
+                                       col_index_to_str(self.column2), self.row2)
+        elif self.column1 is not None:
+            return "'%s'!%s:%s" % (self.ws_name,
+                                   col_index_to_str(self.column1),
+                                   col_index_to_str(self.column2))
+        else:
+            return "'%s'!%d:%d" % (self.ws_name, self.row1, self.row2)
 
     def offset(self, row_offset=0, col_offset=0):
         row1 = self.row1

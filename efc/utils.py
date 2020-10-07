@@ -137,3 +137,10 @@ class Array(object):
 
     def __getitem__(self, item):
         return self._array[item]
+
+
+def join_functions(*functions):
+    def wrapper(*args, **kwargs):
+        for func in functions:
+            func(*args, **kwargs)
+    return wrapper

@@ -26,10 +26,15 @@ def _get_type_id(obj):
 
 def type_mixin(a, b):
     if a is None:
-        a = '' if isinstance(b, string_types) else 0
+        a_type = (1, '') if isinstance(b, string_types) else (0, 0)
+    else:
+        a_type = (_get_type_id(a), a)
+
     if b is None:
-        b = '' if isinstance(a, string_types) else 0
-    return (_get_type_id(a), a), (_get_type_id(b), b)
+        b_type = (1, '') if isinstance(a, string_types) else (0, 0)
+    else:
+        b_type = (_get_type_id(b), b)
+    return a_type, b_type
 
 
 def set_mixin(foo):
@@ -356,45 +361,75 @@ def counta_function(cells):
     return len([op for op in cells.value if op.value is not None])
 
 
-def ifs_indexes(*args):
+def get_checks_from_args(args):
     args = iter(args)
-    good_indexes = set()
-
-    operands = []
-    conditions = []
+    checks = []
     while True:
+        check = []
         try:
-            operands.append(next(args))
+            check.append(next(args))
         except StopIteration:
             break
 
-        conditions.append(get_check_function(next(args)))
+        check.extend(get_check_function(next(args)))
+        checks.append(check)
+    return checks
 
-    for idx, items in enumerate(zip_longest(*operands, fillvalue=None), 1):
-        for item, (check, expr) in zip(items, conditions):
-            if item is None:
-                raise ValueErrorOperand
-            else:
-                # convert expr value to item type
-                if isinstance(item.value, string_types) and not isinstance(expr.value, string_types):
-                    expr = SimpleOperand(expr.string)
-                elif isinstance(item.value, (integer_types, float)) and not isinstance(expr.value,
-                                                                                       (integer_types, float)):
-                    try:
-                        expr = SimpleOperand(expr.digit)
-                    except ValueError:
-                        pass
 
-                if not check(item, expr):
-                    break
+def ifs_indexes(*args):
+    good_indexes = None
+
+    checks = get_checks_from_args(args)
+
+    for op_range, check, expr in checks:
+        check_good_indexes = None
+        key = None
+        if op_range.source and isinstance(op_range, CellRangeOperand):
+            cache = op_range.source.ifs_range_cache
+
+            if cache is not None:
+                key = (op_range.ws_name, op_range.row1, op_range.column1, op_range.row2,
+                       op_range.column2, check, expr.value)
+                check_good_indexes = cache.get(key)
         else:
-            good_indexes.add(idx)
+            cache = None
+
+        if check_good_indexes is None:
+            check_good_indexes = set()
+            for idx, item in enumerate(op_range, 1):
+                if item is None:
+                    raise ValueErrorOperand
+                else:
+                    # convert expr value to item type
+                    if isinstance(item.value, string_types) and not isinstance(expr.value, string_types):
+                        expr = SimpleOperand(expr.string)
+                    elif isinstance(item.value, (integer_types, float)) and not isinstance(expr.value,
+                                                                                           (integer_types, float)):
+                        try:
+                            expr = SimpleOperand(expr.digit)
+                        except ValueError:
+                            pass
+
+                    if check(item, expr):
+                        check_good_indexes.add(idx)
+
+            if cache is not None:
+                cache[key] = check_good_indexes
+
+        if good_indexes is None:
+            good_indexes = check_good_indexes.copy()
+        else:
+            good_indexes &= check_good_indexes
+
+        if not good_indexes:
+            break
+
     return good_indexes
 
 
 def sum_ifs_function(op1, *args):
     good_indexes = ifs_indexes(*args)
-    return sum_func(*[c for idx, c in enumerate(op1, 1) if idx in good_indexes])
+    return sum_func(*(c for idx, c in enumerate(op1, 1) if idx in good_indexes))
 
 
 def sum_if_function(r, expr, op1):
@@ -412,7 +447,7 @@ def average_function(*args):
 
 def average_ifs_function(op1, *args):
     good_indexes = ifs_indexes(*args)
-    return average_function(*[c for idx, c in enumerate(op1, 1) if idx in good_indexes])
+    return average_function(*(c for idx, c in enumerate(op1, 1) if idx in good_indexes))
 
 
 def count_blank_function(cells):
@@ -421,7 +456,7 @@ def count_blank_function(cells):
 
 def count_ifs_function(op1, *args):
     good_indexes = ifs_indexes(*args)
-    return count_function(*[c for idx, c in enumerate(op1, 1) if idx in good_indexes])
+    return count_function(*(c for idx, c in enumerate(op1, 1) if idx in good_indexes))
 
 
 def offset_function(cell, row_offset, col_offset, height=None, width=None):
