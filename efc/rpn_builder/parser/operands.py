@@ -311,7 +311,7 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
                     yield SingleCellOperand(r, c, ws_name=self.ws_name, source=self.source)
 
     def address_to_value(self):
-        return self.get_iter()
+        return self.cached_iterable_items
 
     @property
     def address(self):
