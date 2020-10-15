@@ -162,7 +162,7 @@ def iter_digits(*args):
         if not op.is_blank:
             try:
                 yield op.digit
-            except:
+            except (ValueError, TypeError):
                 pass
 
 
