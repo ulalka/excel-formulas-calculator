@@ -6,8 +6,9 @@ from efc.rpn_builder.lexer.tokens import (AddToken, ArithmeticToken, CellsRangeT
                                           NamedRangeToken, OperandToken, OperationToken, RightBracketToken, Separator,
                                           SingleCellToken, SubtractToken)
 from efc.rpn_builder.parser.errors import InconsistentParentheses, SeparatorBlockError
-from efc.rpn_builder.parser.operands import (CellRangeOperand, NamedRangeOperand, RPNOperand, SimpleOperand,
-                                             SingleCellOperand)
+from efc.rpn_builder.parser.operands import (
+    CellRangeOperand, EmptyOperand, NamedRangeOperand, RPNOperand, SimpleOperand, SingleCellOperand,
+)
 from efc.rpn_builder.parser.operations import ArithmeticOperation, FunctionOperation, Operation
 from efc.rpn_builder.rpn import RPN
 
@@ -60,6 +61,14 @@ class Parser(object):
             operation.operands_count = 1
         return operation
 
+    def handle_result(self, result, ws_name, source):
+        if not result:
+            return EmptyOperand(ws_name=ws_name, source=source)
+        elif len(result) == 1:
+            return result[0]
+        else:
+            return RPNOperand(result, ws_name=ws_name, source=source)
+
     def to_rpn(self, line, ws_name, source, is_operand=False):
         result = RPN(line.src_line)
         stack = []
@@ -95,7 +104,7 @@ class Parser(object):
                 else:
                     if is_operand:
                         line.step_back()
-                        return result[0] if len(result) == 1 else RPNOperand(result, ws_name=ws_name, source=source)
+                        return self.handle_result(result, ws_name, source)
                     raise InconsistentParentheses(ws_name, line.src_line)
             elif isinstance(token, Separator):
                 try:
@@ -104,7 +113,7 @@ class Parser(object):
                 except IndexError:
                     if is_operand:
                         line.step_back()
-                        return result[0] if len(result) == 1 else RPNOperand(result, ws_name=ws_name, source=source)
+                        return self.handle_result(result, ws_name, source)
                     raise SeparatorBlockError(ws_name, line.src_line)
 
                 if len(stack) > 1 and isinstance(stack[-2], FunctionOperation):

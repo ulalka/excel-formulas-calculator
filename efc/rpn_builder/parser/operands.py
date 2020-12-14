@@ -16,7 +16,7 @@ __all__ = (
     'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
     'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
     'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin',
-    'SetOperand', 'BadReference', 'ValueNotAvailable',
+    'SetOperand', 'BadReference', 'ValueNotAvailable', 'EmptyOperand',
 )
 
 
@@ -68,6 +68,10 @@ class Operand(OperandLikeObject):
 
     def __trunc__(self):
         return self.__int__()
+
+
+class EmptyOperand(OperandLikeObject):
+    pass
 
 
 class ErrorOperand(OperandLikeObject, BaseEFCException):

@@ -8,8 +8,8 @@ from six import integer_types, string_types
 from six.moves import range, zip_longest
 
 from efc.rpn_builder.parser.operands import (
-    BadReference, CellRangeOperand, CellSetOperand, ErrorOperand, NamedRangeOperand, NotFoundErrorOperand, RPNOperand,
-    SetOperand, SimpleOperand, SimpleSetOperand, SingleCellOperand, ValueErrorOperand, ValueNotAvailable,
+    BadReference, CellRangeOperand, CellSetOperand, EmptyOperand, ErrorOperand, NamedRangeOperand, NotFoundErrorOperand,
+    RPNOperand, SetOperand, SimpleOperand, SimpleSetOperand, SingleCellOperand, ValueErrorOperand, ValueNotAvailable,
 )
 from efc.utils import is_float
 
@@ -460,20 +460,32 @@ def count_ifs_function(op1, *args):
 
 
 def offset_function(cell, row_offset, col_offset, height=None, width=None):
-    if not isinstance(cell, SingleCellOperand):
+    height_is_none = height is None or isinstance(height, EmptyOperand)
+    width_is_none = width is None or isinstance(width, EmptyOperand)
+
+    if isinstance(cell, SingleCellOperand):
+        height = int(height) if not height_is_none else 1
+        width = int(width) if not width_is_none else 1
+
+        column = cell.column
+        row = cell.row
+    elif isinstance(cell, CellRangeOperand):
+        height = int(height) if not height_is_none else cell.row2 - cell.row1 + 1
+        width = int(width) if not width_is_none else cell.column2 - cell.column1 + 1
+
+        column = cell.column1
+        row = cell.row1
+    else:
         return ValueErrorOperand()
 
-    height = int(height) if height is not None else 1
-    width = int(width) if width is not None else 1
-
     if height == width == 1:
-        return SingleCellOperand(row=cell.row + int(row_offset), column=cell.column + int(col_offset),
+        return SingleCellOperand(row=row + int(row_offset), column=column + int(col_offset),
                                  ws_name=cell.ws_name, source=cell.source)
     else:
-        return CellRangeOperand(row1=cell.row + int(row_offset),
-                                column1=cell.column + int(col_offset),
-                                row2=cell.row + int(row_offset) + height - 1,
-                                column2=cell.column + int(col_offset) + width - 1,
+        return CellRangeOperand(row1=row + int(row_offset),
+                                column1=column + int(col_offset),
+                                row2=row + int(row_offset) + height - 1,
+                                column2=column + int(col_offset) + width - 1,
                                 ws_name=cell.ws_name, source=cell.source)
 
 
