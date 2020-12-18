@@ -16,7 +16,7 @@ __all__ = (
     'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
     'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
     'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin',
-    'SetOperand', 'BadReference', 'ValueNotAvailable', 'EmptyOperand',
+    'SetOperand', 'BadReference', 'ValueNotAvailable', 'EmptyOperand', 'NamedRangeNotExist',
 )
 
 
@@ -370,7 +370,7 @@ class NamedRangeOperand(CellsOperand):
 
     @cached_property
     def value(self):
-        if not self.source.has_worksheet(self.ws_name):
+        if self.ws_name and not self.source.has_worksheet(self.ws_name):
             raise WorksheetNotExist(ws_name=self.ws_name)
         elif not self.source.has_named_range(self.name, self.ws_name):
             raise NamedRangeNotExist(self.name, self.ws_name)

@@ -186,6 +186,12 @@ def if_error_func(op1, op2):
     return op2 if isinstance(op1, ErrorOperand) else op1
 
 
+def is_error_func(op):
+    if isinstance(op, RPNOperand):
+        op = op.evaluated_value
+    return isinstance(op, ErrorOperand)
+
+
 def max_func(*args):
     return max(list(d or 0 for d in iter_digits(*args)) or [0])
 
@@ -552,6 +558,14 @@ def substitute_func(text, old_text, new_text, instance_num=None):
     return text.string.replace(old_text.string, new_text.string, instance_num)
 
 
+def search_func(pattern, source, start_position=None):
+    try:
+        start_position = start_position or 0
+        return source.string[start_position:].lower().index(pattern.string.lower())
+    except ValueError:
+        return ValueErrorOperand()
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -576,6 +590,7 @@ EXCEL_FUNCTIONS['SUMIFS'] = sum_ifs_function
 EXCEL_FUNCTIONS['MOD'] = mod_func
 EXCEL_FUNCTIONS['IF'] = if_func
 EXCEL_FUNCTIONS['IFERROR'] = if_error_func
+EXCEL_FUNCTIONS['ISERROR'] = is_error_func
 EXCEL_FUNCTIONS['MAX'] = max_func
 EXCEL_FUNCTIONS['MIN'] = min_func
 EXCEL_FUNCTIONS['LEFT'] = left_func
@@ -604,3 +619,4 @@ EXCEL_FUNCTIONS['COUNTIFS'] = count_ifs_function
 EXCEL_FUNCTIONS['CONCATENATE'] = concatenate
 EXCEL_FUNCTIONS['INDEX'] = index_function
 EXCEL_FUNCTIONS['SUBSTITUTE'] = substitute_func
+EXCEL_FUNCTIONS['SEARCH'] = search_func
