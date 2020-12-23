@@ -67,6 +67,9 @@ def add(op1, op2):
 
 
 def add_func(op1, op2=None):
+    if isinstance(op2, EmptyOperand):
+        op2 = None
+
     if op2 is not None:
         return add(op1, op2)
     else:
@@ -79,6 +82,9 @@ def sub(op1, op2):
 
 
 def subtract_func(op1, op2=None):
+    if isinstance(op2, EmptyOperand):
+        op2 = None
+
     if op2 is not None:
         return sub(op1, op2)
     else:
@@ -175,6 +181,9 @@ def mod_func(op1, op2):
 
 
 def if_func(expr_op, op1, op2=None):
+    if isinstance(op2, EmptyOperand):
+        op2 = None
+
     if op2 is None:
         op2 = False
     return op1 if expr_op.value else op2
@@ -201,10 +210,16 @@ def min_func(*args):
 
 
 def left_func(op1, op2=1):
+    if isinstance(op2, EmptyOperand):
+        op2 = 1
+
     return op1.string[:int(op2)]
 
 
 def right_func(op1, op2=1):
+    if isinstance(op2, EmptyOperand):
+        op2 = 1
+
     return op1.string[-int(op2):]
 
 
@@ -303,6 +318,9 @@ def abs_function(a):
 
 
 def match_function(op1, r, match_type=None):
+    if isinstance(match_type, EmptyOperand):
+        match_type = None
+
     match_type = 0 if match_type is None else int(match_type)
 
     expr = op1.value
@@ -496,6 +514,9 @@ def offset_function(cell, row_offset, col_offset, height=None, width=None):
 
 
 def vlookup_function(op, rg, column, flag=None):
+    if isinstance(flag, EmptyOperand):
+        flag = None
+
     first_col = rg.offset()
     first_col.column2 = first_col.column1
 
@@ -512,6 +533,9 @@ def vlookup_function(op, rg, column, flag=None):
 
 
 def index_function(rg, row, column=None):
+    if isinstance(column, EmptyOperand):
+        column = None
+
     if isinstance(rg, RPNOperand):
         rg = rg.evaluated_value
 
@@ -554,11 +578,17 @@ def index_function(rg, row, column=None):
 
 
 def substitute_func(text, old_text, new_text, instance_num=None):
+    if isinstance(instance_num, EmptyOperand):
+        instance_num = None
+
     instance_num = instance_num.digit if instance_num is not None else -1
     return text.string.replace(old_text.string, new_text.string, instance_num)
 
 
 def search_func(pattern, source, start_position=None):
+    if isinstance(start_position, EmptyOperand):
+        start_position = None
+
     try:
         start_position = start_position or 0
         return source.string[start_position:].lower().index(pattern.string.lower())

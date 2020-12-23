@@ -71,7 +71,9 @@ class Operand(OperandLikeObject):
 
 
 class EmptyOperand(OperandLikeObject):
-    pass
+    @property
+    def value(self):
+        return
 
 
 class ErrorOperand(OperandLikeObject, BaseEFCException):
