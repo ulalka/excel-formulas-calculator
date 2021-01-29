@@ -560,8 +560,12 @@ def index_function(rg, row, column=None):
     elif rg_size == 1:
         column = 1
 
-    if rg_size == 1 and column > 1 or rg_size == 2 and (column is None or row == 0 or column == 0):
-        return BadReference()
+    if rg_size == 1:
+        if column1 is not None and column != 1:
+            return BadReference()
+    else:
+        if column is None or row == 0 or column == 0:
+            return BadReference()
 
     if row == 0:
         result = set_type()

@@ -354,11 +354,12 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
                                 ws_name=self.ws_name, source=self.source)
 
     def get_cell(self, row, column):
-        row = self.row1 + row - 1
-        column = self.column1 + column - 1
+        row = (self.row1 or 1) + row - 1
+        column = (self.column1 or 1) + column - 1
 
-        if self.row1 <= row <= self.row2 and self.column1 <= column <= self.column2:
-            return SingleCellOperand(row, column, ws_name=self.ws_name, source=self.source)
+        if self.row1 is None or self.row1 <= row <= self.row2:
+            if self.column1 is None or self.column1 <= column <= self.column2:
+                return SingleCellOperand(row, column, ws_name=self.ws_name, source=self.source)
         return BadReference()
 
 
