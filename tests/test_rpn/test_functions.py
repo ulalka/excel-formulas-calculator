@@ -236,6 +236,22 @@ def test_INDEX(calc):
 
 
 def test_SUBSTITUTE(calc):
-    assert calc('SUBSTITUTE("123123123","1","22")', 'Yet another sheet').value == "222322232223"
-    assert calc('SUBSTITUTE("123123123","1","22", 2)', 'Yet another sheet').value == "22232223123"
-    assert calc('SUBSTITUTE("123123123","1","22", -1)', 'Yet another sheet').value == "222322232223"
+    assert calc('SUBSTITUTE("123123123","1","22")', 'Yet another sheet').value == '222322232223'
+    assert calc('SUBSTITUTE("123123123","1","22", 2)', 'Yet another sheet').value == '22232223123'
+    assert calc('SUBSTITUTE("123123123","1","22", -1)', 'Yet another sheet').value == '222322232223'
+
+
+def test_TRIM(calc):
+    assert calc('TRIM(1)', 'Yet another sheet').value == '1'
+    assert calc('TRIM(0)', 'Yet another sheet').value == '0'
+    assert calc('TRIM("1")', 'Yet another sheet').value == '1'
+    assert calc('TRIM(" 1 ")', 'Yet another sheet').value == '1'
+    assert calc('TRIM(" 1 1 ")', 'Yet another sheet').value == '1 1'
+    assert calc('TRIM(" 1      1 ")', 'Yet another sheet').value == '1 1'
+
+
+def test_LEN(calc):
+    assert calc('LEN(1)', 'Yet another sheet').value == 1
+    assert calc('LEN(0)', 'Yet another sheet').value == 1
+    assert calc('LEN("1")', 'Yet another sheet').value == 1
+    assert calc('LEN(" 1 ")', 'Yet another sheet').value == 3

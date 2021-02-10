@@ -600,6 +600,20 @@ def search_func(pattern, source, start_position=None):
         return ValueErrorOperand()
 
 
+TRIM_REGEXP = re.compile(r' {2,}')
+
+
+def trim_func(op):
+    value = op.string.strip()
+    value = TRIM_REGEXP.sub(' ', value)
+    return value
+
+
+def len_func(op):
+    value = op.string
+    return len(value)
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -654,3 +668,5 @@ EXCEL_FUNCTIONS['CONCATENATE'] = concatenate
 EXCEL_FUNCTIONS['INDEX'] = index_function
 EXCEL_FUNCTIONS['SUBSTITUTE'] = substitute_func
 EXCEL_FUNCTIONS['SEARCH'] = search_func
+EXCEL_FUNCTIONS['TRIM'] = trim_func
+EXCEL_FUNCTIONS['LEN'] = len_func
