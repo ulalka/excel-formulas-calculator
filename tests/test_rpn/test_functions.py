@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import pytest
 
 from efc import get_calculator
-from efc.rpn_builder.parser.operands import BadReference
+from efc.rpn_builder.parser.operands import BadReference, NumErrorOperand
 from .mock import ExcelMock
 
 
@@ -255,3 +255,38 @@ def test_LEN(calc):
     assert calc('LEN(0)', 'Yet another sheet').value == 1
     assert calc('LEN("1")', 'Yet another sheet').value == 1
     assert calc('LEN(" 1 ")', 'Yet another sheet').value == 3
+
+
+def test_YEARFRAC(calc):
+    with pytest.raises(NumErrorOperand):
+        assert calc('YEARFRAC(1, 2, 5)', 'Yet another sheet').value
+
+    # 30U/360
+    assert calc('YEARFRAC(43159, 43160)', 'Yet another sheet').value == 1 / 360
+    assert calc('YEARFRAC(43405, 43465, 0)', 'Yet another sheet').value == 60 / 360
+    assert calc('YEARFRAC(43889, 43890, 0)', 'Yet another sheet').value == 1 / 360
+    assert calc('YEARFRAC(43889, 43891, 0)', 'Yet another sheet').value == 3 / 360
+
+    # Actual/Actual
+    assert calc('YEARFRAC(43889, 43890, 1)', 'Yet another sheet').value == 1 / 366
+    assert calc('YEARFRAC(43889, 43891, 1)', 'Yet another sheet').value == 2 / 366
+    assert calc('YEARFRAC(43523, 43524, 1)', 'Yet another sheet').value == 1 / 365
+    assert calc('YEARFRAC(43523, 43525, 1)', 'Yet another sheet').value == 2 / 365
+
+    # Actual/360
+    assert calc('YEARFRAC(43889, 43890, 2)', 'Yet another sheet').value == 1 / 360
+    assert calc('YEARFRAC(43889, 43891, 2)', 'Yet another sheet').value == 2 / 360
+    assert calc('YEARFRAC(43523, 43524, 2)', 'Yet another sheet').value == 1 / 360
+    assert calc('YEARFRAC(43523, 43525, 2)', 'Yet another sheet').value == 2 / 360
+
+    # Actual/365
+    assert calc('YEARFRAC(43889, 43890, 3)', 'Yet another sheet').value == 1 / 365
+    assert calc('YEARFRAC(43889, 43891, 3)', 'Yet another sheet').value == 2 / 365
+    assert calc('YEARFRAC(43523, 43524, 3)', 'Yet another sheet').value == 1 / 365
+    assert calc('YEARFRAC(43523, 43525, 3)', 'Yet another sheet').value == 2 / 365
+
+    # 30E/360
+    assert calc('YEARFRAC(43159, 43160, 4)', 'Yet another sheet').value == 3 / 360
+    assert calc('YEARFRAC(43405, 43465, 4)', 'Yet another sheet').value == 59 / 360
+    assert calc('YEARFRAC(43889, 43890, 4)', 'Yet another sheet').value == 1 / 360
+    assert calc('YEARFRAC(43889, 43891, 4)', 'Yet another sheet').value == 3 / 360

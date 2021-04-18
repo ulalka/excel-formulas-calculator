@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+from calendar import isleap, monthrange
 from functools import wraps
 
 from six import integer_types, string_types
@@ -9,9 +10,10 @@ from six.moves import range, zip_longest
 
 from efc.rpn_builder.parser.operands import (
     BadReference, CellRangeOperand, CellSetOperand, EmptyOperand, ErrorOperand, NamedRangeOperand, NotFoundErrorOperand,
-    RPNOperand, SetOperand, SimpleOperand, SimpleSetOperand, SingleCellOperand, ValueErrorOperand, ValueNotAvailable,
+    NumErrorOperand, RPNOperand, SetOperand, SimpleOperand, SimpleSetOperand, SingleCellOperand, ValueErrorOperand,
+    ValueNotAvailable,
 )
-from efc.utils import is_float
+from efc.utils import is_float, parse_date
 
 __all__ = ('EXCEL_FUNCTIONS',)
 
@@ -614,6 +616,59 @@ def len_func(op):
     return len(value)
 
 
+def year_frac(dt1, dt2, tp=None):
+    if isinstance(tp, EmptyOperand) or tp is None:
+        tp = 0
+    else:
+        tp = tp.digit
+
+    if tp in (0, 4):
+        dt1p = parse_date(dt1.string)
+        dt2p = parse_date(dt2.string)
+
+        dt1p_day = dt1p.day
+        dt2p_day = dt2p.day
+
+        # https://en.wikipedia.org/wiki/Day_count_convention#30/360_US
+        if tp == 0:
+            lfd1 = monthrange(dt1p.year, dt1p.month)[1]
+            lfd2 = monthrange(dt2p.year, dt1p.month)[1]
+            if dt1p_day == lfd1 and dt2p_day == lfd2:
+                dt2p_day = 30
+
+            if dt1p_day == lfd1:
+                dt1p_day = 30
+
+            if dt2p_day == 31 and dt1p_day >= 30:
+                dt2p_day = 30
+
+            if dt1p_day == 31:
+                dt1p_day = 30
+
+        # https://en.wikipedia.org/wiki/Day_count_convention#30E/360
+        else:
+            if dt1p_day == 31:
+                dt1p_day = 30
+
+            if dt2p_day == 31:
+                dt2p_day = 30
+
+        # https://en.wikipedia.org/wiki/Day_count_convention#30/360_methods
+        v = (360 * (dt2p.year - dt1p.year) + 30 * (dt2p.month - dt1p.month) + (dt2p_day - dt1p_day)) / 360
+    elif tp in (1, 2, 3):
+        if tp == 1:
+            year_days = 366 if isleap(parse_date(dt2.string).year) else 365
+        elif tp == 2:
+            year_days = 360
+        else:
+            year_days = 365
+        v = (int(dt2.digit) - int(dt1.digit)) / year_days
+    else:
+        v = NumErrorOperand()
+
+    return v
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -670,3 +725,4 @@ EXCEL_FUNCTIONS['SUBSTITUTE'] = substitute_func
 EXCEL_FUNCTIONS['SEARCH'] = search_func
 EXCEL_FUNCTIONS['TRIM'] = trim_func
 EXCEL_FUNCTIONS['LEN'] = len_func
+EXCEL_FUNCTIONS['YEARFRAC'] = year_frac
