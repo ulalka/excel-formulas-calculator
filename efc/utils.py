@@ -2,13 +2,16 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from string import ascii_uppercase
 
 import six
 
-__all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'Array', 'is_float', 'parse_date')
+__all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'Array', 'is_float', 'parse_date',
+           'datetime_to_openxml')
+
+BASE = datetime(1900, 1, 1)
 
 
 def col_str_to_index(col_str):
@@ -145,4 +148,19 @@ def parse_date(value):
     diff = int(Decimal(value))
 
     diff -= (1 if diff <= 59 else 2)  # openxml has 1900-02-29
-    return date(1900, 1, 1) + timedelta(days=diff)
+    return BASE + timedelta(days=diff)
+
+
+def datetime_to_openxml(value):
+    days = (value - BASE).days + 2
+    if days <= 60:
+        days -= 1
+
+    day_start = datetime(value.year, value.month, value.day)
+    if day_start == value:
+        return six.text_type(days)
+    else:
+        fd = value - datetime(value.year, value.month, value.day)
+        frac = Decimal(fd.seconds * 10 ** 6 + fd.microseconds) / Decimal(60 * 60 * 24 * 10 ** 6)
+        frac_str = six.text_type(round(frac, 12))[2:15]
+        return '%s.%s' % (days, frac_str)
