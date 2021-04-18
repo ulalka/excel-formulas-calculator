@@ -3,9 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from efc import get_calculator
 from efc.rpn_builder.parser.operands import WorksheetNotExist
-from .mock import ExcelMock
+from .mock import ExcelMock, get_calculator
 
 
 @pytest.fixture(scope='session')

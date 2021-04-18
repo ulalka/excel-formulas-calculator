@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from itertools import chain
+
+from efc import Lexer, Parser
 from efc.interfaces.base import BaseExcelInterface
 from efc.rpn_builder.parser.operands import CellSetOperand, SingleCellOperand
-from itertools import chain
 
 
 class ExcelMock(BaseExcelInterface):
@@ -64,3 +66,15 @@ class ExcelMock(BaseExcelInterface):
 
     def _max_column(self, ws_name):
         return max(chain(*self.data[ws_name].values()))
+
+
+def get_calculator():
+    lexer = Lexer()
+    parser = Parser()
+
+    def calculate(formula, ws_name, source):
+        tokens_line = lexer.parse(formula)
+        rpn = parser.to_rpn(tokens_line, ws_name, source)
+        return rpn.calc(ws_name, source)
+
+    return calculate
