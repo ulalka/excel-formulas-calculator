@@ -40,7 +40,8 @@ class OpenpyxlInterface(BaseExcelInterface):
         if cell.data_type != 'f':
             return self._serialize_value(cell.value, cell.data_type)
         elif not self._caches:
-            return self._calc_formula(cell.value, ws_name).value
+            f = cell.value[1:]
+            return self._calc_formula(f, ws_name).value
         else:
             cache_key = (ws_name, row, column)
             if cache_key not in self._caches['cells']:
