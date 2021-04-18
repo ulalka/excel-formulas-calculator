@@ -84,3 +84,18 @@ def test_date_operations_value(cell, result, interface):
 )
 def test_test_operations_value(cell, result, interface):
     assert interface.calc_cell(cell, 'ws1') == result
+
+
+def test_openpyxl_cache_enabled(workbook, interface):
+    assert interface.calc_cell('B1', 'ws1') == 2
+    workbook['ws1']['A1'].value = 3
+    assert interface.calc_cell('B1', 'ws1') == 2  # value from cache
+    interface.clear_cache()
+    assert interface.calc_cell('B1', 'ws1') == 4
+
+
+def test_openpyxl_cache_disabled(workbook):
+    interface = OpenpyxlInterface(workbook, use_cache=False)
+    assert interface.calc_cell('B1', 'ws1') == 2
+    workbook['ws1']['A1'].value = 3
+    assert interface.calc_cell('B1', 'ws1') == 4

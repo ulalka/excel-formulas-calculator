@@ -39,6 +39,10 @@ class BaseExcelInterface(object):
     def _caches(self):
         return self._cache_manager
 
+    def clear_cache(self):
+        """Clear all caches"""
+        self._caches.clear()
+
     @abstractmethod
     def _cell_to_value(self, row, column, ws_name):
         """

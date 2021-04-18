@@ -31,7 +31,7 @@ classifiers = [
     'License :: OSI Approved :: MIT License',
 ]
 
-with open('README.rst', 'r') as fp:
+with open('README.md', 'r') as fp:
     long_description = fp.read()
 
 setup(name='excel-formulas-calculator',
@@ -42,6 +42,9 @@ setup(name='excel-formulas-calculator',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['six'],
+      extras_require={
+          'openpyxl': ['openpyxl'],
+      },
       tests_require=['pytest'],
       test_suite='tests',
       license='MIT',
