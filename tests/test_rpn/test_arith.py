@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from efc import get_calculator
+from tests.test_rpn.mock import get_calculator
 
 
 @pytest.fixture(scope='module')

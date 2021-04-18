@@ -31,7 +31,7 @@ classifiers = [
     'License :: OSI Approved :: MIT License',
 ]
 
-with open('README.rst', 'r') as fp:
+with open('README.md', 'r') as fp:
     long_description = fp.read()
 
 setup(name='excel-formulas-calculator',
@@ -42,11 +42,15 @@ setup(name='excel-formulas-calculator',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['six'],
+      extras_require={
+          'openpyxl': ['openpyxl'],
+      },
       tests_require=['pytest'],
       test_suite='tests',
       license='MIT',
       description='Library to calculate excel formulas',
       long_description=long_description,
+      long_description_content_type='text/markdown',
       classifiers=classifiers,
       python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4',
       )

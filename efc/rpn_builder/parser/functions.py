@@ -411,7 +411,7 @@ def ifs_indexes(*args):
         check_good_indexes = None
         key = None
         if op_range.source and isinstance(op_range, CellRangeOperand):
-            cache = op_range.source.ifs_range_cache
+            cache = op_range.source._caches['ifs'] if op_range.source._caches is not None else None
 
             if cache is not None:
                 key = (op_range.ws_name, op_range.row1, op_range.column1, op_range.row2,
@@ -687,42 +687,54 @@ ARITHMETIC_FUNCTIONS = {
 EXCEL_FUNCTIONS = {}
 EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
 
+EXCEL_FUNCTIONS['ABS'] = abs_function
+EXCEL_FUNCTIONS['AND'] = and_function
+EXCEL_FUNCTIONS['AVERAGE'] = average_function
+EXCEL_FUNCTIONS['AVERAGEIFS'] = average_ifs_function
+
+EXCEL_FUNCTIONS['CONCATENATE'] = concatenate
+EXCEL_FUNCTIONS['COUNT'] = count_function
+EXCEL_FUNCTIONS['COUNTA'] = counta_function
+EXCEL_FUNCTIONS['COUNTIF'] = countif_function
+EXCEL_FUNCTIONS['COUNTIFS'] = count_ifs_function
+EXCEL_FUNCTIONS['COUNTBLANK'] = count_blank_function
+
+EXCEL_FUNCTIONS['FLOOR'] = floor_function
+
+EXCEL_FUNCTIONS['IF'] = if_func
+EXCEL_FUNCTIONS['IFERROR'] = if_error_func
+EXCEL_FUNCTIONS['INDEX'] = index_function
+EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
+EXCEL_FUNCTIONS['ISERROR'] = is_error_func
+
+EXCEL_FUNCTIONS['LARGE'] = large_function
+EXCEL_FUNCTIONS['LEN'] = len_func
+EXCEL_FUNCTIONS['LEFT'] = left_func
+
+EXCEL_FUNCTIONS['MATCH'] = match_function
+EXCEL_FUNCTIONS['MAX'] = max_func
+EXCEL_FUNCTIONS['MID'] = mid_func
+EXCEL_FUNCTIONS['MIN'] = min_func
+EXCEL_FUNCTIONS['MOD'] = mod_func
+
+EXCEL_FUNCTIONS['NOT'] = not_func
+
+EXCEL_FUNCTIONS['OFFSET'] = offset_function
+EXCEL_FUNCTIONS['OR'] = or_function
+
+EXCEL_FUNCTIONS['RIGHT'] = right_func
+EXCEL_FUNCTIONS['ROUND'] = round_function
+EXCEL_FUNCTIONS['ROUNDDOWN'] = round_down_function
+
+EXCEL_FUNCTIONS['SEARCH'] = search_func
+EXCEL_FUNCTIONS['SMALL'] = small_function
+EXCEL_FUNCTIONS['SUBSTITUTE'] = substitute_func
 EXCEL_FUNCTIONS['SUM'] = sum_func
 EXCEL_FUNCTIONS['SUMIF'] = sum_if_function
 EXCEL_FUNCTIONS['SUMIFS'] = sum_ifs_function
-EXCEL_FUNCTIONS['MOD'] = mod_func
-EXCEL_FUNCTIONS['IF'] = if_func
-EXCEL_FUNCTIONS['IFERROR'] = if_error_func
-EXCEL_FUNCTIONS['ISERROR'] = is_error_func
-EXCEL_FUNCTIONS['MAX'] = max_func
-EXCEL_FUNCTIONS['MIN'] = min_func
-EXCEL_FUNCTIONS['LEFT'] = left_func
-EXCEL_FUNCTIONS['RIGHT'] = right_func
-EXCEL_FUNCTIONS['MID'] = mid_func
-EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
-EXCEL_FUNCTIONS['OR'] = or_function
-EXCEL_FUNCTIONS['AND'] = and_function
-EXCEL_FUNCTIONS['NOT'] = not_func
-EXCEL_FUNCTIONS['ROUND'] = round_function
-EXCEL_FUNCTIONS['ROUNDDOWN'] = round_down_function
-EXCEL_FUNCTIONS['FLOOR'] = floor_function
-EXCEL_FUNCTIONS['COUNT'] = count_function
-EXCEL_FUNCTIONS['COUNTIF'] = countif_function
-EXCEL_FUNCTIONS['COUNTBLANK'] = count_blank_function
-EXCEL_FUNCTIONS['COUNTA'] = counta_function
-EXCEL_FUNCTIONS['ABS'] = abs_function
-EXCEL_FUNCTIONS['OFFSET'] = offset_function
-EXCEL_FUNCTIONS['MATCH'] = match_function
-EXCEL_FUNCTIONS['AVERAGE'] = average_function
-EXCEL_FUNCTIONS['AVERAGEIFS'] = average_ifs_function
-EXCEL_FUNCTIONS['VLOOKUP'] = vlookup_function
-EXCEL_FUNCTIONS['SMALL'] = small_function
-EXCEL_FUNCTIONS['LARGE'] = large_function
-EXCEL_FUNCTIONS['COUNTIFS'] = count_ifs_function
-EXCEL_FUNCTIONS['CONCATENATE'] = concatenate
-EXCEL_FUNCTIONS['INDEX'] = index_function
-EXCEL_FUNCTIONS['SUBSTITUTE'] = substitute_func
-EXCEL_FUNCTIONS['SEARCH'] = search_func
+
 EXCEL_FUNCTIONS['TRIM'] = trim_func
-EXCEL_FUNCTIONS['LEN'] = len_func
+
+EXCEL_FUNCTIONS['VLOOKUP'] = vlookup_function
+
 EXCEL_FUNCTIONS['YEARFRAC'] = year_frac
