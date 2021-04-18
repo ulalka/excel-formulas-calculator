@@ -45,7 +45,7 @@ def test_cell_address(calc):
 
 def test_single_cell_cache():
     # Cache disabled
-    source = ExcelMock()
+    source = ExcelMock(use_cache=False)
     calculator = get_calculator()
 
     op1 = calculator('A3', 'Sheet 1', source)
@@ -54,19 +54,19 @@ def test_single_cell_cache():
     assert op1 is not op2
 
     # Cache enabled
-    source.use_cache = True
+    source = ExcelMock(use_cache=True)
     op1 = calculator('A3', 'Sheet 1', source)
     op2 = calculator('A3', 'Sheet 1', source)
 
     assert op1 is op2
 
     # New cache value for A3
-    source.clear_cache()
+    source.cache.clear()
     op2 = calculator('A3', 'Sheet 1', source)
     assert op1 is not op2
 
     # New cache value for A3
-    source.remove_cell_cache('Sheet 1', 3, 1)
+    source.cache.remove_cell('Sheet 1', 3, 1)
     op3 = calculator('A3', 'Sheet 1', source)
     assert op2 is not op3
 

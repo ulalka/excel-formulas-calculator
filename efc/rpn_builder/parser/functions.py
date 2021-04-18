@@ -409,7 +409,7 @@ def ifs_indexes(*args):
         check_good_indexes = None
         key = None
         if op_range.source and isinstance(op_range, CellRangeOperand):
-            cache = op_range.source.ifs_range_cache
+            cache = op_range.source.cache['ifs']
 
             if cache is not None:
                 key = (op_range.ws_name, op_range.row1, op_range.column1, op_range.row2,
