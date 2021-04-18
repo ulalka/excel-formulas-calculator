@@ -411,7 +411,7 @@ def ifs_indexes(*args):
         check_good_indexes = None
         key = None
         if op_range.source and isinstance(op_range, CellRangeOperand):
-            cache = op_range.source.caches['ifs'] if op_range.source.caches is not None else None
+            cache = op_range.source._caches['ifs'] if op_range.source._caches is not None else None
 
             if cache is not None:
                 key = (op_range.ws_name, op_range.row1, op_range.column1, op_range.row2,

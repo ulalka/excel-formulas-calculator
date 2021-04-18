@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from efc.interfaces.base import BaseExcelInterface
 from efc.rpn_builder.parser.operands import CellSetOperand, SingleCellOperand
+from itertools import chain
 
 
 class ExcelMock(BaseExcelInterface):
@@ -27,7 +28,7 @@ class ExcelMock(BaseExcelInterface):
         },
     }
 
-    def cell_to_value(self, row, column, ws_name):
+    def _cell_to_value(self, row, column, ws_name):
         return self.data[ws_name].get(row, {}).get(column)
 
     @property
@@ -40,11 +41,26 @@ class ExcelMock(BaseExcelInterface):
             'test2': op_set
         }
 
-    def named_range_to_cells(self, name, ws_name):
+    def _get_named_range_formula(self, name, ws_name):
+        pass
+
+    def _named_range_to_cells(self, name, ws_name):
         return self.named_ranges[name]
 
-    def has_worksheet(self, ws_name):
+    def _has_worksheet(self, ws_name):
         return ws_name in self.data
 
-    def has_named_range(self, name, ws_name):
+    def _has_named_range(self, name, ws_name):
         return name in self.named_ranges
+
+    def _min_row(self, ws_name):
+        return min(self.data[ws_name])
+
+    def _min_column(self, ws_name):
+        return min(chain(*self.data[ws_name].values()))
+
+    def _max_row(self, ws_name):
+        return max(self.data[ws_name])
+
+    def _max_column(self, ws_name):
+        return max(chain(*self.data[ws_name].values()))

@@ -171,7 +171,7 @@ class CellsOperand(OperandLikeObject):
 
     @cached_property
     def value(self):
-        if self.source.has_worksheet(self.ws_name):
+        if self.source._has_worksheet(self.ws_name):
             return self.address_to_value()
         else:
             raise WorksheetNotExist(ws_name=self.ws_name)
@@ -202,7 +202,7 @@ class SingleCellOperand(CellsOperand, Operand, OffsetMixin):
         self.column_fixed = column_fixed
 
     def address_to_value(self):
-        return self.source.cell_to_value(self.row, self.column, self.ws_name)
+        return self.source._cell_to_value(self.row, self.column, self.ws_name)
 
     def get_iter(self):
         yield self
@@ -306,10 +306,10 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
         self.column2_fixed = column2_fixed
 
     def get_iter(self):
-        column1 = self.source.min_column(self.ws_name) if self.column1 is None else self.column1
-        column2 = self.source.max_column(self.ws_name) if self.column2 is None else self.column2
-        row1 = self.source.min_row(self.ws_name) if self.row1 is None else self.row1
-        row2 = self.source.max_row(self.ws_name) if self.row2 is None else self.row2
+        column1 = self.source._min_column(self.ws_name) if self.column1 is None else self.column1
+        column2 = self.source._max_column(self.ws_name) if self.column2 is None else self.column2
+        row1 = self.source._min_row(self.ws_name) if self.row1 is None else self.row1
+        row2 = self.source._max_row(self.ws_name) if self.row2 is None else self.row2
 
         if row1 == row2:
             for c in range(column1, column2 + 1):
@@ -375,13 +375,13 @@ class NamedRangeOperand(CellsOperand):
         self.name = name
 
     def address_to_value(self):
-        return self.source.named_range_to_cells(self.name, self.ws_name)
+        return self.source._named_range_to_cells(self.name, self.ws_name)
 
     @cached_property
     def value(self):
-        if self.ws_name and not self.source.has_worksheet(self.ws_name):
+        if self.ws_name and not self.source._has_worksheet(self.ws_name):
             raise WorksheetNotExist(ws_name=self.ws_name)
-        elif not self.source.has_named_range(self.name, self.ws_name):
+        elif not self.source._has_named_range(self.name, self.ws_name):
             raise NamedRangeNotExist(self.name, self.ws_name)
         else:
             return self.address_to_value()

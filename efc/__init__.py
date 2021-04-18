@@ -10,7 +10,7 @@ __version__ = '0.1.33'
 
 
 def calc(formula, ws_name, source):
-    return Parser().to_rpn(Lexer().parse(formula), ws_name, source).calc(formula, ws_name, source)
+    return Parser().to_rpn(Lexer().parse(formula), ws_name, source)._calc_formula(formula, ws_name, source)
 
 
 def get_calculator():
