@@ -16,7 +16,7 @@ __all__ = (
     'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
     'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
     'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin',
-    'SetOperand', 'BadReference', 'ValueNotAvailable', 'EmptyOperand', 'NamedRangeNotExist',
+    'SetOperand', 'BadReference', 'ValueNotAvailable', 'EmptyOperand', 'NamedRangeNotExist', 'NumErrorOperand',
 )
 
 
@@ -151,6 +151,12 @@ class ValueNotAvailable(ErrorOperand):
     code = 308
     msg = 'Value not available'
     string_value = '#N/A'
+
+
+class NumErrorOperand(ErrorOperand):
+    code = 309
+    msg = 'Num error'
+    string_value = '#NUM!'
 
 
 class SimpleOperand(Operand):

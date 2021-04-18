@@ -2,11 +2,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+from datetime import date, timedelta
+from decimal import Decimal
 from string import ascii_uppercase
 
 import six
 
-__all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'Array', 'is_float')
+__all__ = ('col_str_to_index', 'col_index_to_str', 'u', 'cached_property', 'digit', 'Array', 'is_float', 'parse_date')
 
 
 def col_str_to_index(col_str):
@@ -137,3 +139,10 @@ class Array(object):
 
     def __getitem__(self, item):
         return self._array[item]
+
+
+def parse_date(value):
+    diff = int(Decimal(value))
+
+    diff -= (1 if diff <= 59 else 2)  # openxml has 1900-02-29
+    return date(1900, 1, 1) + timedelta(days=diff)
