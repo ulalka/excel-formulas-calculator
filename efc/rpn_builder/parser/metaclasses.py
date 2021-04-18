@@ -4,8 +4,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 class MetaSingleCellOperandCache(type):
     def __call__(cls, row, column, row_fixed=False, column_fixed=False, ws_name=None, source=None):
-        if source is not None and ws_name is not None and source.use_cache:
-            cache = source.cache['single']
+        if source is not None and ws_name is not None and source.caches:
+            cache = source.caches['single']
             key = (ws_name, row, column, row_fixed, column_fixed)
 
             try:
@@ -26,8 +26,8 @@ class MetaCellRangeOperandCache(type):
     def __call__(cls, row1, column1, row2, column2,
                  row1_fixed=False, column1_fixed=False, row2_fixed=False, column2_fixed=False,
                  ws_name=None, source=None):
-        if source is not None and ws_name is not None and source.use_cache:
-            cache = source.cache['range']
+        if source is not None and ws_name is not None and source.caches:
+            cache = source.caches['range']
             key = (ws_name, row1, column1, row2, column2, row1_fixed, column1_fixed, row2_fixed, column2_fixed)
 
             try:

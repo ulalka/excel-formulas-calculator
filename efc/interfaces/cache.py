@@ -30,6 +30,9 @@ class BaseCache(object):
     def __setitem__(self, key, value):
         self._items[key] = value
 
+    def __contains__(self, item):
+        return item in self._items
+
 
 class SingleCellCache(BaseCache):
     def remove_cell(self, ws_name, row, column):
@@ -55,9 +58,10 @@ class RangeCache(BaseCache):
 
 class CacheManager(object):
     CACHE_TYPES = {
-        'single': SingleCellCache,
-        'range': RangeCache,
-        'ifs': RangeCache,
+        'single': SingleCellCache,  # cache SingleCellOperand instances
+        'cells': SingleCellCache,  # cache calculated Cells
+        'range': RangeCache,  # cache CellRangeOperand instances
+        'ifs': RangeCache,  # cache IFS expressions for ranges
     }
 
     def __init__(self):

@@ -61,12 +61,12 @@ def test_single_cell_cache():
     assert op1 is op2
 
     # New cache value for A3
-    source.cache.clear()
+    source.caches.clear()
     op2 = calculator('A3', 'Sheet 1', source)
     assert op1 is not op2
 
     # New cache value for A3
-    source.cache.remove_cell('Sheet 1', 3, 1)
+    source.caches.remove_cell('Sheet 1', 3, 1)
     op3 = calculator('A3', 'Sheet 1', source)
     assert op2 is not op3
 
