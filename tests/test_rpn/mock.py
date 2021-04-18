@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from efc.interface import BaseExcelInterface
+from efc.interfaces.base import BaseExcelInterface
 from efc.rpn_builder.parser.operands import CellSetOperand, SingleCellOperand
 
 
