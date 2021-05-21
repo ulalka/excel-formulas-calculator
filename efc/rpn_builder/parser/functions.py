@@ -191,6 +191,14 @@ def if_func(expr_op, op1, op2=None):
     return op1 if expr_op.value else op2
 
 
+def ifs_func(*args):
+    for i in range(0, len(args), 2):
+        if args[i].value:
+            return args[i + 1].value
+    else:
+        raise ValueNotAvailable
+
+
 def if_error_func(op1, op2):
     if isinstance(op1, RPNOperand):
         op1 = op1.evaluated_value
@@ -702,6 +710,7 @@ EXCEL_FUNCTIONS['COUNTBLANK'] = count_blank_function
 EXCEL_FUNCTIONS['FLOOR'] = floor_function
 
 EXCEL_FUNCTIONS['IF'] = if_func
+EXCEL_FUNCTIONS['IFS'] = ifs_func
 EXCEL_FUNCTIONS['IFERROR'] = if_error_func
 EXCEL_FUNCTIONS['INDEX'] = index_function
 EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
