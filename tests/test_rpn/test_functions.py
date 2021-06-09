@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from efc.rpn_builder.parser.operands import BadReference, NumErrorOperand, ValueNotAvailable
+from efc.rpn_builder.parser.operands import BadReference, NumErrorOperand, ValueErrorOperand, ValueNotAvailable
 from .mock import ExcelMock, get_calculator
 
 
@@ -172,6 +172,18 @@ def test_AVERAGEIFS(calc):
 
 def test_VLOOKUP(calc):
     assert calc('VLOOKUP(13,Sheet4!A1:B3,2)', 'Yet another sheet').value == 16
+
+
+def test_SEARCH(calc):
+    assert calc('SEARCH("abc", "abc")', 'Yet another sheet').value == 1
+    assert calc('SEARCH("abc", "abc", 1)', 'Yet another sheet').value == 1
+    assert calc('SEARCH("abc", "aabc", 1)', 'Yet another sheet').value == 2
+
+    with pytest.raises(ValueErrorOperand):
+        assert calc('SEARCH("abcd", "abc")', 'Yet another sheet').value
+
+    with pytest.raises(ValueErrorOperand):
+        assert calc('SEARCH("abcd", "abc", 1)', 'Yet another sheet').value
 
 
 def test_SMALL(calc):

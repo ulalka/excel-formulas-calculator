@@ -604,8 +604,12 @@ def search_func(pattern, source, start_position=None):
         start_position = None
 
     try:
-        start_position = start_position or 0
-        return source.string[start_position:].lower().index(pattern.string.lower())
+        if start_position is not None:
+            start_position = start_position.digit - 1
+        else:
+            start_position = 0
+
+        return source.string[start_position:].lower().index(pattern.string.lower()) + 1
     except ValueError:
         return ValueErrorOperand()
 
