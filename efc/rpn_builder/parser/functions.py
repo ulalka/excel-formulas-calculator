@@ -3,7 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 from calendar import isleap, monthrange
-from functools import wraps
+from datetime import datetime
+from functools import wraps, partial
 
 from six import integer_types, string_types
 from six.moves import range, zip_longest
@@ -14,6 +15,7 @@ from efc.rpn_builder.parser.operands import (
     ValueNotAvailable,
 )
 from efc.utils import is_float, parse_date
+
 
 __all__ = ('EXCEL_FUNCTIONS',)
 
@@ -681,6 +683,22 @@ def year_frac(dt1, dt2, tp=None):
     return v
 
 
+YMD_DATE_FORMAT = '%Y{0}%m{0}%d'
+DMY_DATE_FORMAT = '%d{0}%m{0}%Y'
+
+
+def date_func(key, cell_operand):
+    for date_format in (YMD_DATE_FORMAT, DMY_DATE_FORMAT):
+        for separator in '.-/':
+            try:
+                value = datetime.strptime(cell_operand.string, date_format.format(separator))
+                return getattr(value, key)
+            except:
+                pass
+
+    raise ValueErrorOperand
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -751,3 +769,6 @@ EXCEL_FUNCTIONS['TRIM'] = trim_func
 EXCEL_FUNCTIONS['VLOOKUP'] = vlookup_function
 
 EXCEL_FUNCTIONS['YEARFRAC'] = year_frac
+
+EXCEL_FUNCTIONS['MONTH'] = partial(date_func, 'month')
+EXCEL_FUNCTIONS['YEAR'] = partial(date_func, 'year')

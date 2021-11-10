@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from datetime import date
+
 import pytest
 
 from efc.rpn_builder.parser.operands import BadReference, NumErrorOperand, ValueErrorOperand, ValueNotAvailable
@@ -310,3 +312,21 @@ def test_YEARFRAC(calc):
     assert calc('YEARFRAC(43405, 43465, 4)', 'Yet another sheet').value == 59 / 360
     assert calc('YEARFRAC(43889, 43890, 4)', 'Yet another sheet').value == 1 / 360
     assert calc('YEARFRAC(43889, 43891, 4)', 'Yet another sheet').value == 3 / 360
+
+
+def test_MONTH_YEAR(calc):
+    dt = date(1994, 2, 18)
+
+    for excel_function in ('MONTH', 'YEAR'):
+        for dmy in (True, False):
+            for separator in '.-/':
+                assert calc(
+                    '{excel_function}("{day}{separator}{month}{separator}{year}")'.format(
+                        excel_function=excel_function,
+                        separator=separator,
+                        day=dt.day if dmy else dt.year,
+                        month=dt.month,
+                        year=dt.year if dmy else dt.day,
+                    ),
+                    'Yet another sheet',
+                ).value == getattr(dt, excel_function.lower())
