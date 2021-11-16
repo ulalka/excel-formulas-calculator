@@ -30,6 +30,8 @@ def lexer():
             ('\'List 1\'!A$4:AAA5', [tokens.CellsRangeToken]),
             ('\'List 1\'!hello', [tokens.NamedRangeToken]),
             ('SUM(', [tokens.FunctionToken, tokens.LeftBracketToken]),
+            ('_xlfn.IFS(', [tokens.FunctionToken, tokens.LeftBracketToken]),
+            ('_xludf.IFS(', [tokens.FunctionToken, tokens.LeftBracketToken]),
             ('SUM', [tokens.NamedRangeToken]),
             ('SUM TRUE', [tokens.NamedRangeToken, tokens.BoolToken]),
             ('Hello Mister', [tokens.NamedRangeToken, tokens.NamedRangeToken]),

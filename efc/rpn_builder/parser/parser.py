@@ -81,7 +81,7 @@ class Parser(object):
             if isinstance(token, OperandToken):
                 result_append(self.operand_token_handler(token, ws_name, source))
             elif isinstance(token, FunctionToken):
-                stack_append(FunctionOperation(token.src_value))
+                stack_append(FunctionOperation(token.token_value))
             elif isinstance(token, LeftBracketToken):
                 stack_append(token)
                 if isinstance(line.prev(), FunctionToken):

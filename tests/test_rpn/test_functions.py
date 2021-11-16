@@ -46,13 +46,14 @@ def test_IF(calc):
     assert calc('IF(\'Sheet 1\'!A3 = 4,\'Sheet 1\'!C3, 0)', 'Yet another sheet').value == 8
 
 
-def test_IFS(calc):
-    assert calc('IFS(FALSE,1,FALSE,2,TRUE,3)', 'Yet another sheet').value == 3
-    assert calc('IFS(TRUE,1,FALSE,2,TRUE,3)', 'Yet another sheet').value == 1
-    assert calc('IFS(FALSE,1,TRUE,2,TRUE,3)', 'Yet another sheet').value == 2
+@pytest.mark.parametrize('prefix', ('_xlfn.', '_xludf.', ''))
+def test_IFS(calc, prefix):
+    assert calc(prefix + 'IFS(FALSE,1,FALSE,2,TRUE,3)', 'Yet another sheet').value == 3
+    assert calc(prefix + 'IFS(TRUE,1,FALSE,2,TRUE,3)', 'Yet another sheet').value == 1
+    assert calc(prefix + 'IFS(FALSE,1,TRUE,2,TRUE,3)', 'Yet another sheet').value == 2
 
     with pytest.raises(ValueNotAvailable):
-        assert calc('IFS(FALSE,1,FALSE,2,FALSE,3)', 'Yet another sheet').value == 1
+        assert calc(prefix + 'IFS(FALSE,1,FALSE,2,FALSE,3)', 'Yet another sheet').value == 1
 
 
 def test_IFERROR(calc):

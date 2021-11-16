@@ -134,7 +134,10 @@ class OperationToken(Token):
 
 
 class FunctionToken(OperationToken):
-    pattern = r'[A-Z]+(?=\()'
+    pattern = r'(?P<prefix>_(xlfn|xludf)\.)?(?P<func_name>[A-Z]+)(?=\()'
+
+    def get_value(self, m):
+        return m['func_name']
 
 
 class ArithmeticToken(OperationToken):
