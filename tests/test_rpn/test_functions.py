@@ -3,7 +3,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from efc.rpn_builder.parser.operands import BadReference, NumErrorOperand, ValueErrorOperand, ValueNotAvailable
+from efc.rpn_builder.parser.operands import (
+    BadReference,
+    NumErrorOperand,
+    ValueErrorOperand,
+    ValueNotAvailable,
+    ZeroDivisionErrorOperand,
+)
 from .mock import ExcelMock, get_calculator
 
 
@@ -311,3 +317,25 @@ def test_YEARFRAC(calc):
     assert calc('YEARFRAC(43405, 43465, 4)', 'Yet another sheet').value == 59 / 360
     assert calc('YEARFRAC(43889, 43890, 4)', 'Yet another sheet').value == 1 / 360
     assert calc('YEARFRAC(43889, 43891, 4)', 'Yet another sheet').value == 3 / 360
+
+
+def test_lower(calc):
+    with pytest.raises(ZeroDivisionErrorOperand):
+        _ = calc('LOWER(1/0)', 'Yet another sheet').value
+
+    assert calc('LOWER(1)', 'Yet another sheet').value == '1'
+    assert calc('LOWER("1")', 'Yet another sheet').value == '1'
+    assert calc('LOWER("TEST")', 'Yet another sheet').value == 'test'
+    assert calc('LOWER("test")', 'Yet another sheet').value == 'test'
+    assert calc('LOWER("TeSt %1234")', 'Yet another sheet').value == 'test %1234'
+
+
+def test_upper(calc):
+    with pytest.raises(ZeroDivisionErrorOperand):
+        _ = calc('UPPER(1/0)', 'Yet another sheet').value
+
+    assert calc('UPPER(1)', 'Yet another sheet').value == '1'
+    assert calc('UPPER("1")', 'Yet another sheet').value == '1'
+    assert calc('UPPER("TEST")', 'Yet another sheet').value == 'TEST'
+    assert calc('UPPER("test")', 'Yet another sheet').value == 'TEST'
+    assert calc('UPPER("TeSt %1234")', 'Yet another sheet').value == 'TEST %1234'

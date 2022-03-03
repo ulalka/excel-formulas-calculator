@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+import string
 from calendar import isleap, monthrange
 from functools import wraps
 
@@ -205,9 +206,18 @@ def if_error_func(op1, op2):
     return op2 if isinstance(op1, ErrorOperand) else op1
 
 
+def rpn_operand_value(foo):
+    @wraps(foo)
+    def wrapper(op):
+        if isinstance(op, RPNOperand):
+            op = op.evaluated_value
+        return foo(op)
+
+    return wrapper
+
+
+@rpn_operand_value
 def is_error_func(op):
-    if isinstance(op, RPNOperand):
-        op = op.evaluated_value
     return isinstance(op, ErrorOperand)
 
 
@@ -628,6 +638,22 @@ def len_func(op):
     return len(value)
 
 
+def _upper_lower(func, op):
+    if isinstance(op, ErrorOperand):
+        return op
+    return func(op.string)
+
+
+@rpn_operand_value
+def lower_func(op):
+    return _upper_lower(string.lower, op)
+
+
+@rpn_operand_value
+def upper_func(op):
+    return _upper_lower(string.upper, op)
+
+
 def year_frac(dt1, dt2, tp=None):
     if isinstance(tp, EmptyOperand) or tp is None:
         tp = 0
@@ -723,6 +749,7 @@ EXCEL_FUNCTIONS['ISERROR'] = is_error_func
 EXCEL_FUNCTIONS['LARGE'] = large_function
 EXCEL_FUNCTIONS['LEN'] = len_func
 EXCEL_FUNCTIONS['LEFT'] = left_func
+EXCEL_FUNCTIONS['LOWER'] = lower_func
 
 EXCEL_FUNCTIONS['MATCH'] = match_function
 EXCEL_FUNCTIONS['MAX'] = max_func
@@ -751,3 +778,4 @@ EXCEL_FUNCTIONS['TRIM'] = trim_func
 EXCEL_FUNCTIONS['VLOOKUP'] = vlookup_function
 
 EXCEL_FUNCTIONS['YEARFRAC'] = year_frac
+EXCEL_FUNCTIONS['UPPER'] = upper_func
