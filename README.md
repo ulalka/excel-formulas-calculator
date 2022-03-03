@@ -50,6 +50,6 @@ print(interface.calc_cell('A4', 'Worksheet1'))  # prints '1235'
 * Arithmetic: ``-, +, *, /, ^, ()``
 * Comparison: ``<>, >, >=, <, <=, =``
 * String concatenation: ``&``
-* Functions: `ABS, AND, AVERAGE, AVERAGEIFS, CONCATENATE, COUNT, COUNTA, COUNTIF, COUNTIFS, COUNTBLANK, FLOOR, IF, IFERROR, INDEX, ISBLANK, ISERROR, LARGE, LEN, LEFT, MATCH, MAX, MID, MIN, MOD, NOT, OFFSET, OR, RIGHT, ROUND, ROUNDDOWN, SEARCH, SMALL, SUBSTITUTE, SUM, SUMIF, SUMIFS, TRIM, VLOOKUP, YEARFRAC`
+* Functions: `ABS, AND, AVERAGE, AVERAGEIFS, CONCATENATE, COUNT, COUNTA, COUNTIF, COUNTIFS, COUNTBLANK, FLOOR, IF, IFS, IFERROR, INDEX, ISBLANK, ISERROR, LARGE, LEN, LEFT, LOWER, MATCH, MAX, MID, MIN, MOD, NOT, OFFSET, OR, RIGHT, ROUND, ROUNDDOWN, SEARCH, SMALL, SUBSTITUTE, SUM, SUMIF, SUMIFS, TRIM, VLOOKUP, YEARFRAC, UPPER`
 * All variations of the spelling of the cell and range addresses (linked docs will be skipped)
 * Formula cell offset - this can be useful when calculating shared formulas
