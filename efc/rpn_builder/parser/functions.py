@@ -2,11 +2,10 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-import string
 from calendar import isleap, monthrange
 from functools import wraps
 
-from six import integer_types, string_types
+from six import integer_types, string_types, text_type
 from six.moves import range, zip_longest
 
 from efc.rpn_builder.parser.operands import (
@@ -646,12 +645,12 @@ def _upper_lower(func, op):
 
 @rpn_operand_value
 def lower_func(op):
-    return _upper_lower(string.lower, op)
+    return _upper_lower(text_type.lower, op)
 
 
 @rpn_operand_value
 def upper_func(op):
-    return _upper_lower(string.upper, op)
+    return _upper_lower(text_type.upper, op)
 
 
 def year_frac(dt1, dt2, tp=None):
