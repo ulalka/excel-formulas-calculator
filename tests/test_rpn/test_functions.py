@@ -51,6 +51,10 @@ def test_IF(calc):
     assert calc('IF(TRUE,1,2 ** 5)', 'Yet another sheet').value == 1
     assert calc('IF(\'Sheet 1\'!A3 = 4,\'Sheet 1\'!C3, 0)', 'Yet another sheet').value == 8
 
+    assert calc('IF(TRUE, 1,)', 'Yet another sheet').value == 1
+    assert calc('IF(FALSE, 1,)', 'Yet another sheet').value == 0
+    assert calc('CONCATENATE(IF(FALSE, 1,))', 'Yet another sheet').value == ''
+
 
 @pytest.mark.parametrize('prefix', ('_xlfn.', '_xludf.', ''))
 def test_IFS(calc, prefix):
