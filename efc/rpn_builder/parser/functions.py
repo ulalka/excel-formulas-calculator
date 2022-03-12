@@ -183,9 +183,6 @@ def mod_func(op1, op2):
 
 
 def if_func(expr_op, op1, op2=None):
-    if isinstance(op2, EmptyOperand):
-        op2 = None
-
     if op2 is None:
         op2 = False
     return op1 if expr_op.value else op2

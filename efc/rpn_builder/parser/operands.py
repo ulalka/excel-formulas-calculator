@@ -70,10 +70,14 @@ class Operand(OperandLikeObject):
         return self.__int__()
 
 
-class EmptyOperand(OperandLikeObject):
-    @property
+class EmptyOperand(Operand):
+    @cached_property
     def value(self):
-        return
+        return 0
+
+    @cached_property
+    def string(self):
+        return ''
 
 
 class ErrorOperand(OperandLikeObject, BaseEFCException):
