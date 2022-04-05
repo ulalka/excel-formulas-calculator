@@ -163,4 +163,4 @@ def datetime_to_openxml(value):
         fd = value - datetime(value.year, value.month, value.day)
         frac = Decimal(fd.seconds * 10 ** 6 + fd.microseconds) / Decimal(60 * 60 * 24 * 10 ** 6)
         frac_str = six.text_type(round(frac, 12))[2:15]
-        return '%s.%s' % (days, frac_str)
+        return six.text_type(Decimal('%s.%s' % (days, frac_str)).normalize())
