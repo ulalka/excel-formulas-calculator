@@ -80,6 +80,13 @@ class EmptyOperand(Operand):
         return ''
 
 
+class BlankOperand(Operand):
+    pass
+
+
+BLANK_OPERAND = BlankOperand()
+
+
 class ErrorOperand(OperandLikeObject, BaseEFCException):
     code = 300
     msg = 'Unknown error'
@@ -309,22 +316,49 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
         self.row2_fixed = row2_fixed
         self.column2_fixed = column2_fixed
 
-    def get_iter(self):
-        column1 = self.source._min_column(self.ws_name) if self.column1 is None else self.column1
-        column2 = self.source._max_column(self.ws_name) if self.column2 is None else self.column2
-        row1 = self.source._min_row(self.ws_name) if self.row1 is None else self.row1
-        row2 = self.source._max_row(self.ws_name) if self.row2 is None else self.row2
+    @cached_property
+    def min_column(self):
+        return self.source._min_column(self.ws_name)
 
-        if row1 == row2:
-            for c in range(column1, column2 + 1):
-                yield SingleCellOperand(row1, c, ws_name=self.ws_name, source=self.source)
-        elif column1 == column2:
-            for r in range(row1, row2 + 1):
-                yield SingleCellOperand(r, column1, ws_name=self.ws_name, source=self.source)
-        else:
-            for r in range(row1, row2 + 1):
-                for c in range(column1, column2 + 1):
-                    yield SingleCellOperand(r, c, ws_name=self.ws_name, source=self.source)
+    @cached_property
+    def max_column(self):
+        return self.source._max_column(self.ws_name)
+
+    @cached_property
+    def min_row(self):
+        return self.source._min_row(self.ws_name)
+
+    @cached_property
+    def max_row(self):
+        return self.source._max_row(self.ws_name)
+
+    def _row_cells_generator(self, r, column1, column2):
+        for c in range(column1, self.min_column):
+            yield BLANK_OPERAND
+
+        for c in range(max(self.min_column, column1), min(column2 + 1, self.max_column + 1)):
+            yield SingleCellOperand(r, c, ws_name=self.ws_name, source=self.source)
+
+        for c in range(self.max_column + 1, column2 + 1):
+            yield BLANK_OPERAND
+
+    def get_iter(self):
+        row1 = self.min_row if self.row1 is None else self.row1
+        row2 = self.max_row if self.row2 is None else self.row2
+        column1 = self.min_column if self.column1 is None else self.column1
+        column2 = self.max_column if self.column2 is None else self.column2
+
+        for _ in range(row1, self.min_row):
+            for _ in range(column1, column2 + 1):
+                yield BLANK_OPERAND
+
+        for r in range(max(self.min_row, row1), min(row2 + 1, self.max_row + 1)):
+            for c in self._row_cells_generator(r, column1, column2):
+                yield c
+
+        for r in range(self.max_row + 1, row2 + 1):
+            for _ in range(column1, column2 + 1):
+                yield BLANK_OPERAND
 
     def address_to_value(self):
         return self.cached_iterable_items

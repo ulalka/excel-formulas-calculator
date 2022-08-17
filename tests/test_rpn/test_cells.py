@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from efc.rpn_builder.parser.operands import WorksheetNotExist
+from efc.rpn_builder.parser.operands import BLANK_OPERAND, WorksheetNotExist
 from .mock import ExcelMock, get_calculator
 
 
@@ -68,4 +68,14 @@ def test_single_cell_cache():
     source._caches.remove_cell('Sheet 1', 3, 1)
     op3 = calculator('A3', 'Sheet 1', source)
     assert op2 is not op3
+
+    # Test blank operand
+    r = list(calculator('A99:A105', 'Yet another sheet', source))
+    assert r[0] is BLANK_OPERAND
+    assert r[1] is not BLANK_OPERAND
+    assert r[2] is not BLANK_OPERAND
+    assert r[3] is not BLANK_OPERAND
+    assert r[4] is not BLANK_OPERAND
+    assert r[5] is not BLANK_OPERAND
+    assert r[6] is BLANK_OPERAND
 

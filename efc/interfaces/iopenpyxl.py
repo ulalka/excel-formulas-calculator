@@ -68,16 +68,16 @@ class OpenpyxlInterface(BaseExcelInterface):
             return result
 
     def _max_row(self, ws_name):
-        return self.wb[ws_name]._max_row
+        return self.wb[ws_name].max_row
 
     def _min_row(self, ws_name):
-        return self.wb[ws_name]._min_row
+        return self.wb[ws_name].min_row
 
     def _max_column(self, ws_name):
-        return self.wb[ws_name]._max_column
+        return self.wb[ws_name].max_column
 
     def _min_column(self, ws_name):
-        return self.wb[ws_name]._min_column
+        return self.wb[ws_name].min_column
 
     def _has_worksheet(self, ws_name):
         return ws_name in self.wb.sheetnames
