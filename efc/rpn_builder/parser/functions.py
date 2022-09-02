@@ -703,6 +703,24 @@ def year_frac(dt1, dt2, tp=None):
     return v
 
 
+def row_func(op):
+    if isinstance(op, SingleCellOperand):
+        return op.row
+    elif isinstance(op, CellRangeOperand):
+        return op.row1
+    else:
+        raise ValueErrorOperand
+
+
+def column_func(op):
+    if isinstance(op, SingleCellOperand):
+        return op.column
+    elif isinstance(op, CellRangeOperand):
+        return op.column1
+    else:
+        raise ValueErrorOperand
+
+
 ARITHMETIC_FUNCTIONS = {
     '+': add_func,
     '-': subtract_func,
@@ -726,6 +744,7 @@ EXCEL_FUNCTIONS['AND'] = and_function
 EXCEL_FUNCTIONS['AVERAGE'] = average_function
 EXCEL_FUNCTIONS['AVERAGEIFS'] = average_ifs_function
 
+EXCEL_FUNCTIONS['COLUMN'] = column_func
 EXCEL_FUNCTIONS['CONCATENATE'] = concatenate
 EXCEL_FUNCTIONS['COUNT'] = count_function
 EXCEL_FUNCTIONS['COUNTA'] = counta_function
@@ -761,6 +780,7 @@ EXCEL_FUNCTIONS['OR'] = or_function
 EXCEL_FUNCTIONS['RIGHT'] = right_func
 EXCEL_FUNCTIONS['ROUND'] = round_function
 EXCEL_FUNCTIONS['ROUNDDOWN'] = round_down_function
+EXCEL_FUNCTIONS['ROW'] = row_func
 
 EXCEL_FUNCTIONS['SEARCH'] = search_func
 EXCEL_FUNCTIONS['SMALL'] = small_function
