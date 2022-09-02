@@ -343,3 +343,32 @@ def test_upper(calc):
     assert calc('UPPER("TEST")', 'Yet another sheet').value == 'TEST'
     assert calc('UPPER("test")', 'Yet another sheet').value == 'TEST'
     assert calc('UPPER("TeSt %1234")', 'Yet another sheet').value == 'TEST %1234'
+
+
+@pytest.mark.parametrize(
+    ('formula', 'ws', 'result'),
+    (('ROW(A1)', 'Yet another sheet', 1),
+     ('ROW(C1)', 'Yet another sheet', 1),
+     ('ROW(C3)', 'Yet another sheet', 3),
+     ('ROW(GH12435)', 'Yet another sheet', 12435),
+     pytest.param('ROW(1234)', 'Yet another sheet', 12435,
+                  marks=pytest.mark.xfail(raises=ValueErrorOperand, strict=True)),
+     pytest.param('ROW("123")', 'Yet another sheet', 12435,
+                  marks=pytest.mark.xfail(raises=ValueErrorOperand, strict=True))),
+)
+def test_row(calc, formula, ws, result):
+    assert calc(formula, ws).value == result
+
+
+@pytest.mark.parametrize(
+    ('formula', 'ws', 'result'),
+    (('COLUMN(A1)', 'Yet another sheet', 1),
+     ('COLUMN(C1)', 'Yet another sheet', 3),
+     ('COLUMN(GH12435)', 'Yet another sheet', 190),
+     pytest.param('COLUMN(1234)', 'Yet another sheet', 12435,
+                  marks=pytest.mark.xfail(raises=ValueErrorOperand, strict=True)),
+     pytest.param('COLUMN("123")', 'Yet another sheet', 12435,
+                  marks=pytest.mark.xfail(raises=ValueErrorOperand, strict=True))),
+)
+def test_column(calc, formula, ws, result):
+    assert calc(formula, ws).value == result
