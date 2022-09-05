@@ -28,6 +28,16 @@ class ExcelMock(BaseExcelInterface):
             2: {1: 13, 2: '', 3: 18},
             3: {1: None, 2: 2, 3: ''},
         },
+        'TestVLookup': {
+            1: {1: 13, 2: 16, 3: 18},
+            2: {1: 13, 2: 17, 3: 18},
+            3: {1: 4, 2: 2, 3: 8},
+        },
+        'TestHLookup': {
+            1: {1: 13, 2: 13, 3: 4},
+            2: {1: 16, 2: 17, 3: 2},
+            3: {1: 18, 2: 18, 3: 8},
+        },
     }
 
     def _cell_to_value(self, row, column, ws_name):

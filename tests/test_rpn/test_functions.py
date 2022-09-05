@@ -5,7 +5,7 @@ import pytest
 
 from efc.rpn_builder.parser.operands import (
     BadReference,
-    NumErrorOperand,
+    NotFoundErrorOperand, NumErrorOperand,
     ValueErrorOperand,
     ValueNotAvailable,
     ZeroDivisionErrorOperand,
@@ -181,8 +181,34 @@ def test_AVERAGEIFS(calc):
     assert calc('AVERAGEIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 13
 
 
-def test_VLOOKUP(calc):
-    assert calc('VLOOKUP(13,Sheet4!A1:B3,2)', 'Yet another sheet').value == 16
+@pytest.mark.parametrize(
+    ('formula', 'result'),
+    (('VLOOKUP(13,TestVLookup!A1:B3,2)', 17),
+     ('VLOOKUP(13,TestVLookup!A1:B3,2,1)', 17),
+     ('VLOOKUP(13,TestVLookup!A1:B3,2,0)', 16),
+     ('VLOOKUP(4,\'Yet another sheet\'!A100:ZZ110,27)', 45),
+     pytest.param('VLOOKUP(4,TestVLookup!A1:B3,2)', 12435,
+                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True)),
+     pytest.param('VLOOKUP(24,TestVLookup!A1:B3,2)', 12435,
+                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True))),
+)
+def test_VLOOKUP(calc, formula, result):
+    assert calc(formula, 'Sheet4').value == result
+
+
+@pytest.mark.parametrize(
+    ('formula', 'result'),
+    (('HLOOKUP(13,TestHLookup!A1:B3,2)', 17),
+     ('HLOOKUP(13,TestHLookup!A1:B3,2,1)', 17),
+     ('HLOOKUP(13,TestHLookup!A1:B3,2,0)', 16),
+     ('HLOOKUP(45,\'Yet another sheet\'!A104:ZZ04,1)', 45),
+     pytest.param('HLOOKUP(4,TestHLookup!A1:B3,2)', 12435,
+                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True)),
+     pytest.param('HLOOKUP(24,TestHLookup!A1:B3,2)', 12435,
+                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True))),
+)
+def test_HLOOKUP(calc, formula, result):
+    assert calc(formula, 'Sheet4').value == result
 
 
 def test_SEARCH(calc):

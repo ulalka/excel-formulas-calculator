@@ -340,15 +340,23 @@ def match_function(op1, r, match_type=None):
     match_type = 0 if match_type is None else int(match_type)
 
     expr = op1.value
-    idx = None
     if match_type == 1:
+        match_idx = None
+        if isinstance(r, CellRangeOperand) and r.is_multidim:
+            raise NotFoundErrorOperand
+
         for idx, item in enumerate(r, 1):
             a, b = type_mixin(item.value, expr)
-            if a == b:
-                break
-            elif a > b:
-                idx -= 1
-                break
+            if a > b:
+                if match_idx is not None:
+                    break
+                else:
+                    raise NotFoundErrorOperand
+            elif a == b:
+                match_idx = idx
+        if match_idx is None:
+            raise NotFoundErrorOperand
+        idx = match_idx
     elif match_type == -1:
         for idx, item in enumerate(r, 1):
             a, b = type_mixin(item.value, expr)
@@ -538,13 +546,24 @@ def vlookup_function(op, rg, column, flag=None):
 
     if flag is not None and flag.digit or flag is None:
         idx = match_function(op, first_col, 1)
-        if flag is not None and flag.digit and idx != 1:
-            a, b = type_mixin(list(first_col)[idx - 1].value, op.value)
-            if a == b:
-                idx -= 1
     else:
         idx = match_function(op, first_col, 0)
     return SingleCellOperand(row=(rg.row1 or 1) + idx - 1, column=(rg.column1 or 1) + column.digit - 1,
+                             ws_name=rg.ws_name, source=rg.source)
+
+
+def hlookup_function(op, rg, row, flag=None):
+    if isinstance(flag, EmptyOperand):
+        flag = None
+
+    first_row = rg.offset()
+    first_row.row2 = first_row.row1
+
+    if flag is not None and flag.digit or flag is None:
+        idx = match_function(op, first_row, 1)
+    else:
+        idx = match_function(op, first_row, 0)
+    return SingleCellOperand(row=(rg.row1 or 1) + row.digit - 1, column=(rg.column1 or 1) + idx - 1,
                              ws_name=rg.ws_name, source=rg.source)
 
 
@@ -760,6 +779,8 @@ EXCEL_FUNCTIONS['IFERROR'] = if_error_func
 EXCEL_FUNCTIONS['INDEX'] = index_function
 EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
 EXCEL_FUNCTIONS['ISERROR'] = is_error_func
+
+EXCEL_FUNCTIONS['HLOOKUP'] = hlookup_function
 
 EXCEL_FUNCTIONS['LARGE'] = large_function
 EXCEL_FUNCTIONS['LEN'] = len_func
