@@ -406,6 +406,10 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
                 return SingleCellOperand(row, column, ws_name=self.ws_name, source=self.source)
         return BadReference()
 
+    @cached_property
+    def is_multidim(self):
+        return self.column1 != self.column2 and self.row1 != self.row2
+
 
 class NamedRangeOperand(CellsOperand):
     def __init__(self, name, *args, **kwargs):
