@@ -1,6 +1,9 @@
 # Excel-formulas-calculator
 
---- 
+[![ci-badge]][ci]
+[![pypi-badge]][pypi]
+[![py-version-badge]][pypi]
+
 Excel-formulas-calculator (EFC) is a high-level Py23 library that allows you to calculate Excel formulas on any OS.
 
 ## Openpyxl interface
@@ -55,3 +58,9 @@ print(interface.calc_cell('A4', 'Worksheet1'))  # prints '1235'
   OFFSET, OR, RIGHT, ROUND, ROUNDDOWN, ROW, SEARCH, SMALL, SUBSTITUTE, SUM, SUMIF, SUMIFS, TRIM, VLOOKUP, YEARFRAC, UPPER`
 * All variations of the spelling of the cell and range addresses (linked docs will be skipped)
 * Formula cell offset - this can be useful when calculating shared formulas
+
+[ci-badge]: https://github.com/ulalka/excel-formulas-calculator/actions/workflows/python-package.yml/badge.svg?branch=master
+[ci]: https://github.com/ulalka/excel-formulas-calculator/actions/workflows/python-package.yml
+[pypi-badge]: https://img.shields.io/pypi/v/excel-formulas-calculator
+[pypi]: https://pypi.org/project/excel-formulas-calculator/
+[py-version-badge]: https://img.shields.io/pypi/pyversions/excel-formulas-calculator
