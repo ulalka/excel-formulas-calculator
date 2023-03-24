@@ -43,7 +43,7 @@ setup(name='excel-formulas-calculator',
       include_package_data=True,
       install_requires=['six'],
       extras_require={
-          'openpyxl': ['openpyxl'],
+          'openpyxl': ['openpyxl>=3.1'],
       },
       tests_require=['pytest'],
       test_suite='tests',
