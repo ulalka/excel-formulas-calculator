@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from six import PY3
 from efc.interfaces.base import BaseExcelInterface
 from efc.interfaces.errors import NamedRangeNotFound
 from efc.utils import datetime_to_openxml, parse_date
@@ -50,16 +51,34 @@ class OpenpyxlInterface(BaseExcelInterface):
 
             return self._caches['cells'][cache_key]
 
-    def _get_named_range_formula(self, name, ws_name):
-        check = []
-        if ws_name is not None:
-            check.append(self.wb[ws_name])
-        check.append(self.wb)
-        for obj in check:
-            if name in obj.defined_names:
-                return obj.defined_names[name].attr_text
-        else:
-            raise NamedRangeNotFound
+    if PY3:
+        def _get_named_range_formula(self, name, ws_name):
+            check = []
+            if ws_name is not None:
+                check.append(self.wb[ws_name])
+            check.append(self.wb)
+            for obj in check:
+                if name in obj.defined_names:
+                    return obj.defined_names[name].attr_text
+            else:
+                raise NamedRangeNotFound
+    else:
+        def _get_named_range_formula(self, name, ws_name):
+            local_sheet_id = None
+            if ws_name is not None:
+                local_sheet_id = self.wb.sheetnames.index(ws_name)
+
+            result = None
+            for named_range in self.wb.defined_names.definedName:
+                if named_range.name == name:
+                    result = named_range.attr_text
+                    if named_range.localSheetId == local_sheet_id:
+                        break
+
+            if result is None:
+                raise NamedRangeNotFound
+            else:
+                return result
 
     def _max_row(self, ws_name):
         return self.wb[ws_name].max_row
