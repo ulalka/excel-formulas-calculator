@@ -31,11 +31,15 @@ def test_SUM(calc):
 def test_SUMIFS(calc):
     assert calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,">4")', 'Yet another sheet').value == 58
     assert calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 26
+    assert calc('SUMIFS(Sheet4!A1:B3,Sheet4!A1:C5,"<=0")', 'Yet another sheet').value == 0
 
 
 def test_SUMIF(calc):
+    assert calc('SUMIF(Sheet4!A1:B3,">4")', 'Yet another sheet').value == 58
     assert calc('SUMIF(Sheet4!A1:B3,">4",Sheet4!A1:B3)', 'Yet another sheet').value == 58
-    assert calc('SUMIF(Sheet4!A1:B3,"13",Sheet4!A1:B3)', 'Yet another sheet').value == 26
+    assert calc('SUMIF(Sheet4!A1:B3,"13")', 'Yet another sheet').value == 26
+    assert calc('SUMIF(Sheet4!A1:B3,"13",Sheet4!B2:C4)', 'Yet another sheet').value == 18
+    assert calc('SUMIF(Sheet4!A1:B5,"=0")', 'Yet another sheet').value == 0
 
 
 def test_MOD(calc):
@@ -149,6 +153,7 @@ def test_COUNT(calc):
 def test_COUNTIF(calc):
     assert calc('COUNTIF(A1:C4, ">4")', 'Sheet 1').value == 4
     assert calc('COUNTIF(A1:C4, "13")', 'Sheet4').value == 2
+    assert calc('COUNTIF(A1:C5, ">=0")', 'Sheet4').value == 9
 
 
 def test_COUNTBLANK(calc):
@@ -179,6 +184,7 @@ def test_AVERAGE(calc):
 
 def test_AVERAGEIFS(calc):
     assert calc('AVERAGEIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 13
+    assert calc('AVERAGEIFS(Sheet4!A1:C5,Sheet4!A1:C5,"<>0")', 'Yet another sheet').value == 12
 
 
 @pytest.mark.parametrize(
@@ -236,8 +242,9 @@ def test_LARGE(calc):
 
 
 def test_COUNTIFS(calc):
-    assert calc('COUNTIFS(Sheet4!A1:B3,Sheet4!A1:B3,">4")', 'Yet another sheet').value == 4
-    assert calc('COUNTIFS(Sheet4!A1:B3,Sheet4!A1:B3,"13")', 'Yet another sheet').value == 2
+    assert calc('COUNTIFS(Sheet4!A1:B3,">4")', 'Yet another sheet').value == 4
+    assert calc('COUNTIFS(Sheet4!A1:B3,"13")', 'Yet another sheet').value == 2
+    assert calc('COUNTIFS(Sheet4!A1:B4,"<>0")', 'Yet another sheet').value == 8
 
 
 def test_COUNTA(calc):
