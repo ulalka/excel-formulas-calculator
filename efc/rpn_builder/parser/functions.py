@@ -380,8 +380,9 @@ COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
 
 
 def compare_behaviour_decorator(func, none_res):
+    @wraps(func)
     def _wrapper(op1, op2):
-        if op1.value is None or op2.value is None:
+        if op1.is_blank or op2.is_blank:
             return none_res
         return func(op1, op2)
 
@@ -511,8 +512,8 @@ def count_blank_function(cells):
     return len([op for op in iter_elements(cells) if op.is_blank])
 
 
-def count_ifs_function(op1, *args):
-    return len(ifs_indexes(op1, *args))
+def count_ifs_function(*args):
+    return len(ifs_indexes(*args))
 
 
 def offset_function(cell, row_offset, col_offset, height=None, width=None):
