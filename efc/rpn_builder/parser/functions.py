@@ -379,6 +379,16 @@ def match_function(op1, r, match_type=None):
 COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
 
 
+def compare_behaviour_decorator(func, none_res):
+    @wraps(func)
+    def _wrapper(op1, op2):
+        if op1.is_blank or op2.is_blank:
+            return none_res
+        return func(op1, op2)
+
+    return _wrapper
+
+
 def get_check_function(expr):
     if isinstance(expr.value, string_types):
         match = COUNT_IF_EXPR.search(expr.value)
@@ -396,7 +406,7 @@ def get_check_function(expr):
     if is_float(operand):
         operand = float(operand)
 
-    check = ARITHMETIC_FUNCTIONS[operation]
+    check = compare_behaviour_decorator(ARITHMETIC_FUNCTIONS[operation], operation == '<>')
     return check, SimpleOperand(operand)
 
 
@@ -480,8 +490,8 @@ def sum_ifs_function(op1, *args):
     return sum_func(*(c for idx, c in enumerate(op1, 1) if idx in good_indexes))
 
 
-def sum_if_function(r, expr, op1):
-    return sum_ifs_function(op1, r, expr)
+def sum_if_function(r, expr, op1=None):
+    return sum_ifs_function(op1 or r, r, expr)
 
 
 def concatenate(*args):
@@ -502,9 +512,8 @@ def count_blank_function(cells):
     return len([op for op in iter_elements(cells) if op.is_blank])
 
 
-def count_ifs_function(op1, *args):
-    good_indexes = ifs_indexes(*args)
-    return count_function(*(c for idx, c in enumerate(op1, 1) if idx in good_indexes))
+def count_ifs_function(*args):
+    return len(ifs_indexes(*args))
 
 
 def offset_function(cell, row_offset, col_offset, height=None, width=None):
