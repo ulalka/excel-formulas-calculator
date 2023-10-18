@@ -3,9 +3,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 from calendar import isleap, monthrange
+from collections import defaultdict
 from functools import wraps
+from itertools import groupby
 
-from six import integer_types, string_types, text_type
+from six import integer_types, iteritems, string_types, text_type
 from six.moves import range, zip_longest
 
 from efc.rpn_builder.parser.operands import (
@@ -648,6 +650,52 @@ def trim_func(op):
     return value
 
 
+def unique_func(op1, by_col=None, exactly_once=None):
+    if isinstance(by_col, EmptyOperand) or by_col is None:
+        by_col = False
+    else:
+        by_col = by_col.value
+
+    if isinstance(exactly_once, EmptyOperand) or exactly_once is None:
+        exactly_once = False
+    else:
+        exactly_once = exactly_once.value
+
+    if isinstance(op1, SingleCellOperand):
+        cells_set = CellSetOperand()
+        cells_set.add_cell(op1)
+    elif isinstance(op1, CellRangeOperand):
+        items = defaultdict(list)
+        counter = defaultdict(int)
+
+        get_iterator = lambda: op1.get_columns_iter() if by_col else op1.get_rows_iter()
+
+        for idx, cells in groupby(get_iterator(), lambda x: x[0]):
+            key = tuple(c.value for _, c in cells)
+            counter[key] += 1
+            items[key].append(idx)
+
+        good_items = set()
+        for key, ids in iteritems(items):
+            count = counter[key]
+            if exactly_once and count == 1 or not exactly_once:
+                good_items.add(ids[0])
+
+        cells_set = CellSetOperand()
+        for idx, cells in groupby(get_iterator(), lambda x: x[0]):
+            if idx in good_items:
+                if by_col:
+                    for row_idx, (_, cell) in enumerate(cells):
+                        cells_set.add_cell(cell, row_idx)
+                else:
+                    cells_set.add_row([c for _, c in cells])
+    else:
+        # CellSetOperand not supported
+        return ValueErrorOperand()
+
+    return cells_set
+
+
 def len_func(op):
     value = op.string
     return len(value)
@@ -811,6 +859,8 @@ EXCEL_FUNCTIONS['SUMIF'] = sum_if_function
 EXCEL_FUNCTIONS['SUMIFS'] = sum_ifs_function
 
 EXCEL_FUNCTIONS['TRIM'] = trim_func
+
+EXCEL_FUNCTIONS['UNIQUE'] = unique_func
 
 EXCEL_FUNCTIONS['VLOOKUP'] = vlookup_function
 

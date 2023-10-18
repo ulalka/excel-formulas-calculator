@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from itertools import groupby
+
 import pytest
 
 from efc.rpn_builder.parser.operands import (
@@ -369,6 +371,111 @@ def test_upper(calc):
     assert calc('UPPER("TEST")', 'Yet another sheet').value == 'TEST'
     assert calc('UPPER("test")', 'Yet another sheet').value == 'TEST'
     assert calc('UPPER("TeSt %1234")', 'Yet another sheet').value == 'TEST %1234'
+
+
+@pytest.mark.parametrize(
+    ('rng', 'by_col', 'exactly_once', 'result'),
+    (
+            ('A1:D1', None, None, (('A', 'B', 'B', 'B'),)),
+            ('A1:D1', True, None, (('A', 'B'),)),
+            ('A1:D1', False, None, (('A', 'B', 'B', 'B'),)),
+            ('A1:D1', True, None, (('A', 'B'),)),
+            ('A1:D1', True, True, (('A',),)),
+            ('A1:D1', False, False, (('A', 'B', 'B', 'B'),)),
+            ('A1:D1', False, True, (('A', 'B', 'B', 'B'),)),
+            ('A1:A10', None, None, (('A',), (1,), (2,), (3,), (None,), (5,), (7,), ('7',), (0,),)),
+            ('A1:A10', True, None, (('A',), (1,), (2,), (3,), (None,), (5,), (7,), (7,), ('7',), (0,),)),
+            ('A1:A10', False, None, (('A',), (1,), (2,), (3,), (None,), (5,), (7,), ('7',), (0,),)),
+            ('A1:A10', True, None, (('A',), (1,), (2,), (3,), (None,), (5,), (7,), (7,), ('7',), (0,),)),
+            ('A1:A10', True, True, (('A',), (1,), (2,), (3,), (None,), (5,), (7,), (7,), ('7',), (0,),)),
+            ('A1:A10', False, False, (('A',), (1,), (2,), (3,), (None,), (5,), (7,), ('7',), (0,),)),
+            ('A1:A10', False, True, (('A',), (1,), (2,), (3,), (None,), (5,), ('7',), (0,),)),
+            ('A1:D10', None, None, (('A', 'B', 'B', 'B'),
+                                    (1, 1, 6, 6),
+                                    (2, 2, 7, 7),
+                                    (3, 3, 8, 8),
+                                    (None, None, 9, 9),
+                                    (5, 5, 10, 10),
+                                    (7, 7, 6, 6),
+                                    ('7', 7, 6, 6),
+                                    (0, 0, 9, 9),
+                                    )),
+            ('A1:D10', True, None, (('A', 'B', 'B'),
+                                    (1, 1, 6),
+                                    (2, 2, 7),
+                                    (3, 3, 8),
+                                    (None, None, 9),
+                                    (5, 5, 10,),
+                                    (7, 7, 6),
+                                    (7, 7, 6),
+                                    ('7', 7, 6),
+                                    (0, 0, 9),
+                                    )),
+            ('A1:D10', False, None, (('A', 'B', 'B', 'B'),
+                                     (1, 1, 6, 6),
+                                     (2, 2, 7, 7),
+                                     (3, 3, 8, 8),
+                                     (None, None, 9, 9),
+                                     (5, 5, 10, 10),
+                                     (7, 7, 6, 6),
+                                     ('7', 7, 6, 6),
+                                     (0, 0, 9, 9),
+                                     )),
+            ('A1:D10', True, None, (('A', 'B', 'B'),
+                                    (1, 1, 6),
+                                    (2, 2, 7),
+                                    (3, 3, 8),
+                                    (None, None, 9),
+                                    (5, 5, 10,),
+                                    (7, 7, 6),
+                                    (7, 7, 6),
+                                    ('7', 7, 6),
+                                    (0, 0, 9),
+                                    )),
+            ('A1:D10', True, True, (('A', 'B'),
+                                    (1, 1),
+                                    (2, 2),
+                                    (3, 3),
+                                    (None, None),
+                                    (5, 5,),
+                                    (7, 7),
+                                    (7, 7),
+                                    ('7', 7),
+                                    (0, 0),
+                                    )),
+            ('A1:D10', False, False, (('A', 'B', 'B', 'B'),
+                                      (1, 1, 6, 6),
+                                      (2, 2, 7, 7),
+                                      (3, 3, 8, 8),
+                                      (None, None, 9, 9),
+                                      (5, 5, 10, 10),
+                                      (7, 7, 6, 6),
+                                      ('7', 7, 6, 6),
+                                      (0, 0, 9, 9),
+                                      )),
+            ('A1:D10', False, True, (('A', 'B', 'B', 'B'),
+                                     (1, 1, 6, 6),
+                                     (2, 2, 7, 7),
+                                     (3, 3, 8, 8),
+                                     (None, None, 9, 9),
+                                     (5, 5, 10, 10),
+                                     ('7', 7, 6, 6),
+                                     (0, 0, 9, 9),
+                                     )),
+    )
+)
+def test_unique(calc, rng, by_col, exactly_once, result):
+    suffix = ''
+    if by_col is not None:
+        suffix += (',' + str(by_col).upper())
+    if exactly_once:
+        suffix += (',' + str(exactly_once).upper())
+    op = calc('UNIQUE(TestUnique!%s%s)' % (rng, suffix), 'TestUnique')
+    op_result = []
+    for _, cells in groupby(op.get_iter_rows(), lambda x: x[0]):
+        op_result.append(tuple(c.value for _, c in cells))
+
+    assert tuple(op_result) == result
 
 
 @pytest.mark.parametrize(
