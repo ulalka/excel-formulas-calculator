@@ -65,8 +65,9 @@ class RPN(Array):
                     raise
                 except ErrorOperand as err:
                     v = err
-                except (TypeError, ValueError):
+                except (TypeError, ValueError) as e:
                     v = ValueErrorOperand()
+                    v.__cause__ = e
                 except ZeroDivisionError:
                     v = ZeroDivisionErrorOperand()
 

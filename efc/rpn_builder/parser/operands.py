@@ -105,6 +105,8 @@ class ErrorOperand(OperandLikeObject, BaseEFCException):
         return self.string_value
 
     def __getattr__(self, item):
+        if item in frozenset(('__notes__',)):
+            return super().__getattr__(item)
         raise self
 
 
