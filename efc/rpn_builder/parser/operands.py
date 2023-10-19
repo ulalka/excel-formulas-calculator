@@ -247,9 +247,9 @@ class SetOperand(OperandLikeObject):
 
     def check_type(self, items):
         if isinstance(items, list):
-            if any(not isinstance(i, self.operands_type) for i in items):
+            if any(not isinstance(i, (self.operands_type, BLANK_OPERAND.__class__)) for i in items):
                 raise ValueErrorOperand()
-        elif not isinstance(items, (self.operands_type, ValueNotAvailable)):
+        elif not isinstance(items, (self.operands_type, ValueNotAvailable, BLANK_OPERAND.__class__)):
             raise ValueErrorOperand()
 
     def add_cell(self, item, row=0):
@@ -264,13 +264,17 @@ class SetOperand(OperandLikeObject):
 
     def add_row(self, items):
         self.check_type(items)
-        r = max(self._items) + 1 if self._items else 1
+        r = max(self._items) + 1 if self._items else 0
         self.add_many(items, r)
 
-    def get_iter(self):
+    def get_iter_rows(self):
         for r in sorted(self._items):
             for item in self._items[r]:
-                yield item
+                yield r, item
+
+    def get_iter(self):
+        for _, item in self.get_iter_rows():
+            yield item
 
     def __iter__(self):
         return self.get_iter()
@@ -334,33 +338,65 @@ class CellRangeOperand(CellsOperand, OffsetMixin):
     def max_row(self):
         return self.source._max_row(self.ws_name)
 
-    def _row_cells_generator(self, r, column1, column2):
-        for c in range(column1, self.min_column):
+    def _row_cells_generator(self, row, column1, column2):
+        for _ in range(column1, self.min_column):
             yield BLANK_OPERAND
 
         for c in range(max(self.min_column, column1), min(column2 + 1, self.max_column + 1)):
-            yield SingleCellOperand(r, c, ws_name=self.ws_name, source=self.source)
+            yield SingleCellOperand(row, c, ws_name=self.ws_name, source=self.source)
 
-        for c in range(self.max_column + 1, column2 + 1):
+        for _ in range(self.max_column + 1, column2 + 1):
             yield BLANK_OPERAND
 
-    def get_iter(self):
+    def get_rows_iter(self):
         row1 = self.min_row if self.row1 is None else self.row1
         row2 = self.max_row if self.row2 is None else self.row2
         column1 = self.min_column if self.column1 is None else self.column1
         column2 = self.max_column if self.column2 is None else self.column2
 
-        for _ in range(row1, self.min_row):
+        for r in range(row1, self.min_row):
             for _ in range(column1, column2 + 1):
-                yield BLANK_OPERAND
+                yield r, BLANK_OPERAND
 
         for r in range(max(self.min_row, row1), min(row2 + 1, self.max_row + 1)):
-            for c in self._row_cells_generator(r, column1, column2):
-                yield c
+            for cell in self._row_cells_generator(r, column1, column2):
+                yield r, cell
 
         for r in range(self.max_row + 1, row2 + 1):
             for _ in range(column1, column2 + 1):
-                yield BLANK_OPERAND
+                yield r, BLANK_OPERAND
+
+    def _column_cells_generator(self, column, row1, row2):
+        for _ in range(row1, self.min_row):
+            yield BLANK_OPERAND
+
+        for r in range(max(self.min_row, row1), min(row2 + 1, self.max_row + 1)):
+            yield SingleCellOperand(r, column, ws_name=self.ws_name, source=self.source)
+
+        for _ in range(self.max_row + 1, row2 + 1):
+            yield BLANK_OPERAND
+
+    def get_columns_iter(self):
+        row1 = self.min_row if self.row1 is None else self.row1
+        row2 = self.max_row if self.row2 is None else self.row2
+        column1 = self.min_column if self.column1 is None else self.column1
+        column2 = self.max_column if self.column2 is None else self.column2
+
+        for c in range(column1, self.min_column):
+            for _ in range(row1, row2 + 1):
+                yield c, BLANK_OPERAND
+
+        for c in range(max(self.min_column, column1), min(column2 + 1, self.max_column + 1)):
+            for cell in self._column_cells_generator(c, row1, row2):
+                yield c, cell
+
+        for c in range(self.max_column + 1, column2 + 1):
+            for _ in range(row1, row2 + 1):
+                yield c, BLANK_OPERAND
+
+    def get_iter(self):
+        for _, c in self.get_rows_iter():
+            yield c
 
     def address_to_value(self):
         return self.cached_iterable_items
