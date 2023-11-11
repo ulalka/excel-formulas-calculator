@@ -14,13 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest, ubuntu-20.04]
-        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["pypy2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
         exclude:
           - python-version: "3.6"
             os: ubuntu-latest
         include:
           - openpyxl-version: "3.1.2"
-          - python-version: "2.7"
+          - python-version: "pypy2.7"
             openpyxl-version: "2.6.4"
 
     steps:
