@@ -160,6 +160,11 @@ def test_COUNTIF(calc):
     assert calc('COUNTIF(A1:C4, "13")', 'Sheet4').value == 2
     assert calc('COUNTIF(A1:C5, ">=0")', 'Sheet4').value == 9
     assert calc('COUNTIF(A1:C5, "<=0")', 'Sheet5').value == 0
+    assert calc('COUNTIF(A1:B5, "")', 'Sheet6').value == 2
+    assert calc('COUNTIF(A1:B5, B4)', 'Sheet6').value == 2
+    assert calc('COUNTIF(A1:B5, 0)', 'Sheet6').value == 2
+    assert calc('COUNTIF(A1:B5, A1)', 'Sheet6').value == 2
+    assert calc('COUNTIF(A1:B5, C1)', 'Sheet6').value == 2
 
 
 def test_COUNTBLANK(calc):

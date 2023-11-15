@@ -384,7 +384,7 @@ COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
 def compare_behaviour_decorator(func, none_res):
     @wraps(func)
     def _wrapper(op1, op2):
-        if op1.is_blank or op2.is_blank:
+        if {op1.is_blank, op2.is_blank} == {True, False}:
             return none_res
         return func(op1, op2)
 
