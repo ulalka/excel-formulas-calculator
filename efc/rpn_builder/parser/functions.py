@@ -381,16 +381,6 @@ def match_function(op1, r, match_type=None):
 COUNT_IF_EXPR = re.compile(r'^(?P<symbol><=|>=|<>|>|<|=)(?P<value>.+)$')
 
 
-def compare_behaviour_decorator(func, none_res):
-    @wraps(func)
-    def _wrapper(op1, op2):
-        if op1.value is None and not op2.is_blank or op2.value is None and not op1.is_blank:
-            return none_res
-        return func(op1, op2)
-
-    return _wrapper
-
-
 def get_check_function(expr):
     if isinstance(expr.value, string_types):
         match = COUNT_IF_EXPR.search(expr.value)
@@ -408,7 +398,7 @@ def get_check_function(expr):
     if is_float(operand):
         operand = float(operand)
 
-    check = compare_behaviour_decorator(ARITHMETIC_FUNCTIONS[operation], operation == '<>')
+    check = ARITHMETIC_FUNCTIONS[operation]
     return check, SimpleOperand(operand)
 
 

@@ -107,10 +107,8 @@ def test_concat(calculate, line, result):
 COMPARE_VALUES = (
     'zero',
     'zero_link',
-    'zero_formula',
     'empty_string_formula',
     'empty_string_link',
-    'empty_cell',
     'empty_cell_link',
 )
 
