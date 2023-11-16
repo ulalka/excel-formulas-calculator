@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import pytest
+from os.path import dirname, join
 
+import pytest
+from openpyxl import load_workbook
+from openpyxl.utils.cell import get_column_letter
+
+from efc.interfaces.iopenpyxl import OpenpyxlInterface
 from tests.test_rpn.mock import get_calculator
 
 
@@ -10,6 +15,23 @@ from tests.test_rpn.mock import get_calculator
 def calculate():
     calculator = get_calculator()
     return lambda line: calculator(line, None, None)
+
+
+@pytest.fixture(scope='session')
+def workbook():
+    path = join(dirname(__file__), 'fixtures', 'arith.xlsx')
+    return load_workbook(path)
+
+
+@pytest.fixture(scope='session')
+def workbook_data_only():
+    path = join(dirname(__file__), 'fixtures', 'arith.xlsx')
+    return load_workbook(path, data_only=True)
+
+
+@pytest.fixture(scope='session')
+def interface(workbook):
+    return OpenpyxlInterface(workbook, use_cache=True)
 
 
 @pytest.mark.parametrize(
@@ -67,7 +89,7 @@ def test_arithmetic(calculate, line, result):
             ('"1" < 1', False),
     )
 )
-def test_compare(calculate, line, result):
+def test_simple_compare(calculate, line, result):
     assert calculate(line).value == result
 
 
@@ -80,3 +102,36 @@ def test_compare(calculate, line, result):
 )
 def test_concat(calculate, line, result):
     assert calculate(line).value == result
+
+
+COMPARE_VALUES = (
+    'zero',
+    'zero_link',
+    'zero_formula',
+    'empty_string_formula',
+    'empty_string_link',
+    'empty_cell',
+    'empty_cell_link',
+)
+
+COMPARE_OPERANDS = ('<>', '>=', '<=', '>', '<', '=')
+FIRST_DATA_ROW = 2
+FIRST_OPERAND_COLUMN = 5
+COMPARE_LIST = 'compare'
+
+
+@pytest.mark.parametrize('left', enumerate(COMPARE_VALUES))
+@pytest.mark.parametrize('right', enumerate(COMPARE_VALUES))
+@pytest.mark.parametrize('operand', enumerate(COMPARE_OPERANDS))
+def test_compare(workbook_data_only, workbook, interface, left, right, operand):
+    left_idx, left_value = left
+    right_idx, right_value = right
+    operand_idx, operand_value = operand
+    row = FIRST_DATA_ROW + left_idx + len(COMPARE_OPERANDS) * right_idx
+    column = FIRST_OPERAND_COLUMN + operand_idx
+    index = get_column_letter(column) + str(row)
+
+    # TODO get value and formula together from single fixture
+    expected = workbook_data_only[COMPARE_LIST][index].value
+    assert interface.calc_cell(index, COMPARE_LIST) == expected, \
+        '%s %s %s != %s' % (left_value, operand_value, right_value, expected)
