@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from itertools import chain
 
 from efc import Lexer, Parser
-from efc.interfaces.base import BaseExcelInterface
+from efc.interfaces.base import BaseExcelInterface, CellInfo
 from efc.rpn_builder.parser.operands import CellSetOperand, SingleCellOperand
 
 
@@ -59,8 +59,8 @@ class ExcelMock(BaseExcelInterface):
         },
     }
 
-    def _cell_to_value(self, row, column, ws_name):
-        return self.data[ws_name].get(row, {}).get(column)
+    def _get_cell_info(self, address):
+        return CellInfo(self.data[address.ws_name].get(address.row, {}).get(address.column))
 
     @property
     def named_ranges(self):

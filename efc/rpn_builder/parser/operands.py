@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 from six import add_metaclass, itervalues, python_2_unicode_compatible, text_type
 from six.moves import range
@@ -12,12 +12,14 @@ from efc.rpn_builder.parser.metaclasses import MetaCellRangeOperandCache, MetaSi
 from efc.utils import cached_property, col_index_to_str, digit, u
 
 __all__ = (
-    'Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
+    'CellAddress', 'Operand', 'ErrorOperand', 'ValueErrorOperand', 'WorksheetNotExist',
     'ZeroDivisionErrorOperand', 'SimpleOperand', 'SingleCellOperand',
     'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
     'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin',
     'SetOperand', 'BadReference', 'ValueNotAvailable', 'EmptyOperand', 'NamedRangeNotExist', 'NumErrorOperand',
 )
+
+CellAddress = namedtuple('CellAddress', ('ws_name', 'row', 'column', 'row_fixed', 'column_fixed'))
 
 
 class OperandLikeObject(object):
@@ -81,7 +83,9 @@ class EmptyOperand(Operand):
 
 
 class BlankOperand(Operand):
-    pass
+    @property
+    def linked_cell(self):
+        return self
 
 
 BLANK_OPERAND = BlankOperand()
@@ -214,8 +218,35 @@ class SingleCellOperand(CellsOperand, Operand, OffsetMixin):
         self.row_fixed = row_fixed
         self.column_fixed = column_fixed
 
+    @cached_property
+    def _cell_info(self):
+        return self.source._cell_to_value(self.cell_address)
+
+    @cached_property
+    def cell_address(self):
+        return CellAddress(self.ws_name, self.row, self.column, self.row_fixed, self.column_fixed)
+
+    def from_cell_address(self, cell_addr):
+        """
+        :type cell_addr: CellAddress
+        """
+        return SingleCellOperand(row=cell_addr.row,
+                                 column=cell_addr.column,
+                                 ws_name=cell_addr.ws_name,
+                                 row_fixed=cell_addr.row_fixed,
+                                 column_fixed=cell_addr.column_fixed,
+                                 source=self.source,
+                                 )
+
+    @property
+    def linked_cell(self):
+        if self.cell_address == self._cell_info[1]:
+            return self
+        else:
+            return self.from_cell_address(self._cell_info[1])
+
     def address_to_value(self):
-        return self.source._cell_to_value(self.row, self.column, self.ws_name)
+        return self._cell_info[0]
 
     def get_iter(self):
         yield self
@@ -236,6 +267,9 @@ class SingleCellOperand(CellsOperand, Operand, OffsetMixin):
         return SingleCellOperand(row=row, column=column,
                                  row_fixed=self.row_fixed, column_fixed=self.column_fixed,
                                  ws_name=self.ws_name, source=self.source)
+
+    def __eq__(self, other):
+        return all(getattr(self, key) == getattr(other, key) for key in ('row', 'column', 'source', 'ws_name'))
 
 
 class SetOperand(OperandLikeObject):

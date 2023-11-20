@@ -2,12 +2,20 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from abc import ABCMeta, abstractmethod
+from functools import partial
 
 from six import add_metaclass
 
 from efc import Lexer, Parser
 from efc.interfaces.cache import CacheManager
 from efc.interfaces.errors import NamedRangeNotFound
+from efc.rpn_builder.parser.operands import CellAddress, RPNOperand, SingleCellOperand
+
+
+class CellInfo:
+    def __init__(self, value, formula=None):
+        self.value = value
+        self.formula = formula
 
 
 @add_metaclass(ABCMeta)
@@ -44,13 +52,48 @@ class BaseExcelInterface(object):
         self._caches.clear()
 
     @abstractmethod
-    def _cell_to_value(self, row, column, ws_name):
+    def _get_cell_info(self, address):
         """
-        :type row: int
-        :type column: int
-        :type ws_name: basestring
-        :rtype: list
+        :type address: CellAddress
+        :rtype: CellInfo
         """
+        pass
+
+    def _get_value_with_target_computable_cell(self, cell_addr, cell_info):
+        """
+        :type cell_addr: CellAddress
+        :type cell_info: CellInfo
+        """
+        last_cell_address = cell_addr
+        calc = partial(self._build_rpn(cell_info.formula, cell_addr.ws_name).calc, cell_addr.ws_name, self)
+        while True:
+            partial_result = calc()
+            if isinstance(partial_result, SingleCellOperand):
+                value, last_cell_address = self._cell_to_value(partial_result.cell_address)
+                break
+            elif isinstance(partial_result, RPNOperand):
+                calc = partial_result.calc
+            else:
+                value = partial_result.value
+                break
+        return value, last_cell_address
+
+    def _cell_to_value(self, cell_addr):
+        """
+        rtype: tuple[Any, CellAddress]
+        """
+        cell_info = self._get_cell_info(cell_addr)  # type: CellInfo
+
+        if cell_info.formula is None:
+            return cell_info.value, cell_addr
+        else:
+            if self._caches is not None:
+                if cell_addr not in self._caches['cells']:
+                    self._caches['cells'][cell_addr] = self._get_value_with_target_computable_cell(cell_addr, cell_info)
+                value = self._caches['cells'][cell_addr]
+            else:
+                value = self._get_value_with_target_computable_cell(cell_addr, cell_info)
+            return value
 
     @abstractmethod
     def _get_named_range_formula(self, name, ws_name):

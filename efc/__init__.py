@@ -6,4 +6,4 @@ from efc.rpn_builder.parser import Parser
 from efc.rpn_builder.rpn import RPN
 
 __author__ = 'Gleb Orlov <orlovgb@mail.ru>'
-__version__ = '0.3.0'
+__version__ = '1.0.0'

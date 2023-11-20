@@ -2,17 +2,30 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+from abc import ABCMeta
 from calendar import isleap, monthrange
 from collections import defaultdict
 from functools import wraps
 from itertools import groupby
 
-from six import integer_types, iteritems, string_types, text_type
+from six import add_metaclass, integer_types, iteritems, string_types, text_type
 from six.moves import range, zip_longest
 
 from efc.rpn_builder.parser.operands import (
-    BadReference, CellRangeOperand, CellSetOperand, EmptyOperand, ErrorOperand, NamedRangeOperand, NotFoundErrorOperand,
-    NumErrorOperand, RPNOperand, SetOperand, SimpleOperand, SimpleSetOperand, SingleCellOperand, ValueErrorOperand,
+    BadReference,
+    CellRangeOperand,
+    CellSetOperand,
+    EmptyOperand,
+    ErrorOperand,
+    NamedRangeOperand,
+    NotFoundErrorOperand,
+    NumErrorOperand,
+    RPNOperand,
+    SetOperand,
+    SimpleOperand,
+    SimpleSetOperand,
+    SingleCellOperand,
+    ValueErrorOperand,
     ValueNotAvailable,
 )
 from efc.utils import is_float, parse_date
@@ -20,25 +33,112 @@ from efc.utils import is_float, parse_date
 __all__ = ('EXCEL_FUNCTIONS',)
 
 
-def _get_type_id(obj):
-    if isinstance(obj, bool):
-        return 2
-    elif isinstance(obj, string_types):
-        return 1
-    return 0
+@add_metaclass(ABCMeta)
+class CompareAbstract(object):
+    def __init__(self, symbol, func):
+        self._symbol = symbol
+        self._func = func
+
+    @staticmethod
+    def get_type_id(obj):
+        if isinstance(obj, bool):
+            return 2
+        elif isinstance(obj, string_types):
+            return 1
+        return 0
 
 
-def type_mixin(a, b):
-    if a is None:
-        a_type = (1, '') if isinstance(b, string_types) else (0, 0)
-    else:
-        a_type = (_get_type_id(a), a)
+class SimpleCompare(CompareAbstract):
+    """1 > 3, A1 < B2"""
 
-    if b is None:
-        b_type = (1, '') if isinstance(a, string_types) else (0, 0)
-    else:
-        b_type = (_get_type_id(b), b)
-    return a_type, b_type
+    @classmethod
+    def get_op1_type(cls, op1, op2):
+        if op1.value is None:
+            if isinstance(op1, SingleCellOperand) and op1.linked_cell != op1 or not isinstance(op2.value, string_types):
+                op1_type = (0, 0)
+            elif not isinstance(op2.value, string_types):
+                op1_type = (0, 0)
+            else:
+                op1_type = (1, '')
+        else:
+            op1_type = (cls.get_type_id(op1.value), op1.value)
+        return op1_type
+
+    @classmethod
+    def get_op_types(cls, op1, op2):
+        return cls.get_op1_type(op1, op2), cls.get_op1_type(op2, op1)
+
+    def __call__(self, op1, op2):
+        return self._func(*self.get_op_types(op1, op2))
+
+
+class FunctionsCompare(CompareAbstract):
+    """COUNTIF(A;B, \">=10\")"""
+
+    def __init__(self, check_2_types, *args, **kwargs):
+        self._check_2_types = check_2_types
+        super(FunctionsCompare, self).__init__(*args, **kwargs)
+
+    def _get_op_type(self, op):
+        if isinstance(op, SingleCellOperand):
+            if op.linked_cell == op:
+                if op.value is None:
+                    op1_type = (1, '')
+                else:
+                    op1_type = (self.get_type_id(op.value), op.value)
+            else:
+                if op.value is None:
+                    op1_type = (0, 0)
+                else:
+                    op1_type = (self.get_type_id(op.value), op.value)
+        elif op.value is None:
+            op1_type = (1, '')
+        else:
+            op1_type = (self.get_type_id(op.value), op.value)
+        return op1_type
+
+    @staticmethod
+    def _same_linked_cell(op1, op2):
+        if not isinstance(op1, SingleCellOperand):
+            return False
+        if not isinstance(op2, SingleCellOperand):
+            return False
+
+        return all(getattr(op1.linked_cell, key) == getattr(op2.linked_cell, key)
+                   for key in ('row', 'column', 'source', 'ws_name'))
+
+    def __call__(self, op1, op2):
+        op1_type = self._get_op_type(op1)
+        op2_type = self._get_op_type(op2)
+
+        if self._same_linked_cell(op1, op2):
+            res = self._func(op1_type, op1_type)
+        else:
+            check = [op2_type]
+            if self._check_2_types:
+                if op2_type[0] == 0:
+                    tmp = SimpleOperand(str(op2.value))
+                elif op2_type[0] == 1:
+                    tmp = SimpleOperand(float(op2.value))
+                else:
+                    tmp = SimpleOperand({True: 'TRUE', False: 'FALSE'}[op2.value])
+                check.append(self._get_op_type(tmp))
+
+            res = False
+            for check_op_type in check:
+                if self._symbol in ('<>', '='):
+                    res |= self._func(op1_type, check_op_type)
+                elif op1.value is op2.value is None:
+                    res |= True
+                elif op1.value is None and check_op_type[0] == 0 and op1.linked_cell == op1:
+                    res |= False
+                elif op1.value is None and check_op_type[0] == 1 and op2.value != '':
+                    res |= False
+                elif op1_type[0] != check_op_type[0]:
+                    res |= False
+                else:
+                    res |= self._func(op1_type, check_op_type)
+        return res
 
 
 def set_mixin(foo):
@@ -116,42 +216,36 @@ def concat_func(op1, op2):
 
 @set_mixin
 def exponent_func(op1, op2):
-    return op1.digit ** op2.digit
+    return op1.digit**op2.digit
 
 
 @set_mixin
 def compare_not_eq_func(op1, op2):
-    op1, op2 = type_mixin(op1.value, op2.value)
     return op1 != op2
 
 
 @set_mixin
 def compare_gte_func(op1, op2):
-    op1, op2 = type_mixin(op1.value, op2.value)
     return op1 >= op2
 
 
 @set_mixin
 def compare_lte_func(op1, op2):
-    op1, op2 = type_mixin(op1.value, op2.value)
     return op1 <= op2
 
 
 @set_mixin
 def compare_gt_func(op1, op2):
-    op1, op2 = type_mixin(op1.value, op2.value)
     return op1 > op2
 
 
 @set_mixin
 def compare_lt_func(op1, op2):
-    op1, op2 = type_mixin(op1.value, op2.value)
     return op1 < op2
 
 
 @set_mixin
 def compare_eq_func(op1, op2):
-    op1, op2 = type_mixin(op1.value, op2.value)
     return op1 == op2
 
 
@@ -315,7 +409,7 @@ def round_function(a, b):
 
 def round_down_function(a, b):
     b = int(b)
-    base = 10 ** b
+    base = 10**b
     v = a.digit * base // 1 / base
     if b == 0:
         v = int(v)
@@ -335,41 +429,37 @@ def abs_function(a):
     return abs(a.digit)
 
 
-def match_function(op1, r, match_type=None):
+def match_function(op1, r, match_type=1):
     if isinstance(match_type, EmptyOperand):
         match_type = None
 
     match_type = 0 if match_type is None else int(match_type)
 
-    expr = op1.value
     if match_type == 1:
         match_idx = None
         if isinstance(r, CellRangeOperand) and r.is_multidim:
             raise NotFoundErrorOperand
 
         for idx, item in enumerate(r, 1):
-            a, b = type_mixin(item.value, expr)
-            if a > b:
+            if EXCEL_FUNCTIONS['>'](item, op1):
                 if match_idx is not None:
                     break
                 else:
                     raise NotFoundErrorOperand
-            elif a == b:
+            elif EXCEL_FUNCTIONS['='](item, op1):
                 match_idx = idx
         if match_idx is None:
             raise NotFoundErrorOperand
         idx = match_idx
     elif match_type == -1:
         for idx, item in enumerate(r, 1):
-            a, b = type_mixin(item.value, expr)
-            if a > b:
+            if EXCEL_FUNCTIONS['>'](item, op1):
                 break
         else:
             idx = None
     else:
         for idx, item in enumerate(r, 1):
-            a, b = type_mixin(item.value, expr)
-            if a == b:
+            if EXCEL_FUNCTIONS['='](item, op1):
                 break
         else:
             idx = None
@@ -387,19 +477,24 @@ def get_check_function(expr):
         if match:
             match = match.groupdict()
             operation = match['symbol']
-            operand = match['value']
+            value_is_float = is_float(match['value'])
+            if value_is_float and operation != '=':
+                value = float(match['value'])
+            else:
+                value = match['value']
+            operand = SimpleOperand(value)
         else:
             operation = '='
-            operand = expr.value
+            operand = expr
+            value_is_float = is_float(expr.value)
     else:
         operation = '='
-        operand = expr.value
+        operand = expr
+        value_is_float = is_float(expr.value)
 
-    if is_float(operand):
-        operand = float(operand)
-
-    check = ARITHMETIC_FUNCTIONS[operation]
-    return check, SimpleOperand(operand)
+    check_2_types = value_is_float and operation == '='
+    check = FunctionsCompare(check_2_types, operation, COMPARE_FUNCTIONS[operation])
+    return check, operand
 
 
 def countif_function(cells, expr):
@@ -787,13 +882,7 @@ def column_func(op):
         raise ValueErrorOperand
 
 
-ARITHMETIC_FUNCTIONS = {
-    '+': add_func,
-    '-': subtract_func,
-    '/': divide_func,
-    '*': multiply_func,
-    '&': concat_func,
-    '^': exponent_func,
+COMPARE_FUNCTIONS = {
     '<>': compare_not_eq_func,
     '>=': compare_gte_func,
     '<=': compare_lte_func,
@@ -802,8 +891,18 @@ ARITHMETIC_FUNCTIONS = {
     '=': compare_eq_func,
 }
 
+ARITHMETIC_FUNCTIONS = {
+    '+': add_func,
+    '-': subtract_func,
+    '/': divide_func,
+    '*': multiply_func,
+    '&': concat_func,
+    '^': exponent_func,
+}
+
 EXCEL_FUNCTIONS = {}
 EXCEL_FUNCTIONS.update(ARITHMETIC_FUNCTIONS)
+EXCEL_FUNCTIONS.update({k: SimpleCompare(k, v) for k, v in iteritems(COMPARE_FUNCTIONS)})
 
 EXCEL_FUNCTIONS['ABS'] = abs_function
 EXCEL_FUNCTIONS['AND'] = and_function

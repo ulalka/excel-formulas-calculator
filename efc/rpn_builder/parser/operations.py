@@ -8,7 +8,6 @@ from efc.rpn_builder.parser.operands import FunctionNotSupported, OperandLikeObj
 
 
 def excel_function(func):
-    @wraps(func)
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
         if not isinstance(result, OperandLikeObject):

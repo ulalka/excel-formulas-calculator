@@ -110,6 +110,9 @@ COMPARE_VALUES = (
     'empty_string_formula',
     'empty_string_link',
     'empty_cell_link',
+    'zero_link_link',
+    'empty_string_link_link',
+    'empty_cell_link_link',
 )
 
 COMPARE_OPERANDS = ('<>', '>=', '<=', '>', '<', '=')
@@ -125,7 +128,7 @@ def test_compare(workbook_data_only, workbook, interface, left, right, operand):
     left_idx, left_value = left
     right_idx, right_value = right
     operand_idx, operand_value = operand
-    row = FIRST_DATA_ROW + left_idx + len(COMPARE_OPERANDS) * right_idx
+    row = FIRST_DATA_ROW + left_idx + len(COMPARE_VALUES) * right_idx
     column = FIRST_OPERAND_COLUMN + operand_idx
     index = get_column_letter(column) + str(row)
 

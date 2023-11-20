@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from itertools import groupby
+from itertools import chain, groupby, product
+from os.path import dirname, join
 
 import pytest
+from openpyxl import load_workbook
+from openpyxl.utils.cell import get_column_letter
 
+from efc.interfaces.iopenpyxl import OpenpyxlInterface
 from efc.rpn_builder.parser.operands import (
     BadReference,
     NotFoundErrorOperand, NumErrorOperand,
@@ -20,6 +24,23 @@ def calc():
     source = ExcelMock()
     calculator = get_calculator()
     return lambda line, ws_name: calculator(line, ws_name, source)
+
+
+@pytest.fixture(scope='session')
+def workbook():
+    path = join(dirname(__file__), 'fixtures', 'functions.xlsx')
+    return load_workbook(path)
+
+
+@pytest.fixture(scope='session')
+def workbook_data_only():
+    path = join(dirname(__file__), 'fixtures', 'functions.xlsx')
+    return load_workbook(path, data_only=True)
+
+
+@pytest.fixture(scope='session')
+def interface(workbook):
+    return OpenpyxlInterface(workbook, use_cache=True)
 
 
 def test_SUM(calc):
@@ -102,10 +123,13 @@ def test_MID(calc):
     assert calc('MID("hello",2,2)', 'Sheet 1').value == 'el'
 
 
-def test_ISBLANK(calc):
-    assert calc('ISBLANK("test")', 'Yet another sheet').value is False
-    assert calc('ISBLANK("")', 'Yet another sheet').value is False
-    assert calc('ISBLANK(Sheet4!AA1)', 'Yet another sheet').value is True
+@pytest.mark.parametrize(('f', 'result'),
+                         (('ISBLANK("test")', False),
+                          ('ISBLANK("")', False),
+                          ('ISBLANK(Sheet4!AA1)', True),
+                          ))
+def test_ISBLANK(calc, f, result):
+    assert calc(f, 'Yet another sheet').value is result
 
 
 def test_OR(calc):
@@ -155,16 +179,20 @@ def test_COUNT(calc):
     assert calc('COUNT(A1:C4)', 'Sheet 1').value == 6
 
 
-def test_COUNTIF(calc):
-    assert calc('COUNTIF(A1:C4, ">4")', 'Sheet 1').value == 4
-    assert calc('COUNTIF(A1:C4, "13")', 'Sheet4').value == 2
-    assert calc('COUNTIF(A1:C5, ">=0")', 'Sheet4').value == 9
-    assert calc('COUNTIF(A1:C5, "<=0")', 'Sheet5').value == 0
-    assert calc('COUNTIF(A1:B5, "")', 'Sheet6').value == 2
-    assert calc('COUNTIF(A1:B5, B4)', 'Sheet6').value == 2
-    assert calc('COUNTIF(A1:B5, 0)', 'Sheet6').value == 2
-    assert calc('COUNTIF(A1:B5, A1)', 'Sheet6').value == 2
-    assert calc('COUNTIF(A1:B5, C1)', 'Sheet6').value == 2
+@pytest.mark.parametrize(('f', 'sheet', 'result'),
+                         (
+                                 ('COUNTIF(A1:C4, ">4")', 'Sheet 1', 4),
+                                 ('COUNTIF(A1:C4, "13")', 'Sheet4', 2),
+                                 ('COUNTIF(A1:C5, ">=0")', 'Sheet4', 9),
+                                 ('COUNTIF(A1:C5, "<=0")', 'Sheet5', 0),
+                                 ('COUNTIF(A1:B5, "")', 'Sheet6', 2),
+                                 ('COUNTIF(A1:B5, B4)', 'Sheet6', 3),
+                                 ('COUNTIF(A1:B5, 0)', 'Sheet6', 3),
+                                 ('COUNTIF(A1:B5, A1)', 'Sheet6', 3),
+                                 ('COUNTIF(A1:B5, C1)', 'Sheet6', 2),
+                         ))
+def test_simple_COUNTIF(calc, f, sheet, result):
+    assert calc(f, sheet).value == result
 
 
 def test_COUNTBLANK(calc):
@@ -184,8 +212,8 @@ def test_OFFSET(calc):
     assert calc('SUM(OFFSET(A1,2,1,1,2))', 'Sheet 1').value == 10
 
 
-def test_MATCH(calc):
-    assert calc('MATCH(13,Sheet4!A1:A3)', 'Yet another sheet').value == 1
+def test_simple_MATCH(calc):
+    assert calc('MATCH(13,Sheet4!A1:A3)', 'Yet another sheet').value == 2
 
 
 def test_AVERAGE(calc):
@@ -523,3 +551,88 @@ def test_row(calc, formula, ws, result):
 )
 def test_column(calc, formula, ws, result):
     assert calc(formula, ws).value == result
+
+
+COUNTIF_COMPARE_VALUES = (
+    '-100',
+    '-1',
+    '0',
+    'zero_link',
+    'empty_string_link',
+    'empty_cell_link',
+    'empty_string_formula',
+    '1',
+    '100',
+    'int_string_formula',
+    'int_string_link',
+    'str_string_formula',
+    'str_string_link',
+    'string',
+    'str_link',
+)
+
+COUNTIF_OPERANDS = ('<>', '>=', '<=', '>', '<', '=', '= (wo sign)')
+COUNTIF_FIRST_DATA_ROW = 2
+COUNTIF_FIRST_OPERAND_COLUMN = 6
+COUNTIF_LIST = 'countif'
+
+
+@pytest.mark.parametrize('compare_value', enumerate(COUNTIF_COMPARE_VALUES))
+@pytest.mark.parametrize('operand', enumerate(COUNTIF_OPERANDS))
+def test_countif(workbook_data_only, workbook, interface, compare_value, operand):
+    compare_value_idx, compare_value = compare_value
+    operand_idx, operand_value = operand
+    row = COUNTIF_FIRST_DATA_ROW + compare_value_idx
+    column = COUNTIF_FIRST_OPERAND_COLUMN + operand_idx
+    index = get_column_letter(column) + str(row)
+
+    # TODO get value and formula together from single fixture
+    v = workbook_data_only[COUNTIF_LIST][index].value
+    expected = int(v) if v != 'skip' else v
+    assert interface.calc_cell(index, COUNTIF_LIST) == expected, index
+
+
+MATCH_VALUES = COUNTIF_COMPARE_VALUES
+MATCH_FIRST_OPERAND_COLUMN = 6
+MATCH_LIST = 'match'
+
+MATCH_INT_FIRST_DATA_ROW = 3
+MATCH_INT_VALUES = (
+    '-100',
+    '-1',
+    '0',
+    'zero_link',
+    'empty_cell_link',
+    '1',
+    '100',
+)
+
+MATCH_STRING_FIRST_DATA_ROW = 24
+MATCH_STRING_VALUES = (
+    'empty_string_link',
+    'empty_cell_link',
+    'empty_string_formula',
+    'int_string_formula',
+    'int_string_link',
+    'str_string_formula',
+    'str_string_link',
+    'string',
+    'str_link',
+)
+
+
+@pytest.mark.parametrize('match_type', enumerate((1, 0)))
+@pytest.mark.parametrize(('first_row', 'data_type', 'operand'),
+                         chain(
+                             product((MATCH_INT_FIRST_DATA_ROW,), ('int',), list(enumerate(MATCH_INT_VALUES))),
+                             product((MATCH_STRING_FIRST_DATA_ROW,), ('string',), list(enumerate(MATCH_STRING_VALUES))),
+                         ))
+def test_match(workbook_data_only, workbook, interface, first_row, data_type, operand, match_type):
+    operand_idx, operand_value = operand
+    row = first_row + operand_idx
+    column = MATCH_FIRST_OPERAND_COLUMN + match_type[0]
+    index = get_column_letter(column) + str(row)
+
+    # TODO get value and formula together from single fixture
+    expected = workbook_data_only[MATCH_LIST][index].value
+    assert interface.calc_cell(index, MATCH_LIST) == expected, index
