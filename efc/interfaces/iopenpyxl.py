@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from six import PY3
-from efc.interfaces.base import BaseExcelInterface
-from efc.interfaces.errors import NamedRangeNotFound
-from efc.utils import datetime_to_openxml, parse_date
 from openpyxl.utils.cell import coordinate_to_tuple
+from six import PY3
+
+from efc.interfaces.base import BaseExcelInterface, CellInfo
+from efc.interfaces.errors import NamedRangeNotFound
+from efc.rpn_builder.parser.operands import CellAddress
+from efc.utils import datetime_to_openxml, parse_date
 
 
 class OpenpyxlInterface(BaseExcelInterface):
@@ -31,25 +33,17 @@ class OpenpyxlInterface(BaseExcelInterface):
         :type ws_name: basestring
         """
         row, column = coordinate_to_tuple(cell_index)
-        value = self._cell_to_value(row, column, ws_name)
+        value, _ = self._cell_to_value(CellAddress(ws_name, row, column, False, False))
         cell = self.wb[ws_name]._get_cell(row, column)
         return self._deserialize_value(value, cell.data_type)
 
-    def _cell_to_value(self, row, column, ws_name):
-        cell = self.wb[ws_name]._get_cell(row, column)
-
+    def _get_cell_info(self, address):
+        cell = self.wb[address.ws_name]._get_cell(address.row, address.column)
+        value = cell.value
         if cell.data_type != 'f':
-            return self._serialize_value(cell.value, cell.data_type)
-        elif not self._caches:
-            f = cell.value[1:]
-            return self._calc_formula(f, ws_name).value
+            return CellInfo(self._serialize_value(value, cell.data_type))
         else:
-            cache_key = (ws_name, row, column)
-            if cache_key not in self._caches['cells']:
-                f = cell.value[1:]
-                self._caches['cells'][cache_key] = self._calc_formula(f, ws_name).value
-
-            return self._caches['cells'][cache_key]
+            return CellInfo(None, cell.value[1:])
 
     if PY3:
         def _get_named_range_formula(self, name, ws_name):
