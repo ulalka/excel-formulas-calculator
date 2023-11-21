@@ -87,6 +87,9 @@ class BlankOperand(Operand):
     def linked_cell(self):
         return self
 
+    def __eq__(self, other):
+        return self is other or isinstance(other, SingleCellOperand) and other.value is None
+
 
 BLANK_OPERAND = BlankOperand()
 
