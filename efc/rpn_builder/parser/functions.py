@@ -50,6 +50,12 @@ class CompareAbstract(object):
 
 class SimpleCompare(CompareAbstract):
     """1 > 3, A1 < B2"""
+    
+    def __hash__(self):
+        return hash((self._symbol, self._func))
+
+    def __eq__(self, other):
+        return isinstance(other, SimpleCompare) and hash(other) == hash(self)
 
     @classmethod
     def get_op1_type(cls, op1, op2):
@@ -78,6 +84,12 @@ class FunctionsCompare(CompareAbstract):
     def __init__(self, check_2_types, *args, **kwargs):
         self._check_2_types = check_2_types
         super(FunctionsCompare, self).__init__(*args, **kwargs)
+
+    def __hash__(self):
+        return hash((self._check_2_types, self._symbol, self._func))
+
+    def __eq__(self, other):
+        return isinstance(other, FunctionsCompare) and hash(other) == hash(self)
 
     def _get_op_type(self, op):
         if isinstance(op, SingleCellOperand):
