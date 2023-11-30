@@ -72,7 +72,7 @@ class BaseExcelInterface(object):
                 value, last_cell_address = self._cell_to_value(partial_result.cell_address)
                 break
             elif isinstance(partial_result, RPNOperand):
-                calc = partial_result.calc
+                calc = partial(partial_result.rpn.calc, ws_name=partial_result.ws_name, source=partial_result.source)
             else:
                 value = partial_result.value
                 break
