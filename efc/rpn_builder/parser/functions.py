@@ -217,7 +217,23 @@ def multiply_func(op1, op2):
     return op1.digit * op2.digit
 
 
+def rpn_operand_value(foo):
+    @wraps(foo)
+    def wrapper(*args, **kwargs):
+        args = list(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, RPNOperand):
+                args[i] = arg.evaluated_value
+        for k, v in kwargs.items():
+            if isinstance(v, RPNOperand):
+                kwargs[k] = v.evaluated_value
+        return foo(*args, **kwargs)
+
+    return wrapper
+
+
 @set_mixin
+@rpn_operand_value
 def concat_func(op1, op2):
     if isinstance(op1, ErrorOperand):
         raise op1
@@ -310,16 +326,6 @@ def if_error_func(op1, op2):
     return op2 if isinstance(op1, ErrorOperand) else op1
 
 
-def rpn_operand_value(foo):
-    @wraps(foo)
-    def wrapper(op):
-        if isinstance(op, RPNOperand):
-            op = op.evaluated_value
-        return foo(op)
-
-    return wrapper
-
-
 @rpn_operand_value
 def is_error_func(op):
     return isinstance(op, ErrorOperand)
@@ -333,21 +339,31 @@ def min_func(*args):
     return min(list(d or 0 for d in iter_digits(*args)) or [0])
 
 
+@rpn_operand_value
 def left_func(op1, op2=1):
+    if isinstance(op1, ErrorOperand):
+        raise op1
     if isinstance(op2, EmptyOperand):
         op2 = 1
 
     return op1.string[:int(op2)]
 
 
+@rpn_operand_value
 def right_func(op1, op2=1):
+    if isinstance(op1, ErrorOperand):
+        raise op1
     if isinstance(op2, EmptyOperand):
         op2 = 1
 
     return op1.string[-int(op2):]
 
 
+@rpn_operand_value
 def mid_func(op1, op2, op3):
+    if isinstance(op1, ErrorOperand):
+        raise op1
+
     left = int(op2) - 1
     right = left + int(op3)
     return op1.string[left:right]
@@ -724,7 +740,14 @@ def index_function(rg, row, column=None):
     return result
 
 
+@rpn_operand_value
 def substitute_func(text, old_text, new_text, instance_num=None):
+    if isinstance(text, ErrorOperand):
+        raise text
+    if isinstance(old_text, ErrorOperand):
+        raise old_text
+    if isinstance(new_text, ErrorOperand):
+        raise new_text
     if isinstance(instance_num, EmptyOperand):
         instance_num = None
 
@@ -732,7 +755,12 @@ def substitute_func(text, old_text, new_text, instance_num=None):
     return text.string.replace(old_text.string, new_text.string, instance_num)
 
 
+@rpn_operand_value
 def search_func(pattern, source, start_position=None):
+    if isinstance(pattern, ErrorOperand):
+        raise pattern
+    if isinstance(source, ErrorOperand):
+        raise source
     if isinstance(start_position, EmptyOperand):
         start_position = None
 
@@ -750,7 +778,10 @@ def search_func(pattern, source, start_position=None):
 TRIM_REGEXP = re.compile(r' {2,}')
 
 
+@rpn_operand_value
 def trim_func(op):
+    if isinstance(op, ErrorOperand):
+        raise op
     value = op.string.strip()
     value = TRIM_REGEXP.sub(' ', value)
     return value
@@ -802,7 +833,10 @@ def unique_func(op1, by_col=None, exactly_once=None):
     return cells_set
 
 
+@rpn_operand_value
 def len_func(op):
+    if isinstance(op, ErrorOperand):
+        raise op
     value = op.string
     return len(value)
 
