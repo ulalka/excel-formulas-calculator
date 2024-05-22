@@ -17,6 +17,7 @@ from efc.rpn_builder.parser.operands import (
     CellSetOperand,
     EmptyOperand,
     ErrorOperand,
+    HyperlinkOperand,
     NamedRangeOperand,
     NotFoundErrorOperand,
     NumErrorOperand,
@@ -675,6 +676,16 @@ def hlookup_function(op, rg, row, flag=None):
                              ws_name=rg.ws_name, source=rg.source)
 
 
+def hyperlink_function(link, text=None):
+    if isinstance(link, RPNOperand):
+        link = link.evaluated_value
+
+    if isinstance(text, RPNOperand):
+        text = text.evaluated_value
+
+    return HyperlinkOperand(link.value, text.value if text is not None else None)
+
+
 def index_function(rg, row, column=None):
     if isinstance(column, EmptyOperand):
         column = None
@@ -939,6 +950,7 @@ EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
 EXCEL_FUNCTIONS['ISERROR'] = is_error_func
 
 EXCEL_FUNCTIONS['HLOOKUP'] = hlookup_function
+EXCEL_FUNCTIONS['HYPERLINK'] = hyperlink_function
 
 EXCEL_FUNCTIONS['LARGE'] = large_function
 EXCEL_FUNCTIONS['LEN'] = len_func

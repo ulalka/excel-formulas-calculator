@@ -25,6 +25,10 @@ class OpenpyxlInterface(BaseExcelInterface):
             value = parse_date(value)
         return value
 
+    def get_cell_formula_hyperlink(self, cell_index, ws_name):
+        row, column = coordinate_to_tuple(cell_index)
+        return self._get_cell_formula_hyperlink(CellAddress(ws_name, row, column, False, False))
+
     def calc_cell(self, cell_index, ws_name):
         """
         Calculate the cell formula by str index.

@@ -11,8 +11,8 @@ from openpyxl.utils.cell import get_column_letter
 from efc.interfaces.iopenpyxl import OpenpyxlInterface
 from efc.rpn_builder.parser.operands import (
     BadReference,
-    NotFoundErrorOperand, NumErrorOperand,
-    ValueErrorOperand,
+    HyperlinkOperand, NotFoundErrorOperand, NumErrorOperand,
+    RPNOperand, ValueErrorOperand,
     ValueNotAvailable,
     ZeroDivisionErrorOperand,
 )
@@ -255,6 +255,27 @@ def test_VLOOKUP(calc, formula, result):
 )
 def test_HLOOKUP(calc, formula, result):
     assert calc(formula, 'Sheet4').value == result
+
+
+@pytest.mark.parametrize(
+    ('formula', 'link', 'text'),
+    (('HYPERLINK("https://ya.ru")', 'https://ya.ru', None),
+     ('HYPERLINK("https://ya.ru", "text")', 'https://ya.ru', 'text'),
+     ('HYPERLINK("https://ya.ru", IF(TRUE, "lalala", "bababa"))', 'https://ya.ru', 'lalala'),
+     ('HYPERLINK(IF(FALSE, "https://ya.ru", "https://yandex.ru"),  "bababa")', 'https://yandex.ru', 'bababa'),
+     ('HYPERLINK(IF(FALSE, "https://ya.ru", "https://ya2.ru"),  IF(FALSE, "lalala", "ba"))', 'https://ya2.ru', 'ba'),
+     ('IF(TRUE, HYPERLINK("https://ya.ru"), HYPERLINK("https://ya2.ru"))', 'https://ya.ru', None),
+     ('IF(FALSE, HYPERLINK("https://ya.ru"), HYPERLINK("https://ya2.ru"))', 'https://ya2.ru', None),
+     ),
+)
+def test_HYPERLINK(calc, formula, link, text):
+    result = calc(formula, 'Sheet4')
+    if isinstance(result, RPNOperand):
+        result = result.evaluated_value
+
+    assert isinstance(result, HyperlinkOperand)
+    assert result.link == link
+    assert result.text == text
 
 
 def test_SEARCH(calc):
