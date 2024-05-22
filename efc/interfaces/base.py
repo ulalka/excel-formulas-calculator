@@ -51,7 +51,7 @@ class BaseExcelInterface(object):
         """Clear all caches"""
         self._caches.clear()
 
-    def _get_cell_hyperlink(self, address):
+    def _get_cell_formula_hyperlink(self, address):
         """
         :type address: CellAddress
         :rtype: str | None

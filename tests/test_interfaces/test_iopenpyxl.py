@@ -120,4 +120,4 @@ def test_openpyxl_cache_disabled(workbook):
 def test_hyperlink(workbook, cell, hyperlink, value, use_cache):
     interface = OpenpyxlInterface(workbook, use_cache=use_cache)
     assert interface.calc_cell(cell, 'hyperlink') == value
-    assert interface.get_cell_hyperlink(cell, 'hyperlink') == hyperlink
+    assert interface.get_cell_formula_hyperlink(cell, 'hyperlink') == hyperlink
