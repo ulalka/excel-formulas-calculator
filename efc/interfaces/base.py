@@ -56,9 +56,9 @@ class BaseExcelInterface(object):
         :type address: CellAddress
         :rtype: str | None
         """
-        if self._caches is None:
+        if not self._caches:
             cell_info = self._get_cell_info(address)
-            v = self._get_value_with_target_computable_cell(address, cell_info)
+            v = self._calc_extended_value(address, cell_info)
             return v[1].link if isinstance(v[1], HyperlinkOperand) else None
         else:
             self._cell_to_value(address)
@@ -72,7 +72,7 @@ class BaseExcelInterface(object):
         """
         pass
 
-    def _get_value_with_target_computable_cell(self, cell_addr, cell_info):
+    def _calc_extended_value(self, cell_addr, cell_info):
         """
         :type cell_addr: CellAddress
         :type cell_info: CellInfo
@@ -85,11 +85,29 @@ class BaseExcelInterface(object):
                 value, last_cell_address = self._cell_to_value(partial_result.cell_address)
                 break
             elif isinstance(partial_result, RPNOperand):
-                calc = partial(partial_result.rpn.calc, ws_name=partial_result.ws_name, source=partial_result.source)
+                calc = partial(partial_result.rpn.calc,
+                               ws_name=partial_result.ws_name,
+                               source=partial_result.source)
             else:
                 value = partial_result.value
                 break
         return value, partial_result, last_cell_address
+
+    def _get_or_calc_extended_value(self, cell_addr, cell_info):
+        """
+        :type cell_addr: CellAddress
+        :type cell_info: CellInfo
+        """
+        if self._caches:
+            if cell_addr not in self._caches['cells']:
+                v, pr, lca = self._calc_extended_value(cell_addr, cell_info)
+                if isinstance(pr, HyperlinkOperand):
+                    self._caches['hyperlinks'][cell_addr] = pr.link
+                self._caches['cells'][cell_addr] = (v, lca)
+            return self._caches['cells'][cell_addr]
+        else:
+            v, _, lca = self._calc_extended_value(cell_addr, cell_info)
+            return v, lca
 
     def _cell_to_value(self, cell_addr):
         """
@@ -100,17 +118,7 @@ class BaseExcelInterface(object):
         if cell_info.formula is None:
             return cell_info.value, cell_addr
         else:
-            if self._caches is not None:
-                if cell_addr not in self._caches['cells']:
-                    v, partial_res, last_cell_addr = self._get_value_with_target_computable_cell(cell_addr, cell_info)
-                    if isinstance(partial_res, HyperlinkOperand):
-                        self._caches['hyperlinks'][cell_addr] = partial_res.link
-                    self._caches['cells'][cell_addr] = (v, last_cell_addr)
-                value = self._caches['cells'][cell_addr]
-            else:
-                v, partial_res, last_cell_addr = self._get_value_with_target_computable_cell(cell_addr, cell_info)
-                value = (v, last_cell_addr)
-            return value
+            return self._get_or_calc_extended_value(cell_addr, cell_info)
 
     @abstractmethod
     def _get_named_range_formula(self, name, ws_name):

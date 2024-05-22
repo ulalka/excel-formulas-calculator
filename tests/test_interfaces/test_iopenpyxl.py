@@ -101,7 +101,7 @@ def test_openpyxl_cache_disabled(workbook):
     assert interface.calc_cell('B1', 'ws1') == 4
 
 
-@pytest.mark.parametrize('use_cache', (True, False))
+@pytest.mark.parametrize('use_cache', (False, True))
 @pytest.mark.parametrize(
     ('cell', 'hyperlink', 'value'),
     [
