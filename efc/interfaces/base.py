@@ -92,7 +92,12 @@ class BaseExcelInterface(object):
                 value = partial_result.value
                 break
         return value, partial_result, last_cell_address
-
+    
+    def _store_to_cache(self, cell_addr, value, partial_result, last_cell_address):
+        if isinstance(partial_result, HyperlinkOperand):
+            self._caches['hyperlinks'][cell_addr] = partial_result.link
+        self._caches['cells'][cell_addr] = (value, last_cell_address)
+        
     def _get_or_calc_extended_value(self, cell_addr, cell_info):
         """
         :type cell_addr: CellAddress
@@ -101,9 +106,7 @@ class BaseExcelInterface(object):
         if self._caches:
             if cell_addr not in self._caches['cells']:
                 v, pr, lca = self._calc_extended_value(cell_addr, cell_info)
-                if isinstance(pr, HyperlinkOperand):
-                    self._caches['hyperlinks'][cell_addr] = pr.link
-                self._caches['cells'][cell_addr] = (v, lca)
+                self._store_to_cache(cell_addr, v, pr, lca)
             return self._caches['cells'][cell_addr]
         else:
             v, _, lca = self._calc_extended_value(cell_addr, cell_info)
