@@ -544,7 +544,6 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
         return iter(self.evaluated_value)
 
 
-@python_2_unicode_compatible
 class HyperlinkOperand(Operand):
     def __init__(self, link, text=None, *args, **kwargs):
         self.link = link
