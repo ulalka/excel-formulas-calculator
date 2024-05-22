@@ -950,6 +950,7 @@ EXCEL_FUNCTIONS['ISBLANK'] = is_blank_func
 EXCEL_FUNCTIONS['ISERROR'] = is_error_func
 
 EXCEL_FUNCTIONS['HLOOKUP'] = hlookup_function
+EXCEL_FUNCTIONS['HYPERLINK'] = hyperlink_function
 
 EXCEL_FUNCTIONS['LARGE'] = large_function
 EXCEL_FUNCTIONS['LEN'] = len_func
