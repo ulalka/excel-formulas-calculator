@@ -17,6 +17,7 @@ __all__ = (
     'CellSetOperand', 'SimpleSetOperand', 'NamedRangeOperand', 'CellRangeOperand',
     'FunctionNotSupported', 'NotFoundErrorOperand', 'RPNOperand', 'OperandLikeObject', 'OffsetMixin',
     'SetOperand', 'BadReference', 'ValueNotAvailable', 'EmptyOperand', 'NamedRangeNotExist', 'NumErrorOperand',
+    'HyperlinkOperand',
 )
 
 CellAddress = namedtuple('CellAddress', ('ws_name', 'row', 'column', 'row_fixed', 'column_fixed'))
@@ -541,3 +542,11 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
 
     def __iter__(self):
         return iter(self.evaluated_value)
+
+
+@python_2_unicode_compatible
+class HyperlinkOperand(OperandLikeObject):
+    def __init__(self, link, text=None, *args, **kwargs):
+        self.link = link
+        self.text = text
+        super(HyperlinkOperand, self).__init__(*args, **kwargs)

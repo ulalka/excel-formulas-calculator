@@ -17,6 +17,7 @@ from efc.rpn_builder.parser.operands import (
     CellSetOperand,
     EmptyOperand,
     ErrorOperand,
+    HyperlinkOperand,
     NamedRangeOperand,
     NotFoundErrorOperand,
     NumErrorOperand,
@@ -673,6 +674,16 @@ def hlookup_function(op, rg, row, flag=None):
         idx = match_function(op, first_row, 0)
     return SingleCellOperand(row=(rg.row1 or 1) + row.digit - 1, column=(rg.column1 or 1) + idx - 1,
                              ws_name=rg.ws_name, source=rg.source)
+
+
+def hyperlink_function(link, text=None):
+    if isinstance(link, RPNOperand):
+        link = link.evaluated_value
+
+    if isinstance(text, RPNOperand):
+        text = text.evaluated_value
+
+    return HyperlinkOperand(link.value, text.value if text is not None else None)
 
 
 def index_function(rg, row, column=None):
