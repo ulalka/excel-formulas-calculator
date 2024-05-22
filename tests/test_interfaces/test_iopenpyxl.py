@@ -99,3 +99,25 @@ def test_openpyxl_cache_disabled(workbook):
     assert interface.calc_cell('B1', 'ws1') == 2
     workbook['ws1']['A1'].value = 3
     assert interface.calc_cell('B1', 'ws1') == 4
+
+
+@pytest.mark.parametrize('use_cache', (True, False))
+@pytest.mark.parametrize(
+    ('cell', 'hyperlink', 'value'),
+    [
+        ('A1', 'https://ya.ru', 'https://ya.ru'),
+        ('A2', 'https://ya.ru', 'text'),
+        ('A3', 'https://ya.ru', 'lalala'),
+        ('A4', 'https://ya2.ru', 'bababa'),
+        ('A5', 'https://ya2.ru', 'bababa'),
+        ('A6', 'https://ya.ru', 'https://ya.ru'),
+        ('A7', 'http://ya.ru', 'Яндекс'),
+        ('A8', None, 2468),
+        ('A9', None, 'https://ya.rutext'),
+        ('A10', None, 'https://ya.ru'),
+    ]
+)
+def test_hyperlink(workbook, cell, hyperlink, value, use_cache):
+    interface = OpenpyxlInterface(workbook, use_cache=use_cache)
+    assert interface.calc_cell(cell, 'hyperlink') == value
+    assert interface.get_cell_hyperlink(cell, 'hyperlink') == hyperlink

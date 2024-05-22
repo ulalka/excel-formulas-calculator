@@ -62,6 +62,7 @@ class CacheManager(object):
         'cells': SingleCellCache,  # cache calculated Cells
         'range': RangeCache,  # cache CellRangeOperand instances
         'ifs': RangeCache,  # cache IFS expressions for ranges
+        'hyperlinks': SingleCellCache,  # cache hyperlinks for cells
     }
 
     def __init__(self):

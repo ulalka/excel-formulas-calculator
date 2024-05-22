@@ -545,8 +545,12 @@ class RPNOperand(OperandLikeObject, OffsetMixin):
 
 
 @python_2_unicode_compatible
-class HyperlinkOperand(OperandLikeObject):
+class HyperlinkOperand(Operand):
     def __init__(self, link, text=None, *args, **kwargs):
         self.link = link
         self.text = text
         super(HyperlinkOperand, self).__init__(*args, **kwargs)
+
+    @cached_property
+    def value(self):
+        return self.link if self.text is None else self.text
