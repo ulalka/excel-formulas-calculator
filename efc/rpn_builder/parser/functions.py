@@ -6,7 +6,7 @@ from abc import ABCMeta
 from calendar import isleap, monthrange
 from collections import defaultdict
 from functools import wraps
-from itertools import groupby
+from itertools import chain, groupby
 
 from six import add_metaclass, integer_types, iteritems, string_types, text_type
 from six.moves import range, zip_longest
@@ -51,7 +51,7 @@ class CompareAbstract(object):
 
 class SimpleCompare(CompareAbstract):
     """1 > 3, A1 < B2"""
-    
+
     def __hash__(self):
         return hash((self._symbol, self._func))
 
@@ -590,6 +590,44 @@ def sum_ifs_function(op1, *args):
     return sum_func(*(c for idx, c in enumerate(op1, 1) if idx in good_indexes))
 
 
+def sumproduct_function(op1, *args):
+    operands = []
+    tp = size = None
+    for item in chain([op1], args):
+        while True:
+            if isinstance(item, NamedRangeOperand):
+                item = item.value
+            elif isinstance(item, RPNOperand):
+                item = item.evaluated_value
+            else:
+                break
+
+        if isinstance(item, SetOperand):
+            item_tp = 1
+            item_size = (item.rows_count, 1)
+        elif isinstance(item, CellRangeOperand):
+            item_tp = 2
+            item_size = (item.row2 - item.row1 + 1, item.column2 - item.column1 + 1)
+        else:
+            raise NotFoundErrorOperand
+
+        if tp is None:
+            tp = item_tp
+            size = item_size
+        elif tp != item_tp or size != item_size:
+            raise NotFoundErrorOperand
+
+        operands.append(item)
+
+    result = 0
+    for ops in zip(*operands):
+        partial_result = ops[0].digit
+        for op in ops[1:]:
+            partial_result = partial_result * op.digit
+        result += partial_result
+    return result
+
+
 def sum_if_function(r, expr, op1=None):
     return sum_ifs_function(op1 or r, r, expr)
 
@@ -979,6 +1017,7 @@ EXCEL_FUNCTIONS['SUBSTITUTE'] = substitute_func
 EXCEL_FUNCTIONS['SUM'] = sum_func
 EXCEL_FUNCTIONS['SUMIF'] = sum_if_function
 EXCEL_FUNCTIONS['SUMIFS'] = sum_ifs_function
+EXCEL_FUNCTIONS['SUMPRODUCT'] = sumproduct_function
 
 EXCEL_FUNCTIONS['TRIM'] = trim_func
 

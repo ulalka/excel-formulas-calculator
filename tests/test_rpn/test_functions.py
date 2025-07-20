@@ -11,11 +11,15 @@ from openpyxl.utils.cell import get_column_letter
 from efc.interfaces.iopenpyxl import OpenpyxlInterface
 from efc.rpn_builder.parser.operands import (
     BadReference,
-    HyperlinkOperand, NotFoundErrorOperand, NumErrorOperand,
-    RPNOperand, ValueErrorOperand,
+    HyperlinkOperand,
+    NotFoundErrorOperand,
+    NumErrorOperand,
+    RPNOperand,
+    ValueErrorOperand,
     ValueNotAvailable,
     ZeroDivisionErrorOperand,
 )
+
 from .mock import ExcelMock, get_calculator
 
 
@@ -657,3 +661,23 @@ def test_match(workbook_data_only, workbook, interface, first_row, data_type, op
     # TODO get value and formula together from single fixture
     expected = workbook_data_only[MATCH_LIST][index].value
     assert interface.calc_cell(index, MATCH_LIST) == expected, index
+
+
+@pytest.mark.parametrize(
+    ('formula', 'result'),
+    (('SUMPRODUCT(A1:A3)', 30),
+     ('SUMPRODUCT(A1:A3,B1:B3)', 424),
+     ('SUMPRODUCT(A1:A3,B2:B4)', 234),
+     ('SUMPRODUCT(A1:A3,B1:B3,C1:C3)', 7552),
+     ('SUMPRODUCT(UNIQUE(A1:C1),UNIQUE(A3:C3))', 228),
+     pytest.param('SUMPRODUCT(UNIQUE(A1:A2),UNIQUE(B1:B3))', None,
+                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True)),
+     pytest.param('SUMPRODUCT(A1:A2,UNIQUE(B1:B3))', None,
+                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True)),
+     pytest.param('SUMPRODUCT(A1:A3,B1:B2)', None,
+                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True)),
+     pytest.param('SUMPRODUCT(A1:A3,A1:C1)', None,
+                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True))),
+)
+def test_SUMPRODUCT(calc, formula, result):
+    assert calc(formula, 'Sheet4').value == result
