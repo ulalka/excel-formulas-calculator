@@ -3,3 +3,6 @@
 dist
 build
 .tox/
+.history
+.idea
+.vscode

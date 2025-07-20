@@ -178,6 +178,16 @@ def set_mixin(foo):
     return wrapper
 
 
+def operand_to_final_operand(op):
+    while True:
+        if isinstance(op, NamedRangeOperand):
+            op = op.value
+        elif isinstance(op, RPNOperand):
+            op = op.evaluated_value
+        else:
+            return op
+
+
 @set_mixin
 def add(op1, op2):
     return op1.digit + op2.digit
@@ -592,29 +602,23 @@ def sum_ifs_function(op1, *args):
 
 def sumproduct_function(op1, *args):
     operands = []
-    tp = size = None
+    r_sizes = s_sizes = None
     for item in chain([op1], args):
-        while True:
-            if isinstance(item, NamedRangeOperand):
-                item = item.value
-            elif isinstance(item, RPNOperand):
-                item = item.evaluated_value
-            else:
-                break
+        item = operand_to_final_operand(item)
 
         if isinstance(item, SetOperand):
-            item_tp = 1
-            item_size = (item.rows_count, 1)
+            item_sizes = {(item.rows_count, item.columns_count), (item.columns_count, item.rows_count)}
+            if s_sizes is None:
+                s_sizes = item_sizes
+            elif s_sizes != item_sizes or r_sizes is not None and not r_sizes.intersection(item_sizes):
+                raise NotFoundErrorOperand
         elif isinstance(item, CellRangeOperand):
-            item_tp = 2
-            item_size = (item.row2 - item.row1 + 1, item.column2 - item.column1 + 1)
+            item_sizes = {(item.row2 - item.row1 + 1, item.column2 - item.column1 + 1)}
+            if r_sizes is None:
+                r_sizes = item_sizes
+            elif r_sizes != item_sizes or s_sizes is not None and not s_sizes.intersection(item_sizes):
+                raise NotFoundErrorOperand
         else:
-            raise NotFoundErrorOperand
-
-        if tp is None:
-            tp = item_tp
-            size = item_size
-        elif tp != item_tp or size != item_size:
             raise NotFoundErrorOperand
 
         operands.append(item)
@@ -685,18 +689,33 @@ def offset_function(cell, row_offset, col_offset, height=None, width=None):
 
 
 def vlookup_function(op, rg, column, flag=None):
+    rg = operand_to_final_operand(rg)
+
     if isinstance(flag, EmptyOperand):
         flag = None
 
     first_col = rg.offset()
     first_col.column2 = first_col.column1
 
-    if flag is not None and flag.digit or flag is None:
-        idx = match_function(op, first_col, 1)
+    op = operand_to_final_operand(op)
+    if isinstance(op, (SetOperand, CellRangeOperand)):
+        check = list(op)
     else:
-        idx = match_function(op, first_col, 0)
-    return SingleCellOperand(row=(rg.row1 or 1) + idx - 1, column=(rg.column1 or 1) + column.digit - 1,
-                             ws_name=rg.ws_name, source=rg.source)
+        check = [op]
+
+    result = CellSetOperand()
+    for op in check:
+        if flag is not None and flag.digit or flag is None:
+            idx = match_function(op, first_col, 1)
+        else:
+            idx = match_function(op, first_col, 0)
+        result.add_cell(SingleCellOperand(row=(rg.row1 or 1) + idx - 1, column=(rg.column1 or 1) + column.digit - 1,
+                                          ws_name=rg.ws_name, source=rg.source))
+
+    if result.columns_count == 1:
+        return next(iter(result))
+    else:
+        return result
 
 
 def hlookup_function(op, rg, row, flag=None):

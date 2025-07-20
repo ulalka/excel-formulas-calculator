@@ -246,6 +246,15 @@ def test_VLOOKUP(calc, formula, result):
     assert calc(formula, 'Sheet4').value == result
 
 
+def test_range_VLOOKUP(calc):
+    res = list(calc('VLOOKUP(B2:B3,B1:C3,2,0)', 'TestVLookup'))
+    expected_result = list(calc('UNIQUE(C2:C3)', 'TestVLookup'))
+    assert res == expected_result
+
+    res = calc('SUMPRODUCT(VLOOKUP(B2:B3,B1:C3,2,0),A2:A3)', 'TestVLookup').value
+    assert res == 266
+
+
 @pytest.mark.parametrize(
     ('formula', 'result'),
     (('HLOOKUP(13,TestHLookup!A1:B3,2)', 17),
@@ -670,9 +679,7 @@ def test_match(workbook_data_only, workbook, interface, first_row, data_type, op
      ('SUMPRODUCT(A1:A3,B2:B4)', 234),
      ('SUMPRODUCT(A1:A3,B1:B3,C1:C3)', 7552),
      ('SUMPRODUCT(UNIQUE(A1:C1),UNIQUE(A3:C3))', 228),
-     pytest.param('SUMPRODUCT(UNIQUE(A1:A2),UNIQUE(B1:B3))', None,
-                  marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True)),
-     pytest.param('SUMPRODUCT(A1:A2,UNIQUE(B1:B3))', None,
+     pytest.param('SUMPRODUCT(UNIQUE(A1:B1),UNIQUE(A3:C3))', None,
                   marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True)),
      pytest.param('SUMPRODUCT(A1:A3,B1:B2)', None,
                   marks=pytest.mark.xfail(raises=NotFoundErrorOperand, strict=True)),
