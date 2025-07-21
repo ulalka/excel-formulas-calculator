@@ -55,7 +55,7 @@ print(interface.calc_cell('A4', 'Worksheet1'))  # prints '1235'
 * String concatenation: ``&``
 * Functions: `ABS, AND, AVERAGE, AVERAGEIFS, COLUMN, CONCATENATE, COUNT, COUNTA, COUNTIF, COUNTIFS, COUNTBLANK, 
   FLOOR, IF, IFS, IFERROR, INDEX, ISBLANK, ISERROR, HLOOKUP, LARGE, LEN, LEFT, LOWER, MATCH, MAX, MID, MIN, MOD, NOT,
-  OFFSET, OR, RIGHT, ROUND, ROUNDDOWN, ROW, SEARCH, SMALL, SUBSTITUTE, SUM, SUMIF, SUMIFS, TRIM, VLOOKUP, YEARFRAC, 
+  OFFSET, OR, RIGHT, ROUND, ROUNDDOWN, ROW, SEARCH, SMALL, SUBSTITUTE, SUM, SUMIF, SUMIFS, SUMPRODUCT, TRIM, VLOOKUP, YEARFRAC, 
   UNIQUE, UPPER`
 * All variations of the spelling of the cell and range addresses (linked docs will be skipped)
 * Formula cell offset - this can be useful when calculating shared formulas
